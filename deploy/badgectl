@@ -40,10 +40,14 @@ fi
 # Load the env file without letting it run arbitrary code: only KEY=VALUE lines
 # are honoured, the value is taken verbatim (spaces and "<>" are fine), and an
 # optional pair of surrounding double quotes is stripped (systemd does the same).
+# Collect the pairs to hand to the child verbatim -- nothing else is passed, so
+# the app's own defaults apply to every key the operator left out.
+declare -a _pass=()
 while IFS='=' read -r _key _val; do
   [[ "$_key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
   if [[ "$_val" == \"*\" ]]; then _val="${_val#\"}"; _val="${_val%\"}"; fi
   export "$_key=$_val"
+  _pass+=("$_key=$_val")
 done < <(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$ENV_FILE")
 
 : "${BADGESERVER_DATA_DIR:=/var/lib/badgeserver}"
@@ -68,18 +72,6 @@ exec sudo -u badges env -C / \
     FLASK_SKIP_DOTENV=1 \
     PYTHONPATH="$REPO_DIR" \
     BADGESERVER_DATA_DIR="$BADGESERVER_DATA_DIR" \
-    SECRET_KEY="${SECRET_KEY:-}" \
-    EXTERNAL_URL="${EXTERNAL_URL:-}" \
-    DATABASE_URL="${DATABASE_URL:-}" \
-    SITE_TITLE="${SITE_TITLE:-}" \
-    MAIL_ENABLED="${MAIL_ENABLED:-}" \
-    SMTP_HOST="${SMTP_HOST:-}" \
-    SMTP_PORT="${SMTP_PORT:-}" \
-    SMTP_SECURITY="${SMTP_SECURITY:-}" \
-    SMTP_USERNAME="${SMTP_USERNAME:-}" \
-    SMTP_PASSWORD="${SMTP_PASSWORD:-}" \
-    SMTP_TIMEOUT="${SMTP_TIMEOUT:-}" \
-    MAIL_FROM="${MAIL_FROM:-}" \
-    MAIL_REPLY_TO="${MAIL_REPLY_TO:-}" \
+    "${_pass[@]}" \
     FLASK_APP="$REPO_DIR/wsgi.py" \
   python3 -m flask "$@"
