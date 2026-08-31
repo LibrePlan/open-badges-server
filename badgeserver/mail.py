@@ -35,10 +35,22 @@ def _send(msg: EmailMessage) -> None:
     with server:
         server.ehlo()
         if security == "starttls":
+            if not server.has_extn("starttls"):
+                raise RuntimeError(
+                    f"{host}:{port} does not offer STARTTLS; "
+                    f"set SMTP_SECURITY to 'none' or 'ssl'."
+                )
             server.starttls(context=context)
             server.ehlo()
-        if cfg.get("SMTP_USERNAME"):
-            server.login(cfg["SMTP_USERNAME"], cfg.get("SMTP_PASSWORD", ""))
+        username = cfg.get("SMTP_USERNAME")
+        if username:
+            if not server.has_extn("auth"):
+                raise RuntimeError(
+                    f"{host}:{port} does not offer SMTP AUTH. If the relay accepts "
+                    f"mail from this host without a login, leave SMTP_USERNAME and "
+                    f"SMTP_PASSWORD blank."
+                )
+            server.login(username, cfg.get("SMTP_PASSWORD", ""))
         server.send_message(msg)
 
 

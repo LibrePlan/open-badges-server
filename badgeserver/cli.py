@@ -98,5 +98,8 @@ def send_test_email(address: str) -> None:
         raise click.ClickException(
             "SMTP is not configured (need MAIL_ENABLED, SMTP_HOST, MAIL_FROM)."
         )
-    _send(address)
+    try:
+        _send(address)
+    except Exception as exc:  # noqa: BLE001 - report cleanly, no traceback
+        raise click.ClickException(f"SMTP test failed: {exc}") from exc
     click.echo(f"Test message sent to {address}.")
