@@ -98,6 +98,7 @@ proxy or an external monitor at it.
 | --- | --- |
 | Service won't start, `Missing required configuration` | `SECRET_KEY` / `EXTERNAL_URL` in `badges.env` |
 | Service won't start, `WorkingDirectory ... not absolute` | the unit still has `__REPO__`; re-run the `sed` install step |
+| `badgectl` / service fails: `badges` user can't read the checkout, or `dotenv ... Starting path not found` | the checkout is under a private `/home`; relocate it (`sudo rsync -a --delete <checkout>/ /opt/badgeserver/`), redo the `sed` install step |
 | Badge JSON has the wrong scheme/host | `EXTERNAL_URL` must be the exact public origin; behind a proxy also set `PROXY_FIX_HOPS=1` |
 | Can't sign in over plain HTTP | `SESSION_COOKIE_SECURE` should be false for an `http://` `EXTERNAL_URL` (it defaults that way) |
 | Login always fails right after deploy | run `create-admin`; check the clock (session protection) |

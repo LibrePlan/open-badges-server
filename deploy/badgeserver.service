@@ -5,6 +5,10 @@
 # of this repository. Everything else is derived from it or lives in
 # /var/lib/badgeserver (created by StateDirectory=).
 #
+# The checkout must be readable by the unprivileged "badges" user, so it must
+# NOT sit under a private home directory (/home/<user>, mode 0700). Put it in
+# /opt/badgeserver or similar. See Docs/INSTALL.md.
+#
 # Install (substitutes the repo path in one step -- run from the checkout):
 #   sudo sed "s#__REPO__#$PWD#" deploy/badgeserver.service \
 #     | sudo tee /etc/systemd/system/badgeserver.service > /dev/null

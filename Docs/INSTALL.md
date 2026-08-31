@@ -13,17 +13,26 @@ There is a scripted version of all of this in
 
 ## 0. Where the repository lives
 
-The checkout can be anywhere (`/home/you/badges`, `/opt/badgeserver`, …). The
-only place the path is pinned is the systemd unit's `WorkingDirectory`, and the
-install step below substitutes it automatically. The data directory is always
-`/var/lib/badgeserver`, separate from the code.
-
-Set a shell variable for the rest of this guide:
+The service runs as the unprivileged `badges` user, so **the checkout must be
+readable by that user**. A private home directory (`/home/you`, mode `0700`) is
+not — put the code somewhere world-traversable. `/opt/badgeserver` is the
+recommended location; `/srv/badgeserver` is fine too. The data directory is
+always `/var/lib/badgeserver`, separate from the code.
 
 ```sh
-cd /path/to/your/checkout
+sudo rsync -a --delete /path/to/your/checkout/ /opt/badgeserver/
+cd /opt/badgeserver
 REPO_DIR="$PWD"
 ```
+
+Keep the checkout owned by your normal user (so `git pull` works); it only
+needs to be *readable* by others, which `/opt` already allows. The single place
+the path is pinned is the systemd unit's `WorkingDirectory`, and step 5
+substitutes it automatically. If you later move the checkout, redo step 5.
+
+> Staying under `/home` is possible but requires opening it up
+> (`sudo setfacl -m u:badges:x /home/you && sudo setfacl -R -m u:badges:rX /path/to/checkout`).
+> Relocating to `/opt` is cleaner.
 
 ## 1. Runtime packages
 

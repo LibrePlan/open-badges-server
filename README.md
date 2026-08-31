@@ -36,6 +36,10 @@ Debian 13, all dependencies from `apt`. Full walk-through in
 [`contrib/setup.sh`](contrib/setup.sh). In short:
 
 ```sh
+# the service user must be able to read the checkout: keep it out of a private
+# /home and somewhere world-traversable such as /opt
+sudo rsync -a --delete ./ /opt/badgeserver/ && cd /opt/badgeserver
+
 sudo apt install python3-flask python3-flask-sqlalchemy python3-flask-login \
   python3-flaskext.wtf python3-wtforms python3-email-validator \
   python3-flask-talisman python3-flask-limiter python3-pil python3-qrcode \
@@ -56,8 +60,8 @@ sudo systemctl daemon-reload && sudo systemctl enable --now badgeserver
 curl -s localhost:4000/healthz
 ```
 
-The repository can live anywhere; the `sed` step is what pins its path into the
-service unit.
+The `sed` step pins the checkout path into the service unit — redo it if you
+move the checkout.
 
 ## Local development
 

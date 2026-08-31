@@ -14,8 +14,23 @@ set -euo pipefail
 ENV_FILE="${BADGES_ENV_FILE:-/var/lib/badgeserver/badges.env}"
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+if [[ $EUID -ne 0 ]]; then
+  echo "badgectl: run with sudo (it switches to the 'badges' user itself)" >&2
+  exit 1
+fi
 if [[ ! -r "$ENV_FILE" ]]; then
   echo "badgectl: cannot read $ENV_FILE" >&2
+  exit 1
+fi
+
+# The 'badges' user must be able to read the checkout. A checkout under a
+# private home directory (/home/<user>, mode 0700) is NOT reachable -- move it
+# somewhere world-traversable such as /opt/badgeserver. See Docs/INSTALL.md.
+if ! sudo -u badges test -r "$REPO_DIR/wsgi.py"; then
+  echo "badgectl: the 'badges' user cannot read $REPO_DIR/wsgi.py" >&2
+  echo "          move this checkout outside a private home dir, e.g.:" >&2
+  echo "            sudo rsync -a --delete '$REPO_DIR/' /opt/badgeserver/" >&2
+  echo "          then run  sudo /opt/badgeserver/deploy/badgectl $*" >&2
   exit 1
 fi
 
@@ -30,8 +45,13 @@ done < <(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$ENV_FILE")
 
 : "${BADGESERVER_DATA_DIR:=/var/lib/badgeserver}"
 
-exec sudo -u badges \
-  env \
+# Run from "/" (a directory the badges user can always stat) so Flask's dotenv
+# lookup does not choke, and skip that lookup entirely -- config comes from the
+# env file above, not from a .env in the tree.
+exec sudo -u badges env -C / \
+    HOME="$BADGESERVER_DATA_DIR" \
+    FLASK_SKIP_DOTENV=1 \
+    PYTHONPATH="$REPO_DIR" \
     BADGESERVER_DATA_DIR="$BADGESERVER_DATA_DIR" \
     SECRET_KEY="${SECRET_KEY:-}" \
     EXTERNAL_URL="${EXTERNAL_URL:-}" \

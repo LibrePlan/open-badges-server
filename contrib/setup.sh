@@ -21,6 +21,16 @@ sudo apt install -y python3-flask python3-flask-sqlalchemy python3-flask-login \
 sudo adduser --system --group --home /var/lib/badgeserver --no-create-home badges || true
 sudo install -d -o badges -g badges -m 0750 /var/lib/badgeserver
 
+# the 'badges' user must be able to read this checkout
+if ! sudo -u badges test -r "$REPO_DIR/wsgi.py"; then
+  echo
+  echo "!!! The 'badges' user cannot read $REPO_DIR (a private /home?)."
+  echo "!!! Move the checkout somewhere world-traversable and re-run, e.g.:"
+  echo "      sudo rsync -a --delete '$REPO_DIR/' /opt/badgeserver/"
+  echo "      sudo /opt/badgeserver/contrib/setup.sh"
+  exit 1
+fi
+
 # 3. config file (edit it before continuing)
 if [ ! -e /var/lib/badgeserver/badges.env ]; then
   sudo install -o root -g badges -m 0640 deploy/badges.env.example /var/lib/badgeserver/badges.env
