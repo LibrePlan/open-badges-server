@@ -5,14 +5,16 @@ A small self-hosted **Open Badges 2.0** issuer.
 - Issues badges with **hosted verification** — the assertion JSON URL is the proof.
 - One **local admin** account (username + password). No external identity provider.
 - Single **SQLite** database plus an uploads directory.
-- Server-rendered Flask app, runs under **gunicorn on `127.0.0.1:4000`** behind a
-  reverse proxy that terminates TLS.
+- Server-rendered Flask app under **gunicorn on port 4000**. A reverse proxy is
+  optional: serve plain HTTP directly on the LAN, or put nginx/apache in front
+  for TLS.
 - Emails recipients (optional) when a badge is awarded.
 
-Licence: **AGPL-3.0-or-later** (see `LICENSE`).
+Licence: **AGPL-3.0-or-later** (see `LICENSE`). © Jeroen Baten / LibrePlan.
 
-The full design is in [`Docs/badges-server-v2-build-plan-v1.md`](Docs/badges-server-v2-build-plan-v1.md);
-operational procedures are in [`Docs/operations.md`](Docs/operations.md).
+- Install: [`Docs/INSTALL.md`](Docs/INSTALL.md)
+- Running it (backup, upgrade, troubleshooting): [`Docs/operations.md`](Docs/operations.md)
+- Design notes: [`Docs/badges-server-v2-build-plan-v1.md`](Docs/badges-server-v2-build-plan-v1.md)
 
 ## What it serves
 
@@ -27,52 +29,47 @@ operational procedures are in [`Docs/operations.md`](Docs/operations.md).
 | `/admin` | login-protected administration |
 | `/healthz` | health check for the proxy |
 
-## Install (Debian 13)
+## Install
+
+Debian 13, all dependencies from `apt`. Full walk-through in
+[`Docs/INSTALL.md`](Docs/INSTALL.md); scripted in
+[`contrib/setup.sh`](contrib/setup.sh). In short:
 
 ```sh
 sudo apt install python3-flask python3-flask-sqlalchemy python3-flask-login \
   python3-flaskext.wtf python3-wtforms python3-email-validator \
   python3-flask-talisman python3-flask-limiter python3-pil python3-qrcode \
   python3-gunicorn
-
 sudo adduser --system --group --home /var/lib/badgeserver --no-create-home badges
-```
 
-Then create the config and bootstrap the database:
-
-```sh
 sudo install -o root -g badges -m 0640 deploy/badges.env.example /var/lib/badgeserver/badges.env
-sudoedit /var/lib/badgeserver/badges.env      # set SECRET_KEY, EXTERNAL_URL, SMTP_*
+sudoedit /var/lib/badgeserver/badges.env      # SECRET_KEY, EXTERNAL_URL, BIND, SMTP_*
 
 sudo ./deploy/badgectl init-db
 sudo ./deploy/badgectl create-admin admin
-sudo ./deploy/badgectl set-issuer --slug main --name "Your Org" --url https://your.org --email badges@your.org
-sudo ./deploy/badgectl send-test-email you@your.org      # verify SMTP
-```
+sudo ./deploy/badgectl set-issuer --slug main --name "LibrePlan Badges" \
+  --url https://libreplan.dev --email jeroen@libreplan.dev
 
-Install and start the service:
-
-```sh
-sudo cp deploy/badgeserver.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now badgeserver
+sudo sed "s#__REPO__#$PWD#" deploy/badgeserver.service \
+  | sudo tee /etc/systemd/system/badgeserver.service > /dev/null
+sudo systemctl daemon-reload && sudo systemctl enable --now badgeserver
 curl -s localhost:4000/healthz
 ```
 
-Put a reverse proxy in front of `127.0.0.1:4000`
-(see `deploy/apache-badges.conf.example`), matching `EXTERNAL_URL`.
+The repository can live anywhere; the `sed` step is what pins its path into the
+service unit.
 
 ## Local development
 
 ```sh
-export SECRET_KEY=dev-only EXTERNAL_URL=http://localhost:4000 \
-       SESSION_COOKIE_SECURE=false MAIL_ENABLED=false
+export SECRET_KEY=dev-only EXTERNAL_URL=http://localhost:4000 MAIL_ENABLED=false
 python3 -m flask --app wsgi.py init-db
 python3 -m flask --app wsgi.py create-admin admin
 python3 -m flask --app wsgi.py run --port 4000
 ```
 
-Data goes to `./instance/` in this mode.
+`SESSION_COOKIE_SECURE` defaults to false for an `http://` `EXTERNAL_URL`, so
+login works over plain HTTP. Data goes to `./instance/` in this mode.
 
 ## Tests
 

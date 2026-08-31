@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Jeroen Baten <jbaten@coderial.com>
+# SPDX-FileCopyrightText: 2026 Jeroen Baten <jeroen@libreplan.dev>
 #
 # Run the badge server's "flask" administration commands as the "badges"
 # system user, with the environment from badges.env.

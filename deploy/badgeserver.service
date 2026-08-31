@@ -1,12 +1,15 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Jeroen Baten <jbaten@coderial.com>
+# SPDX-FileCopyrightText: 2026 Jeroen Baten <jeroen@libreplan.dev>
 #
-# Install:
-#   sudo cp deploy/badgeserver.service /etc/systemd/system/
+# This unit has ONE path to set for your host: WorkingDirectory, the checkout
+# of this repository. Everything else is derived from it or lives in
+# /var/lib/badgeserver (created by StateDirectory=).
+#
+# Install (substitutes the repo path in one step -- run from the checkout):
+#   sudo sed "s#__REPO__#$PWD#" deploy/badgeserver.service \
+#     | sudo tee /etc/systemd/system/badgeserver.service > /dev/null
 #   sudo systemctl daemon-reload
 #   sudo systemctl enable --now badgeserver
-#
-# Adjust WorkingDirectory below if the repository lives elsewhere.
 
 [Unit]
 Description=Self-hosted Open Badges 2.0 issuer
@@ -17,7 +20,7 @@ Wants=network-online.target
 Type=notify
 User=badges
 Group=badges
-WorkingDirectory=/home/jeroen/badges
+WorkingDirectory=__REPO__
 StateDirectory=badgeserver
 Environment=BADGESERVER_DATA_DIR=/var/lib/badgeserver
 EnvironmentFile=/var/lib/badgeserver/badges.env

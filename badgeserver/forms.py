@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Jeroen Baten <jbaten@coderial.com>
+# SPDX-FileCopyrightText: 2026 Jeroen Baten <jeroen@libreplan.dev>
 """Flask-WTF forms. CSRF protection is applied globally via ``CSRFProtect``."""
 
 from __future__ import annotations

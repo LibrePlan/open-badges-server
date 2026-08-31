@@ -15,8 +15,8 @@ This project replaces it with a small, purpose-built Flask application that:
   validators and backpacks accept;
 - has **one local admin** (username + password), no external identity provider;
 - stores everything in a single SQLite file plus an uploads directory;
-- runs under **gunicorn on `127.0.0.1:4000`**, behind a reverse proxy added
-  separately;
+- runs under **gunicorn on port 4000** — plain HTTP directly, or behind an
+  optional TLS reverse proxy;
 - is small enough to read end-to-end and keep stable long term.
 
 Constraints baked into this plan:
@@ -224,11 +224,12 @@ Standard-library `smtplib` / `email.message.EmailMessage`. Config keys (in
 
 ## systemd unit (`deploy/badgeserver.service`)
 
-Runs `/usr/bin/gunicorn -c deploy/gunicorn.conf.py wsgi:application`
-(`bind = "127.0.0.1:4000"`, 3 workers, logs to the journal).
+Runs `/usr/bin/python3 -m gunicorn -c deploy/gunicorn.conf.py wsgi:application`
+(bind from `BIND`, default `127.0.0.1:4000`; 3 workers; logs to the journal).
 
 - `User=badges`, `Group=badges`
-- `WorkingDirectory=/home/jeroen/badges`
+- `WorkingDirectory=__REPO__` — the one path to set; the install step
+  substitutes the actual checkout with `sed`
 - `StateDirectory=badgeserver` → `/var/lib/badgeserver` (auto-created, `badges`-owned)
 - `EnvironmentFile=/var/lib/badgeserver/badges.env`
 - Hardening: `NoNewPrivileges`, `PrivateTmp`, `ProtectSystem=strict`,

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Jeroen Baten <jbaten@coderial.com>
+# SPDX-FileCopyrightText: 2026 Jeroen Baten <jeroen@libreplan.dev>
 """Configuration, loaded from the process environment.
 
 Every value has a safe default except ``SECRET_KEY`` and ``EXTERNAL_URL``,
@@ -33,22 +33,29 @@ class Config:
         self.UPLOAD_DIR = os.path.join(data_dir, "uploads")
 
         self.SECRET_KEY = os.environ.get("SECRET_KEY", "")
-        # Public origin the badges are served from, e.g. https://badges.example.org
+        # Public origin the badges are served from. Examples:
+        #   http://badges.example.lan:4000   (direct access, no reverse proxy)
+        #   https://badges.example.org       (behind a TLS-terminating proxy)
         self.EXTERNAL_URL = os.environ.get("EXTERNAL_URL", "").rstrip("/")
+        _https = self.EXTERNAL_URL.startswith("https://")
 
         self.SQLALCHEMY_DATABASE_URI = os.environ.get(
             "DATABASE_URL", f"sqlite:///{os.path.join(data_dir, 'badges.sqlite')}"
         )
         self.SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
 
-        # Behind a TLS-terminating reverse proxy by default.
-        self.PREFERRED_URL_SCHEME = os.environ.get("PREFERRED_URL_SCHEME", "https")
-        self.SESSION_COOKIE_SECURE = _bool("SESSION_COOKIE_SECURE", True)
+        # These default to the EXTERNAL_URL scheme, so a plain-HTTP deployment
+        # works with no reverse proxy. Override either one explicitly if needed.
+        self.PREFERRED_URL_SCHEME = os.environ.get(
+            "PREFERRED_URL_SCHEME", "https" if _https else "http"
+        )
+        self.SESSION_COOKIE_SECURE = _bool("SESSION_COOKIE_SECURE", _https)
         self.SESSION_COOKIE_HTTPONLY = True
         self.SESSION_COOKIE_SAMESITE = "Lax"
 
-        # Number of trusted proxy hops in front of the app.
-        self.PROXY_FIX_HOPS = _int("PROXY_FIX_HOPS", 1)
+        # Trusted reverse-proxy hops. 0 = no proxy (X-Forwarded-* is ignored, so
+        # it cannot be spoofed). Set to 1 when running behind one nginx/apache.
+        self.PROXY_FIX_HOPS = _int("PROXY_FIX_HOPS", 0)
 
         self.RATELIMIT_STORAGE_URI = os.environ.get("RATELIMIT_STORAGE_URI", "memory://")
         self.RATELIMIT_LOGIN = os.environ.get("RATELIMIT_LOGIN", "5 per minute; 30 per hour")

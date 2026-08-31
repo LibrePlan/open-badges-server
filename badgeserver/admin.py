@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 Jeroen Baten <jbaten@coderial.com>
+# SPDX-FileCopyrightText: 2026 Jeroen Baten <jeroen@libreplan.dev>
 """Authenticated admin views."""
 
 from __future__ import annotations
@@ -37,6 +37,7 @@ from .images import ImageError, save_square_png
 from .issuing import AlreadyAwarded, award_badge, resend_email
 from .mail import mail_configured
 from .models import AdminUser, Assertion, BadgeClass, Issuer, slugify
+from .openbadges import assertion_id as assertion_public_id
 
 bp = Blueprint("admin", __name__)
 
@@ -353,10 +354,13 @@ def assertions():
 @bp.get("/assertions/<uuid>")
 def assertion_detail(uuid: str):
     assertion = db.session.get(Assertion, uuid) or abort(404)
+    json_url = assertion_public_id(assertion.uuid)
     return render_template(
         "admin/assertion_detail.html",
         assertion=assertion,
         badge=assertion.badge,
+        json_url=json_url,
+        page_url=json_url.removesuffix(".json"),
         revoke_form=RevokeForm(),
         confirm_form=ConfirmForm(),
         mail_ready=mail_configured(),

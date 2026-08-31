@@ -10,8 +10,8 @@
     <dt>Recipient</dt><dd>{{ assertion.recipient_email }}</dd>
     <dt>UUID</dt><dd><code>{{ assertion.uuid }}</code></dd>
     <dt>Issued on</dt><dd>{{ assertion.issued_on_utc().strftime('%Y-%m-%d') }}</dd>
-    <dt>Public page</dt><dd><a href="{{ url_for('public.assertion_page', uuid=assertion.uuid) }}">{{ url_for('public.assertion_page', uuid=assertion.uuid, _external=True) }}</a></dd>
-    <dt>Assertion JSON</dt><dd><a href="{{ url_for('public.assertion_doc', uuid=assertion.uuid) }}">{{ url_for('public.assertion_doc', uuid=assertion.uuid, _external=True) }}</a></dd>
+    <dt>Public page</dt><dd><a href="{{ page_url }}">{{ page_url }}</a></dd>
+    <dt>Assertion JSON</dt><dd><a href="{{ json_url }}">{{ json_url }}</a></dd>
     <dt>Baked PNG</dt><dd><a href="{{ url_for('public.assertion_badge_png', uuid=assertion.uuid) }}">download</a></dd>
     {% if assertion.evidence_url %}<dt>Evidence</dt><dd><a href="{{ assertion.evidence_url }}">{{ assertion.evidence_url }}</a></dd>{% endif %}
     {% if assertion.narrative %}<dt>Note</dt><dd>{{ assertion.narrative }}</dd>{% endif %}
