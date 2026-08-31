@@ -83,7 +83,7 @@ def assertion_json(assertion: Assertion) -> dict:
             "identity": assertion.identity_hash(),
         },
         "badge": badgeclass_id(assertion.badge_slug),
-        "issuedOn": assertion.issued_on_utc().isoformat(),
+        "issuedOn": assertion.issued_on_utc().isoformat(timespec="seconds"),
         "verification": {"type": "hosted"},
     }
     if assertion.evidence_url:
