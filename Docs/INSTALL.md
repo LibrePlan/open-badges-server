@@ -40,7 +40,7 @@ substitutes it automatically. If you later move the checkout, redo step 5.
 sudo apt install python3-flask python3-flask-sqlalchemy python3-flask-login \
   python3-flaskext.wtf python3-wtforms python3-email-validator \
   python3-flask-talisman python3-flask-limiter python3-pil python3-qrcode \
-  python3-gunicorn
+  python3-gunicorn rsync
 ```
 
 Optional, for the test suite: `sudo apt install python3-pytest`.

@@ -19,7 +19,10 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 if [[ ! -r "$ENV_FILE" ]]; then
-  echo "badgectl: cannot read $ENV_FILE" >&2
+  echo "badgectl: $ENV_FILE not found." >&2
+  echo "          create it:  sudo install -o root -g badges -m 0640 \\" >&2
+  echo "                        '$REPO_DIR/deploy/badges.env.example' $ENV_FILE" >&2
+  echo "          then edit it: sudoedit $ENV_FILE" >&2
   exit 1
 fi
 
@@ -44,6 +47,18 @@ while IFS='=' read -r _key _val; do
 done < <(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$ENV_FILE")
 
 : "${BADGESERVER_DATA_DIR:=/var/lib/badgeserver}"
+
+# Required values must be filled in before anything will load.
+_missing=()
+[[ -n "${SECRET_KEY:-}" ]]   || _missing+=(SECRET_KEY)
+[[ -n "${EXTERNAL_URL:-}" ]] || _missing+=(EXTERNAL_URL)
+if (( ${#_missing[@]} )); then
+  echo "badgectl: ${_missing[*]} still unset in $ENV_FILE -- edit it first:" >&2
+  echo "          sudoedit $ENV_FILE" >&2
+  echo "          SECRET_KEY: python3 -c 'import secrets; print(secrets.token_urlsafe(48))'" >&2
+  echo "          EXTERNAL_URL: e.g. http://badges.dsg.lan:4000" >&2
+  exit 1
+fi
 
 # Run from "/" (a directory the badges user can always stat) so Flask's dotenv
 # lookup does not choke, and skip that lookup entirely -- config comes from the
