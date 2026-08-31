@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Jeroen Baten <jbaten@coderial.com>
+#
+# Run the badge server's "flask" administration commands as the "badges"
+# system user, with the environment from badges.env.
+#
+# Usage:  sudo ./deploy/badgectl <command> [args...]
+# Example: sudo ./deploy/badgectl create-admin admin
+#          sudo ./deploy/badgectl set-issuer --name "Acme" --url https://acme.example --email badges@acme.example
+
+set -euo pipefail
+
+ENV_FILE="${BADGES_ENV_FILE:-/var/lib/badgeserver/badges.env}"
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+if [[ ! -r "$ENV_FILE" ]]; then
+  echo "badgectl: cannot read $ENV_FILE" >&2
+  exit 1
+fi
+
+# Load the env file without letting it run arbitrary code: only KEY=VALUE lines
+# are honoured, the value is taken verbatim (spaces and "<>" are fine), and an
+# optional pair of surrounding double quotes is stripped (systemd does the same).
+while IFS='=' read -r _key _val; do
+  [[ "$_key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
+  if [[ "$_val" == \"*\" ]]; then _val="${_val#\"}"; _val="${_val%\"}"; fi
+  export "$_key=$_val"
+done < <(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$ENV_FILE")
+
+: "${BADGESERVER_DATA_DIR:=/var/lib/badgeserver}"
+
+exec sudo -u badges \
+  env \
+    BADGESERVER_DATA_DIR="$BADGESERVER_DATA_DIR" \
+    SECRET_KEY="${SECRET_KEY:-}" \
+    EXTERNAL_URL="${EXTERNAL_URL:-}" \
+    DATABASE_URL="${DATABASE_URL:-}" \
+    SITE_TITLE="${SITE_TITLE:-}" \
+    MAIL_ENABLED="${MAIL_ENABLED:-}" \
+    SMTP_HOST="${SMTP_HOST:-}" \
+    SMTP_PORT="${SMTP_PORT:-}" \
+    SMTP_SECURITY="${SMTP_SECURITY:-}" \
+    SMTP_USERNAME="${SMTP_USERNAME:-}" \
+    SMTP_PASSWORD="${SMTP_PASSWORD:-}" \
+    SMTP_TIMEOUT="${SMTP_TIMEOUT:-}" \
+    MAIL_FROM="${MAIL_FROM:-}" \
+    MAIL_REPLY_TO="${MAIL_REPLY_TO:-}" \
+    FLASK_APP="$REPO_DIR/wsgi.py" \
+  python3 -m flask "$@"

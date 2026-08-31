@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Jeroen Baten <jbaten@coderial.com>
+#
+# Install:
+#   sudo cp deploy/badgeserver.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now badgeserver
+#
+# Adjust WorkingDirectory below if the repository lives elsewhere.
+
+[Unit]
+Description=Self-hosted Open Badges 2.0 issuer
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+User=badges
+Group=badges
+WorkingDirectory=/home/jeroen/badges
+StateDirectory=badgeserver
+Environment=BADGESERVER_DATA_DIR=/var/lib/badgeserver
+EnvironmentFile=/var/lib/badgeserver/badges.env
+ExecStart=/usr/bin/python3 -m gunicorn -c deploy/gunicorn.conf.py wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=on-failure
+RestartSec=3
+
+# --- hardening ---
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/badgeserver
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+ProtectHostname=yes
+ProtectClock=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

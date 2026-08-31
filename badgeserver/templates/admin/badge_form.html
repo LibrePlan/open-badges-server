@@ -1,0 +1,25 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% extends "admin/base.html" %}
+{% from "_formhelpers.html" import field %}
+{% block title %}{{ "Edit badge" if badge else "New badge" }} · {{ site_title }}{% endblock %}
+{% block admin_content %}
+  <h1>{{ "Edit badge" if badge else "New badge" }}</h1>
+  <form method="post" enctype="multipart/form-data" class="card">
+    {{ form.hidden_tag() }}
+    {% if badge %}
+      <p class="muted">Slug <code>{{ badge.slug }}</code> &mdash; fixed once created.</p>
+    {% else %}
+      {{ field(form.slug, "Used in URLs. Leave blank to derive it from the name.") }}
+    {% endif %}
+    {{ field(form.name) }}
+    {{ field(form.description) }}
+    {{ field(form.criteria_narrative, "Plain text describing what earns this badge.") }}
+    {{ field(form.criteria_url) }}
+    {{ field(form.tags) }}
+    {{ field(form.image, "Square image. Required for a new badge; leave blank to keep the current one.") }}
+    {% if badge %}
+      <p><img src="{{ url_for('public.badge_image', slug=badge.slug) }}" alt="" width="96" height="96"></p>
+    {% endif %}
+    {{ form.submit(class="btn") }}
+  </form>
+{% endblock %}

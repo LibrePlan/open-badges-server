@@ -1,0 +1,21 @@
+# Local data / runtime
+/instance/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editors / OS
+*.swp
+.DS_Store
+
+# Secrets
+*.env
+!deploy/badges.env.example

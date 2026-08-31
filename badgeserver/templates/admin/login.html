@@ -1,0 +1,13 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% extends "base.html" %}
+{% from "_formhelpers.html" import field %}
+{% block title %}Sign in · {{ site_title }}{% endblock %}
+{% block content %}
+  <h1>Admin sign in</h1>
+  <form method="post" class="card narrow">
+    {{ form.hidden_tag() }}
+    {{ field(form.username) }}
+    {{ field(form.password) }}
+    {{ form.submit(class="btn") }}
+  </form>
+{% endblock %}

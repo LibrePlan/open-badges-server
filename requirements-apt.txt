@@ -1,0 +1,26 @@
+# Runtime dependencies, installed from Debian (trixie) apt — not pip.
+#
+#   sudo apt install python3-flask python3-flask-sqlalchemy python3-flask-login \
+#     python3-flaskext.wtf python3-wtforms python3-email-validator \
+#     python3-flask-talisman python3-flask-limiter python3-pil python3-qrcode \
+#     python3-gunicorn
+#
+# Package name            Provides / used for
+# ----------------------  -------------------------------------------------
+# python3-flask           Flask web framework
+# python3-flask-sqlalchemy  ORM session + teardown wiring
+# python3-flask-login     admin session management
+# python3-flaskext.wtf    Flask-WTF (module: flask_wtf) — forms + CSRF
+# python3-wtforms         form fields / validators
+# python3-email-validator e-mail address validation for forms
+# python3-flask-talisman  security response headers / CSP
+# python3-flask-limiter   login rate limiting
+# python3-pil             Pillow — image validation + PNG baking
+# python3-qrcode          QR code image for assertion URLs
+# python3-gunicorn        WSGI application server (run as: python3 -m gunicorn)
+#
+# Standard library only: smtplib/email (SMTP), hashlib (recipient hashing),
+# werkzeug.security (password hashing).
+#
+# Optional, for running the test suite:
+#   sudo apt install python3-pytest

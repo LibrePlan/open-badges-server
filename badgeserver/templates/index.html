@@ -1,0 +1,37 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% extends "base.html" %}
+{% block content %}
+  {% if issuer %}
+    <section class="issuer-card">
+      {% if issuer.image_path %}
+        <img class="issuer-logo" src="{{ url_for('public.issuer_image', slug=issuer.slug) }}" alt="">
+      {% endif %}
+      <div>
+        <h1>{{ issuer.name }}</h1>
+        {% if issuer.description %}<p>{{ issuer.description }}</p>{% endif %}
+        <p class="muted">
+          <a href="{{ issuer.url }}">{{ issuer.url }}</a> ·
+          <a href="{{ url_for('public.issuer_doc', slug=issuer.slug) }}">issuer JSON</a>
+        </p>
+      </div>
+    </section>
+  {% else %}
+    <p>No issuer has been configured yet.</p>
+  {% endif %}
+
+  <h2>Badges</h2>
+  {% if badges %}
+    <ul class="badge-grid">
+      {% for badge in badges %}
+        <li>
+          <a href="{{ url_for('public.badge_page', slug=badge.slug) }}">
+            <img src="{{ url_for('public.badge_image', slug=badge.slug) }}" alt="" width="96" height="96">
+            <span>{{ badge.name }}</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No badges published yet.</p>
+  {% endif %}
+{% endblock %}

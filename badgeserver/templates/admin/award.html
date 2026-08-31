@@ -1,0 +1,21 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% extends "admin/base.html" %}
+{% from "_formhelpers.html" import field, checkbox %}
+{% block title %}Award {{ badge.name }} · {{ site_title }}{% endblock %}
+{% block admin_content %}
+  <h1>Award &ldquo;{{ badge.name }}&rdquo;</h1>
+  {% if badge.archived %}<p class="flash flash-warn">This badge is archived but can still be awarded.</p>{% endif %}
+  <form method="post" class="card narrow">
+    {{ form.hidden_tag() }}
+    {{ field(form.recipient_email) }}
+    {{ field(form.issued_on, "Defaults to today if left blank.") }}
+    {{ field(form.evidence_url) }}
+    {{ field(form.narrative) }}
+    {% if mail_ready %}
+      {{ checkbox(form.send_email) }}
+    {% else %}
+      <p class="hint">SMTP is not configured, so no e-mail will be sent.</p>
+    {% endif %}
+    {{ form.submit(class="btn") }}
+  </form>
+{% endblock %}

@@ -1,0 +1,28 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% extends "base.html" %}
+{% block title %}{{ badge.name }} · {{ site_title }}{% endblock %}
+{% block content %}
+  <article class="detail">
+    <img class="detail-image" src="{{ url_for('public.badge_image', slug=badge.slug) }}" alt="" width="180" height="180">
+    <div>
+      <h1>{{ badge.name }}</h1>
+      {% if badge.archived %}<p class="flash flash-error">This badge is archived.</p>{% endif %}
+      <p>{{ badge.description }}</p>
+      {% if badge.criteria_narrative %}
+        <h2>Criteria</h2>
+        <p>{{ badge.criteria_narrative }}</p>
+      {% endif %}
+      {% if badge.criteria_url %}
+        <p><a href="{{ badge.criteria_url }}">More about the criteria</a></p>
+      {% endif %}
+      {% if badge.tag_list %}
+        <p class="tags">{% for tag in badge.tag_list %}<span class="tag">{{ tag }}</span>{% endfor %}</p>
+      {% endif %}
+      <p class="muted">
+        Awarded {{ awarded }} time{{ '' if awarded == 1 else 's' }} ·
+        <a href="{{ url_for('public.badge_doc', slug=badge.slug) }}">badge JSON</a> ·
+        issued by <a href="{{ url_for('public.issuer_doc', slug=badge.issuer_slug) }}">{{ badge.issuer.name }}</a>
+      </p>
+    </div>
+  </article>
+{% endblock %}

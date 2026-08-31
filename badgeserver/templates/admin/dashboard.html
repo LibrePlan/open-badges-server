@@ -1,0 +1,41 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% extends "admin/base.html" %}
+{% block title %}Dashboard · {{ site_title }}{% endblock %}
+{% block admin_content %}
+  <h1>Dashboard</h1>
+
+  {% if not issuer %}
+    <p class="flash flash-error">No issuer profile yet &mdash;
+      <a href="{{ url_for('admin.issuer') }}">create it</a> before adding badges.</p>
+  {% endif %}
+  {% if not mail_ready %}
+    <p class="flash flash-warn">SMTP is not configured; award notifications are disabled.</p>
+  {% endif %}
+
+  <ul class="stat-row">
+    <li><span class="stat-n">{{ stats.active_badges }}</span> active badges</li>
+    <li><span class="stat-n">{{ stats.badges }}</span> badges total</li>
+    <li><span class="stat-n">{{ stats.assertions }}</span> active assertions</li>
+    <li><span class="stat-n">{{ stats.revoked }}</span> revoked</li>
+  </ul>
+
+  <h2>Recent awards</h2>
+  {% if recent %}
+    <table class="grid">
+      <thead><tr><th>When</th><th>Badge</th><th>Recipient</th><th>E-mail</th><th></th></tr></thead>
+      <tbody>
+        {% for a in recent %}
+          <tr>
+            <td>{{ a.created_on.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>{{ a.badge.name }}</td>
+            <td>{{ a.recipient_email }}{% if a.revoked %} <span class="tag">revoked</span>{% endif %}</td>
+            <td>{% if a.email_sent %}sent{% elif a.email_error %}<span class="field-error">failed</span>{% else %}&ndash;{% endif %}</td>
+            <td><a href="{{ url_for('admin.assertion_detail', uuid=a.uuid) }}">open</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No badges awarded yet.</p>
+  {% endif %}
+{% endblock %}

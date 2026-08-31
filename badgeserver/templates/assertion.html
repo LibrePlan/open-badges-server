@@ -1,0 +1,29 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% extends "base.html" %}
+{% block title %}{{ badge.name }} — awarded · {{ site_title }}{% endblock %}
+{% block content %}
+  <article class="detail">
+    <img class="detail-image" src="{{ url_for('public.assertion_badge_png', uuid=assertion.uuid) }}" alt="" width="180" height="180">
+    <div>
+      <h1>{{ badge.name }}</h1>
+      {% if assertion.revoked %}
+        <p class="flash flash-error">
+          This badge was revoked{% if assertion.revocation_reason %}: {{ assertion.revocation_reason }}{% endif %}
+        </p>
+      {% endif %}
+      <p>{{ badge.description }}</p>
+      <dl class="facts">
+        <dt>Recipient</dt><dd>{{ assertion.masked_recipient }}</dd>
+        <dt>Issued on</dt><dd>{{ assertion.issued_on_utc().strftime('%Y-%m-%d') }}</dd>
+        <dt>Issued by</dt><dd>{{ badge.issuer.name }}</dd>
+        {% if assertion.narrative %}<dt>Note</dt><dd>{{ assertion.narrative }}</dd>{% endif %}
+        {% if assertion.evidence_url %}<dt>Evidence</dt><dd><a href="{{ assertion.evidence_url }}">{{ assertion.evidence_url }}</a></dd>{% endif %}
+      </dl>
+      <p class="muted">
+        <a href="{{ url_for('public.assertion_doc', uuid=assertion.uuid) }}">assertion JSON</a> ·
+        <a href="{{ url_for('public.assertion_badge_png', uuid=assertion.uuid) }}">baked PNG</a> ·
+        <a href="{{ url_for('public.assertion_qr', uuid=assertion.uuid) }}">QR code</a>
+      </p>
+    </div>
+  </article>
+{% endblock %}

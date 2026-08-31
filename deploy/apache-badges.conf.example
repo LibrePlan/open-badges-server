@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Jeroen Baten <jbaten@coderial.com>
+#
+# Example Apache reverse-proxy vhost for the badge server.
+#
+#   sudo a2enmod proxy proxy_http headers ssl
+#   sudo cp deploy/apache-badges.conf.example /etc/apache2/sites-available/badges.conf
+#   (edit ServerName + certificate paths)
+#   sudo a2ensite badges && sudo systemctl reload apache2
+#
+# TLS is expected to be obtained separately (e.g. certbot --apache).
+
+<VirtualHost *:80>
+    ServerName badges.example.org
+    Redirect permanent / https://badges.example.org/
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName badges.example.org
+
+    SSLEngine on
+    SSLCertificateFile      /etc/letsencrypt/live/badges.example.org/fullchain.pem
+    SSLCertificateKeyFile   /etc/letsencrypt/live/badges.example.org/privkey.pem
+
+    # Pass the real scheme/host so the app builds correct absolute URLs.
+    RequestHeader set X-Forwarded-Proto "https"
+    ProxyPreserveHost On
+    ProxyPass        /  http://127.0.0.1:4000/  timeout=30
+    ProxyPassReverse /  http://127.0.0.1:4000/
+
+    # Uploaded badge art can be a few hundred KB; keep the default body limit.
+    LimitRequestBody 4194304
+
+    ErrorLog  ${APACHE_LOG_DIR}/badges-error.log
+    CustomLog ${APACHE_LOG_DIR}/badges-access.log combined
+</VirtualHost>

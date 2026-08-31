@@ -1,0 +1,17 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% macro field(f, hint="") %}
+  <div class="field">
+    {{ f.label }}
+    {{ f(class="control") }}
+    {% if hint %}<p class="hint">{{ hint }}</p>{% endif %}
+    {% for error in f.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+  </div>
+{% endmacro %}
+
+{% macro checkbox(f, hint="") %}
+  <div class="field field-check">
+    <label>{{ f() }} {{ f.label.text }}</label>
+    {% if hint %}<p class="hint">{{ hint }}</p>{% endif %}
+    {% for error in f.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+  </div>
+{% endmacro %}

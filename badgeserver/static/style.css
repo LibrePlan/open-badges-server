@@ -1,0 +1,154 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/* SPDX-FileCopyrightText: 2026 Jeroen Baten <jbaten@coderial.com> */
+
+:root {
+  --fg: #1a1a1a;
+  --muted: #5c5c5c;
+  --bg: #fbfbf9;
+  --card: #ffffff;
+  --line: #e2e2dc;
+  --accent: #2b6cb0;
+  --danger: #b02b2b;
+  --ok-bg: #e6f4ea;
+  --err-bg: #fbe7e7;
+  --warn-bg: #fdf2d8;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+  line-height: 1.5;
+}
+
+a { color: var(--accent); }
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .8rem 1.4rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--card);
+}
+.site-header .brand { font-weight: 700; text-decoration: none; color: var(--fg); }
+.site-header nav a { margin-left: 1rem; }
+
+.wrap { max-width: 60rem; margin: 1.6rem auto; padding: 0 1.4rem; }
+.site-footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 2rem 0; }
+
+.muted { color: var(--muted); }
+.hint { color: var(--muted); font-size: .85rem; margin: .2rem 0 0; }
+
+.flash { padding: .6rem .9rem; border-radius: 6px; margin-bottom: 1rem; }
+.flash-ok { background: var(--ok-bg); }
+.flash-error { background: var(--err-bg); }
+.flash-warn { background: var(--warn-bg); }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1.2rem;
+  margin: 1rem 0;
+}
+.card.narrow { max-width: 32rem; }
+
+.field { margin-bottom: 1rem; }
+.field label { display: block; font-weight: 600; margin-bottom: .25rem; }
+.field .control, .filter-bar input, .filter-bar select {
+  width: 100%;
+  padding: .5rem .6rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+  background: #fff;
+}
+.field-check label { font-weight: 400; }
+.field-check .control { width: auto; }
+.field-error { color: var(--danger); font-size: .85rem; margin: .25rem 0 0; }
+
+.btn, .linkbtn {
+  font: inherit;
+  cursor: pointer;
+}
+.btn {
+  display: inline-block;
+  padding: .55rem 1.1rem;
+  background: var(--accent);
+  color: #fff;
+  border: 0;
+  border-radius: 6px;
+  text-decoration: none;
+}
+.btn-danger { background: var(--danger); }
+.linkbtn {
+  background: none;
+  border: 0;
+  color: var(--accent);
+  padding: 0;
+  text-decoration: underline;
+}
+form.inline { display: inline; }
+
+.stat-row { list-style: none; display: flex; flex-wrap: wrap; gap: 1rem; padding: 0; }
+.stat-row li {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: .8rem 1rem;
+  min-width: 8rem;
+}
+.stat-n { display: block; font-size: 1.6rem; font-weight: 700; }
+
+table.grid { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+table.grid th, table.grid td {
+  text-align: left;
+  padding: .5rem .6rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+table.grid img { border-radius: 6px; vertical-align: middle; }
+.actions a, .actions form { margin-right: .6rem; }
+
+.filter-bar { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin: 1rem 0; }
+.filter-bar input, .filter-bar select { width: auto; }
+
+.badge-grid { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 1.2rem; }
+.badge-grid a { display: flex; flex-direction: column; align-items: center; width: 8rem; text-align: center; text-decoration: none; color: var(--fg); }
+.badge-grid span { margin-top: .4rem; font-size: .9rem; }
+
+.detail { display: flex; gap: 1.6rem; flex-wrap: wrap; }
+.detail-image { border-radius: 10px; }
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: .3rem 1rem; }
+.facts dt { font-weight: 600; color: var(--muted); }
+.facts dd { margin: 0; }
+
+.tags { margin-top: .6rem; }
+.tag {
+  display: inline-block;
+  background: #eef0f3;
+  border-radius: 999px;
+  padding: .1rem .6rem;
+  font-size: .8rem;
+  margin-right: .3rem;
+}
+
+.issuer-card { display: flex; gap: 1.2rem; align-items: center; margin-bottom: 1.5rem; }
+.issuer-logo { width: 84px; height: 84px; border-radius: 10px; }
+
+.admin-layout { display: flex; gap: 1.6rem; align-items: flex-start; }
+.admin-nav { display: flex; flex-direction: column; gap: .5rem; min-width: 9rem; }
+.admin-nav a { text-decoration: none; }
+.admin-main { flex: 1; min-width: 0; }
+.action-grid { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
+
+code { background: #eef0f3; padding: .05rem .3rem; border-radius: 4px; }
+
+@media (max-width: 40rem) {
+  .admin-layout { flex-direction: column; }
+  .admin-nav { flex-direction: row; flex-wrap: wrap; }
+}

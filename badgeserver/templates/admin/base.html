@@ -1,0 +1,20 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% extends "base.html" %}
+{% block content %}
+  <div class="admin-layout">
+    <aside class="admin-nav">
+      <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('admin.issuer') }}">Issuer</a>
+      <a href="{{ url_for('admin.badges') }}">Badges</a>
+      <a href="{{ url_for('admin.assertions') }}">Assertions</a>
+      <a href="{{ url_for('admin.change_password') }}">Password</a>
+      <form method="post" action="{{ url_for('admin.logout') }}" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="linkbtn">Sign out</button>
+      </form>
+    </aside>
+    <section class="admin-main">
+      {% block admin_content %}{% endblock %}
+    </section>
+  </div>
+{% endblock %}

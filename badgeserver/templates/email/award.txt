@@ -1,0 +1,18 @@
+You have been awarded a badge: {{ badge.name }}
+
+{{ badge.description }}
+
+Issued by: {{ issuer.name }} ({{ issuer.url }})
+{% if assertion.narrative %}Note: {{ assertion.narrative }}
+{% endif %}
+Your badge page:
+{{ assertion_url }}
+
+Badge image (Open Badges "baked" PNG):
+{{ badge_png_url }}
+
+Verification data (Open Badges 2.0 assertion):
+{{ assertion_json_url }}
+
+--
+{{ site_title }}

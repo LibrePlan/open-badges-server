@@ -1,0 +1,23 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% extends "admin/base.html" %}
+{% from "_formhelpers.html" import field %}
+{% block title %}Issuer · {{ site_title }}{% endblock %}
+{% block admin_content %}
+  <h1>Issuer profile</h1>
+  {% if issuer %}
+    <p class="muted">Slug <code>{{ issuer.slug }}</code> &mdash; fixed once created, because it is part of every badge URL.</p>
+  {% endif %}
+  <form method="post" enctype="multipart/form-data" class="card">
+    {{ form.hidden_tag() }}
+    {% if not issuer %}{{ field(form.slug, "Used in URLs. Leave blank to derive it from the name.") }}{% endif %}
+    {{ field(form.name) }}
+    {{ field(form.url) }}
+    {{ field(form.email) }}
+    {{ field(form.description) }}
+    {{ field(form.image, "Square PNG/JPEG/WEBP. Optional.") }}
+    {% if issuer and issuer.image_path %}
+      <p><img src="{{ url_for('public.issuer_image', slug=issuer.slug) }}" alt="" width="96" height="96"></p>
+    {% endif %}
+    {{ form.submit(class="btn") }}
+  </form>
+{% endblock %}
