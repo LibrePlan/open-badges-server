@@ -57,7 +57,17 @@ issue *assertions* of it to people.
 | Criteria | Plain text: what someone did to earn it. |
 | Criteria URL | Optional link to a fuller policy/page. |
 | Tags | Comma-separated, for grouping on the public page. |
-| Badge image | **Required.** A square PNG works best; it is padded to square and resized to 512 px, and becomes the artwork that gets "baked". |
+| Badge image | Choose one of the two modes below. |
+
+**Badge image** has two modes:
+
+- **Upload a finished image** — PNG / JPEG / WEBP / GIF / SVG; it is made square
+  and resized to 512 px and used as-is.
+- **Compose from a logo** — upload just a logo (SVG works well), pick a shape
+  (octagon / circle / hexagon / shield) and a background + ring colour. The
+  server draws the badge with the logo on top and the **title wrapped
+  underneath**, and re-renders it whenever you change the name, shape, colours
+  or logo. Text colour auto-contrasts with the background.
 
 Save. The badge now appears on the public home page and at `/b/<slug>`.
 
@@ -136,6 +146,7 @@ sudo systemctl reload badgeserver     # graceful worker reload after a code upda
 ```sh
 cd "$(systemctl show -p WorkingDirectory --value badgeserver)"
 git pull
+sudo ./deploy/badgectl init-db        # picks up any new columns; safe to re-run
 sudo systemctl restart badgeserver
 ```
 
@@ -143,9 +154,9 @@ If you moved the checkout, re-generate the unit:
 `sudo sed "s#__REPO__#$PWD#" deploy/badgeserver.service | sudo tee /etc/systemd/system/badgeserver.service`
 then `sudo systemctl daemon-reload && sudo systemctl restart badgeserver`.
 
-There are no schema migrations in v1. If a future change adds columns,
-`sudo ./deploy/badgectl init-db` creates *new* tables only — an added column
-needs a manual `ALTER TABLE` or a one-off script. Take a backup first.
+`init-db` creates missing tables and adds missing columns (`ALTER TABLE ADD
+COLUMN`, SQLite) — it is idempotent. There is no down-migration or column
+removal; take a backup before an upgrade if in doubt.
 
 ## Backup
 

@@ -33,6 +33,8 @@ from .forms import (
     NewBadgeClassForm,
     RevokeForm,
 )
+from . import images
+from .badgeart import compose_badge
 from .images import ImageError, save_square_png
 from .issuing import AlreadyAwarded, award_badge, resend_email
 from .mail import mail_configured
@@ -68,12 +70,25 @@ def _sole_issuer() -> Issuer | None:
     return Issuer.query.order_by(Issuer.created_on).first()
 
 
+def _upload_dir() -> str:
+    return current_app.config["UPLOAD_DIR"]
+
+
+def _image_size() -> int:
+    return current_app.config["BADGE_IMAGE_SIZE"]
+
+
+def _write_upload(data: bytes, filename: str) -> str:
+    with open(os.path.join(_upload_dir(), filename), "wb") as fh:
+        fh.write(data)
+    return filename
+
+
 def _store_image(file_storage, filename: str) -> str:
     raw = file_storage.read()
     if not raw:
         raise ImageError("The uploaded file is empty.")
-    dest = os.path.join(current_app.config["UPLOAD_DIR"], filename)
-    save_square_png(raw, dest, size=current_app.config["BADGE_IMAGE_SIZE"])
+    save_square_png(raw, os.path.join(_upload_dir(), filename), size=_image_size())
     return filename
 
 
@@ -198,6 +213,9 @@ def badge_edit(slug: str):
     form = BadgeClassForm(obj=badge)
     if request.method == "GET":
         form.tags.data = badge.tags
+        form.art_mode.data = "compose" if badge.composed else "upload"
+        form.art_bg.data = badge.art_bg or BadgeClass.ART_BG_DEFAULT
+        form.art_accent.data = badge.art_accent or BadgeClass.ART_ACCENT_DEFAULT
     if form.validate_on_submit():
         try:
             _apply_badge_form(badge, form, image_required=False)
@@ -216,10 +234,44 @@ def _apply_badge_form(badge: BadgeClass, form: BadgeClassForm, *, image_required
     badge.criteria_narrative = (form.criteria_narrative.data or "").strip()
     badge.criteria_url = (form.criteria_url.data or "").strip()
     badge.tags = BadgeClass.normalise_tags(form.tags.data or "")
-    if form.image.data:
-        badge.image_path = _store_image(form.image.data, f"badge-{badge.slug}.png")
-    elif image_required and not badge.image_path:
-        raise ImageError("A badge image is required.")
+
+    if form.art_mode.data == "compose":
+        _apply_compose(badge, form)
+    else:
+        if form.image.data:
+            badge.image_path = _store_image(form.image.data, f"badge-{badge.slug}.png")
+        elif image_required and not badge.image_path:
+            raise ImageError("A badge image is required.")
+        badge.logo_path = None
+        badge.art_bg = badge.art_accent = ""
+
+
+def _apply_compose(badge: BadgeClass, form: BadgeClassForm) -> None:
+    size = _image_size()
+    if form.logo.data:
+        png = images.rasterize_to_png(form.logo.data.read(), size)
+        badge.logo_path = _write_upload(png, f"logo-{badge.slug}.png")
+    if not badge.logo_path:
+        raise ImageError("Upload a logo to compose a badge.")
+
+    badge.art_shape = (
+        form.art_shape.data if form.art_shape.data in BadgeClass.ART_SHAPES else "octagon"
+    )
+    badge.art_bg = (form.art_bg.data or BadgeClass.ART_BG_DEFAULT).strip()
+    badge.art_accent = (form.art_accent.data or BadgeClass.ART_ACCENT_DEFAULT).strip()
+
+    with open(os.path.join(_upload_dir(), badge.logo_path), "rb") as fh:
+        logo_png = fh.read()
+    compose_badge(
+        logo_png,
+        badge.name,
+        shape=badge.art_shape,
+        bg=badge.art_bg,
+        accent=badge.art_accent,
+        size=size,
+        dest_path=os.path.join(_upload_dir(), f"badge-{badge.slug}.png"),
+    )
+    badge.image_path = f"badge-{badge.slug}.png"
 
 
 @bp.post("/badges/<slug>/archive")

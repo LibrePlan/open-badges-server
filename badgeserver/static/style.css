@@ -70,6 +70,26 @@ a { color: var(--accent); }
 .field-check label { font-weight: 400; }
 .field-check .control { width: auto; }
 .field-error { color: var(--danger); font-size: .85rem; margin: .25rem 0 0; }
+.field-label { display: block; font-weight: 600; margin-bottom: .25rem; }
+label.radio { display: block; font-weight: 400; margin: .15rem 0; }
+label.radio input { width: auto; margin-right: .4rem; }
+
+fieldset {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: .8rem 1rem;
+  margin: 0 0 1rem;
+}
+fieldset legend { font-weight: 600; padding: 0 .3rem; }
+input[type="color"] {
+  width: 3rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  vertical-align: middle;
+  margin: 0 1rem .3rem .3rem;
+}
 
 .btn, .linkbtn {
   font: inherit;

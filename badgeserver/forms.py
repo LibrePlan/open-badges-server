@@ -10,6 +10,8 @@ from wtforms import (
     BooleanField,
     DateField,
     PasswordField,
+    RadioField,
+    SelectField,
     StringField,
     SubmitField,
     TextAreaField,
@@ -21,9 +23,16 @@ from wtforms.validators import (
     EqualTo,
     Length,
     Optional,
+    Regexp,
 )
 
+from .models import BadgeClass
+
 _IMAGE_EXT = ["png", "jpg", "jpeg", "webp", "gif"]
+_LOGO_EXT = [*_IMAGE_EXT, "svg"]
+_HEX_COLOUR = Regexp(
+    r"^#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$", message="Use a hex colour like #2b6cb0."
+)
 
 
 class LoginForm(FlaskForm):
@@ -67,15 +76,35 @@ class BadgeClassForm(FlaskForm):
         "Criteria URL (optional)", validators=[Optional(), URL(), Length(max=255)]
     )
     tags = StringField("Tags (comma separated)", validators=[Optional(), Length(max=512)])
-    image = FileField("Badge image", validators=[FileAllowed(_IMAGE_EXT, "Images only.")])
+
+    art_mode = RadioField(
+        "Badge image",
+        choices=[("upload", "Upload a finished image"), ("compose", "Compose from a logo")],
+        default="upload",
+    )
+    # used when art_mode == "upload"
+    image = FileField(
+        "Finished badge image", validators=[FileAllowed(_LOGO_EXT, "Images only.")]
+    )
+    # used when art_mode == "compose"
+    logo = FileField("Logo", validators=[FileAllowed(_LOGO_EXT, "Images only.")])
+    art_shape = SelectField(
+        "Shape",
+        choices=[(s, s.title()) for s in BadgeClass.ART_SHAPES],
+        default="octagon",
+    )
+    art_bg = StringField(
+        "Background colour", default=BadgeClass.ART_BG_DEFAULT, validators=[Optional(), _HEX_COLOUR]
+    )
+    art_accent = StringField(
+        "Ring colour", default=BadgeClass.ART_ACCENT_DEFAULT, validators=[Optional(), _HEX_COLOUR]
+    )
+
     submit = SubmitField("Save badge")
 
 
 class NewBadgeClassForm(BadgeClassForm):
-    image = FileField(
-        "Badge image",
-        validators=[FileRequired("A badge image is required."), FileAllowed(_IMAGE_EXT, "Images only.")],
-    )
+    """Same fields; on creation the view requires an image or a logo per mode."""
 
 
 class AwardForm(FlaskForm):

@@ -74,6 +74,11 @@ class Issuer(db.Model):
 class BadgeClass(db.Model):
     __tablename__ = "badge_class"
 
+    #: shapes available when composing a badge from a logo + title
+    ART_SHAPES = ("octagon", "circle", "hexagon", "shield")
+    ART_BG_DEFAULT = "#2b6cb0"
+    ART_ACCENT_DEFAULT = "#b0872b"
+
     slug = db.Column(db.String(64), primary_key=True)
     issuer_slug = db.Column(db.String(64), db.ForeignKey("issuer.slug"), nullable=False)
     name = db.Column(db.String(255), nullable=False)
@@ -85,10 +90,20 @@ class BadgeClass(db.Model):
     created_on = db.Column(db.DateTime, nullable=False, default=_utcnow)
     archived = db.Column(db.Boolean, nullable=False, default=False)
 
+    # Set when the badge image was composed from a logo (see badgeart.py).
+    logo_path = db.Column(db.String(255))
+    art_shape = db.Column(db.String(16), nullable=False, default="octagon")
+    art_bg = db.Column(db.String(7), nullable=False, default="")
+    art_accent = db.Column(db.String(7), nullable=False, default="")
+
     issuer = db.relationship("Issuer", back_populates="badges")
     assertions = db.relationship(
         "Assertion", back_populates="badge", lazy="dynamic", cascade="all, delete-orphan"
     )
+
+    @property
+    def composed(self) -> bool:
+        return bool(self.logo_path)
 
     @property
     def tag_list(self) -> list[str]:

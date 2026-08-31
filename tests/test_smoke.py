@@ -123,3 +123,128 @@ def test_csrf_enforced(app):
     # no token -> rejected
     r = c.post("/admin/change-password", data={})
     assert r.status_code == 400
+
+
+# --- composed badges -------------------------------------------------------
+
+
+def _png_bytes(w=120, h=90):
+    from io import BytesIO
+
+    from PIL import Image
+
+    buf = BytesIO()
+    Image.new("RGBA", (w, h), (200, 80, 40, 255)).save(buf, "PNG")
+    buf.seek(0)
+    return buf
+
+
+def _compose(auth_client, **overrides):
+    data = {
+        "name": "Release Manager",
+        "description": "Ships releases.",
+        "art_mode": "compose",
+        "art_shape": "shield",
+        "art_bg": "#1f6f43",
+        "art_accent": "#d4af37",
+        "logo": (_png_bytes(), "logo.png"),
+        "submit": "Save badge",
+    }
+    data.update(overrides)
+    return auth_client.post(
+        "/admin/badges/new", data=data, content_type="multipart/form-data",
+        follow_redirects=True,
+    )
+
+
+def test_compose_badge(app, auth_client):
+    assert _compose(auth_client, art_shape="hexagon").status_code == 200
+    with app.app_context():
+        badge = db.session.get(BadgeClass, "release-manager")
+        assert badge.composed and badge.art_shape == "hexagon"
+        assert badge.art_bg == "#1f6f43" and badge.logo_path
+
+    from io import BytesIO
+
+    from PIL import Image
+
+    img = Image.open(BytesIO(auth_client.get("/b/release-manager/image").data))
+    assert img.format == "PNG" and img.size == (app.config["BADGE_IMAGE_SIZE"],) * 2
+    assert auth_client.get("/b/release-manager/logo").status_code == 200
+
+
+def test_compose_rerenders_on_rename(app, auth_client):
+    _compose(auth_client)
+    import os
+
+    path = os.path.join(app.config["UPLOAD_DIR"], "badge-release-manager.png")
+    before = open(path, "rb").read()
+    r = auth_client.post(
+        "/admin/badges/release-manager/edit",
+        data={
+            "name": "Release Wrangler", "description": "Ships releases.",
+            "art_mode": "compose", "art_shape": "octagon",
+            "art_bg": "#1f6f43", "art_accent": "#d4af37", "submit": "Save badge",
+        },
+        content_type="multipart/form-data", follow_redirects=True,
+    )
+    assert r.status_code == 200
+    assert open(path, "rb").read() != before
+
+
+def test_compose_to_upload_switch_clears_logo(app, auth_client):
+    _compose(auth_client)
+    auth_client.post(
+        "/admin/badges/release-manager/edit",
+        data={
+            "name": "Release Manager", "description": "d", "art_mode": "upload",
+            "art_bg": "#1f6f43", "art_accent": "#d4af37",
+            "image": (_png_bytes(256, 256), "final.png"), "submit": "Save badge",
+        },
+        content_type="multipart/form-data", follow_redirects=True,
+    )
+    with app.app_context():
+        badge = db.session.get(BadgeClass, "release-manager")
+        assert not badge.composed and badge.logo_path is None
+
+
+def test_award_composed_badge_bakes(app, auth_client):
+    _compose(auth_client)
+    with app.app_context():
+        from badgeserver.issuing import award_badge
+
+        badge = db.session.get(BadgeClass, "release-manager")
+        uuid = award_badge(badge, "r@example.com", send_email=False).assertion.uuid
+
+    from io import BytesIO
+
+    from PIL import Image
+
+    png = auth_client.get(f"/a/{uuid}/badge.png").data
+    with Image.open(BytesIO(png)) as img:
+        assert img.text["openbadges"] == f"https://badges.test/a/{uuid}.json"
+
+
+def test_svg_finished_upload(app, auth_client):
+    import pytest
+
+    pytest.importorskip("cairosvg")
+    svg = (
+        b'<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" '
+        b'width="100" height="100"><circle cx="50" cy="50" r="40" fill="#369"/></svg>'
+    )
+    from io import BytesIO
+
+    r = auth_client.post(
+        "/admin/badges/new",
+        data={
+            "name": "Vector Badge", "description": "d", "art_mode": "upload",
+            "image": (BytesIO(svg), "art.svg"), "submit": "Save badge",
+        },
+        content_type="multipart/form-data", follow_redirects=True,
+    )
+    assert r.status_code == 200
+    from PIL import Image
+
+    img = Image.open(BytesIO(auth_client.get("/b/vector-badge/image").data))
+    assert img.format == "PNG"

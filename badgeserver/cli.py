@@ -20,11 +20,40 @@ def register(app: Flask) -> None:
     app.cli.add_command(send_test_email)
 
 
+# Columns added after 1.0. `init-db` is safe to re-run on an existing database
+# and applies these with ALTER TABLE ADD COLUMN (SQLite).
+_ADDED_COLUMNS = {
+    "badge_class": {
+        "logo_path": "VARCHAR(255)",
+        "art_shape": "VARCHAR(16) NOT NULL DEFAULT 'octagon'",
+        "art_bg": "VARCHAR(7) NOT NULL DEFAULT ''",
+        "art_accent": "VARCHAR(7) NOT NULL DEFAULT ''",
+    },
+}
+
+
+def _sync_columns() -> None:
+    from sqlalchemy import inspect, text
+
+    inspector = inspect(db.engine)
+    tables = set(inspector.get_table_names())
+    with db.engine.begin() as conn:
+        for table, columns in _ADDED_COLUMNS.items():
+            if table not in tables:
+                continue
+            have = {c["name"] for c in inspector.get_columns(table)}
+            for name, ddl in columns.items():
+                if name not in have:
+                    conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}"))
+                    click.echo(f"added {table}.{name}")
+
+
 @click.command("init-db")
 @with_appcontext
 def init_db() -> None:
-    """Create any missing database tables."""
+    """Create missing tables and add any missing columns (safe to re-run)."""
     db.create_all()
+    _sync_columns()
     click.echo(f"Database ready: {db.engine.url}")
 
 

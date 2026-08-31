@@ -16,10 +16,46 @@
     {{ field(form.criteria_narrative, "Plain text describing what earns this badge.") }}
     {{ field(form.criteria_url) }}
     {{ field(form.tags) }}
-    {{ field(form.image, "Square image. Required for a new badge; leave blank to keep the current one.") }}
+
+    <div class="field">
+      <span class="field-label">Badge image</span>
+      {% for opt in form.art_mode %}
+        <label class="radio">{{ opt }} {{ opt.label.text }}</label>
+      {% endfor %}
+    </div>
+
+    <fieldset>
+      <legend>Upload a finished image</legend>
+      <p class="hint">Fill this in if you chose &ldquo;Upload a finished image&rdquo; above.
+        PNG, JPEG, WEBP, GIF or SVG. It is made square and resized.</p>
+      {{ field(form.image) }}
+    </fieldset>
+
+    <fieldset>
+      <legend>Compose from a logo</legend>
+      <p class="hint">Fill this in if you chose &ldquo;Compose from a logo&rdquo;.
+        The server draws the shape, places the logo and writes the title below it.</p>
+      {{ field(form.logo, "PNG, JPEG, WEBP, GIF or SVG. A transparent logo looks best.") }}
+      {{ field(form.art_shape) }}
+      <div class="field">
+        {{ form.art_bg.label }} {{ form.art_bg(type="color") }}
+        {{ form.art_accent.label }} {{ form.art_accent(type="color") }}
+        {% for e in form.art_bg.errors + form.art_accent.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+      </div>
+    </fieldset>
+
     {% if badge %}
-      <p><img src="{{ url_for('public.badge_image', slug=badge.slug) }}" alt="" width="96" height="96"></p>
+      <div class="field">
+        <span class="field-label">Current</span>
+        <p>
+          <img src="{{ url_for('public.badge_image', slug=badge.slug) }}" alt="" width="96" height="96">
+          {% if badge.composed %}
+            <img src="{{ url_for('public.badge_logo', slug=badge.slug) }}" alt="logo" width="64" height="64">
+          {% endif %}
+        </p>
+      </div>
     {% endif %}
+
     {{ form.submit(class="btn") }}
   </form>
 {% endblock %}

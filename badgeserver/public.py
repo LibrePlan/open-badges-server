@@ -97,6 +97,14 @@ def badge_image(slug: str):
     return send_from_directory(_uploads_dir(), badge.image_path, max_age=3600)
 
 
+@bp.get("/b/<slug>/logo")
+def badge_logo(slug: str):
+    badge = _get_badge_or_404(slug)
+    if not badge.logo_path:
+        abort(404)
+    return send_from_directory(_uploads_dir(), badge.logo_path, max_age=3600)
+
+
 @bp.get("/b/<slug>")
 def badge_page(slug: str):
     badge = _get_badge_or_404(slug)
