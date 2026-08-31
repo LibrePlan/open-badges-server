@@ -194,7 +194,7 @@ proxy or an external monitor at it.
 | Service won't start, `WorkingDirectory ... not absolute` | the unit still has `__REPO__`; re-run the `sed` install step |
 | `badgectl` / service fails: `badges` user can't read the checkout, or `dotenv ... Starting path not found` | the checkout is under a private `/home`; relocate it (`sudo rsync -a --delete <checkout>/ /opt/badgeserver/`), redo the `sed` install step |
 | Badge JSON has the wrong scheme/host | `EXTERNAL_URL` must be the exact public origin; behind a proxy also set `PROXY_FIX_HOPS=1` |
-| Can't sign in over plain HTTP | `SESSION_COOKIE_SECURE` should be false for an `http://` `EXTERNAL_URL` (it defaults that way) |
+| Login fails with `The CSRF session token is missing` | `SESSION_COOKIE_SECURE=true` in `badges.env` while serving over `http://` — the browser drops the cookie. Remove that line (it defaults correctly from `EXTERNAL_URL`) and restart. The service now refuses to start in this state. |
 | Login always fails right after deploy | run `create-admin`; check the clock (session protection) |
 | `429 Too Many Requests` on login | rate limit hit; wait, or adjust `RATELIMIT_LOGIN` |
 | Award e-mail fails | `sudo ./deploy/badgectl send-test-email …`; check `SMTP_*` |

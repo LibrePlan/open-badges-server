@@ -100,5 +100,13 @@ class Config:
             )
         if not self.EXTERNAL_URL.startswith(("http://", "https://")):
             raise RuntimeError("EXTERNAL_URL must be an absolute http(s) URL.")
+        if self.SESSION_COOKIE_SECURE and self.EXTERNAL_URL.startswith("http://"):
+            raise RuntimeError(
+                "SESSION_COOKIE_SECURE is on but EXTERNAL_URL is http:// -- the "
+                "session cookie would never come back and sign-in would always "
+                "fail with a CSRF error. Remove the SESSION_COOKIE_SECURE line "
+                "from badges.env (it defaults correctly from the URL scheme), or "
+                "serve over https."
+            )
         if self.SMTP_SECURITY not in {"none", "starttls", "ssl"}:
             raise RuntimeError("SMTP_SECURITY must be one of: none, starttls, ssl.")
