@@ -18,15 +18,109 @@ The service runs as `User=badges`. Administration commands are run with
 `sudo ./deploy/badgectl <command>`, which loads `badges.env` and re-executes
 `flask` as that user.
 
-## Day-to-day
+## First steps
 
-- **Award a badge**: `/admin` → Badges → *Award*. Or bulk from a CSV/text file
-  of e-mail addresses (*CSV*, capped at `CSV_AWARD_MAX_ROWS`, default 200).
-- **Revoke**: open the assertion → *Revoke* with a reason. The public
-  `/a/<uuid>.json` then returns `"revoked": true`. Use *Re-instate* to undo.
-- **Resend a notification**: assertion page → *Re-send e-mail*.
-- **Archive a badge**: hides it from the public browse page; existing
-  assertions and JSON keep working.
+Everything below happens in the web UI. The address is your `EXTERNAL_URL`
+(e.g. `http://badges.dsg.lan:4000`).
+
+### 1. Sign in
+
+Go to `/admin`. Sign in with the username you passed to
+`badgectl create-admin` and its password. You land on the **Dashboard** (badge
+and assertion counts, recent awards). The left nav has: Dashboard, Issuer,
+Badges, Assertions, Password.
+
+Change the bootstrap password now if it was typed on a shared terminal:
+**Password** in the nav, or `sudo ./deploy/badgectl reset-password <username>`.
+
+### 2. Polish the issuer profile
+
+**Issuer** in the nav. `badgectl set-issuer` already created it; here you can
+edit the name, website URL, contact e-mail and description, and upload a
+**logo** (square PNG/JPEG/WEBP/GIF; it is normalised to a 512 px PNG). The
+issuer's `slug` is fixed — it is part of every badge URL.
+
+This profile is published at `/issuer/<slug>.json` and is what validators read
+to identify who issued a badge.
+
+### 3. Create a badge class
+
+A *badge class* is the definition of an award (its name, image, criteria). You
+issue *assertions* of it to people.
+
+**Badges → New badge**. Fill in:
+
+| Field | Notes |
+| --- | --- |
+| Name | e.g. "First Commit". The slug is derived from it and then fixed. |
+| Description | One or two sentences shown on the badge page and in the JSON. |
+| Criteria | Plain text: what someone did to earn it. |
+| Criteria URL | Optional link to a fuller policy/page. |
+| Tags | Comma-separated, for grouping on the public page. |
+| Badge image | **Required.** A square PNG works best; it is padded to square and resized to 512 px, and becomes the artwork that gets "baked". |
+
+Save. The badge now appears on the public home page and at `/b/<slug>`.
+
+### 4. Award it
+
+From **Badges**, use **Award** on the row (or open the badge and award from
+there):
+
+- **Recipient e-mail** — the identity the badge is bound to. It is stored
+  server-side but only ever published as a salted SHA-256 hash.
+- **Issued on** — defaults to today.
+- **Evidence URL** / **Note** — optional, both appear in the assertion.
+- **Send an e-mail notification** — on by default (hidden if SMTP is not
+  configured). The recipient gets a message with a link to their badge.
+
+On save you get the **assertion page**. Each assertion has a unique URL
+(`/a/<uuid>`) and:
+
+- `/a/<uuid>.json` — the Open Badges 2.0 assertion, i.e. the verifiable proof;
+- `/a/<uuid>/badge.png` — the badge image with that assertion URL baked in;
+- `/a/<uuid>/qr.png` — a QR code to the assertion page.
+
+To award the same badge to many people at once, use **CSV**: upload a file with
+one e-mail address per line (other columns are ignored). Duplicates and people
+who already hold the badge are skipped; you get a per-row result. Capped at
+`CSV_AWARD_MAX_ROWS` (default 200).
+
+### 5. What the recipient does
+
+The recipient opens their assertion page and can:
+
+- download the **baked PNG** and use it anywhere (it carries its own proof);
+- import the badge into an Open Badges backpack / wallet by giving it either the
+  baked PNG or the `/a/<uuid>.json` URL;
+- share the assertion page link.
+
+Anyone can verify a badge by fetching its `.json` and following `badge` →
+`issuer`; all three URLs are public and send `Access-Control-Allow-Origin: *`.
+
+### 6. Manage awards
+
+**Assertions** in the nav lists everything issued, with filters by badge,
+recipient e-mail and status. Open one to:
+
+- **Revoke** it (with a reason) — `/a/<uuid>.json` then returns
+  `"revoked": true` and the recipient's page shows it as revoked. **Re-instate**
+  undoes this.
+- **Re-send** the notification e-mail (e.g. after a delivery failure — the
+  detail page shows the last e-mail status).
+
+**Archive** a badge class (Badges list) to hide it from the public home page
+without touching any assertions already issued.
+
+## Quick reference
+
+| Task | Where |
+| --- | --- |
+| Award a badge | Badges → *Award* (or *CSV* for a list) |
+| Revoke / re-instate | Assertions → open one → *Revoke* / *Re-instate* |
+| Re-send a notification | assertion detail → *Re-send e-mail* |
+| Hide a badge from the public page | Badges → *Archive* (assertions keep working) |
+| Reset a lost admin password | `sudo ./deploy/badgectl reset-password <username>` |
+| Add another admin | `sudo ./deploy/badgectl create-admin <username>` |
 
 ## Service control
 
