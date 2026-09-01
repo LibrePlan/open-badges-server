@@ -4,9 +4,11 @@
 {% block title %}{{ "Edit badge" if badge else "New badge" }} · {{ site_title }}{% endblock %}
 {% block admin_content %}
   <h1>{{ "Edit badge" if badge else "New badge" }}</h1>
-  <form method="post" enctype="multipart/form-data" class="card">
+  <form method="post" enctype="multipart/form-data" class="card" id="badge-form"
+        data-preview-url="{{ url_for('admin.badge_preview') }}">
     {{ form.hidden_tag() }}
     {% if badge %}
+      <input type="hidden" name="slug" value="{{ badge.slug }}">
       <p class="muted">Slug <code>{{ badge.slug }}</code> &mdash; fixed once created.</p>
     {% else %}
       {{ field(form.slug, "Used in URLs. Leave blank to derive it from the name.") }}
@@ -31,31 +33,44 @@
       {{ field(form.image) }}
     </fieldset>
 
-    <fieldset>
+    <fieldset id="compose-fields">
       <legend>Compose from a logo</legend>
       <p class="hint">Fill this in if you chose &ldquo;Compose from a logo&rdquo;.
         The server draws the shape, places the logo and writes the title below it.</p>
-      {{ field(form.logo, "PNG, JPEG, WEBP, GIF or SVG. A transparent logo looks best.") }}
-      {{ field(form.art_shape) }}
-      <div class="field">
-        {{ form.art_bg.label }} {{ form.art_bg(type="color") }}
-        {{ form.art_accent.label }} {{ form.art_accent(type="color") }}
-        {% for e in form.art_bg.errors + form.art_accent.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+      <div class="compose-grid">
+        <div>
+          {{ field(form.logo, "PNG, JPEG, WEBP, GIF or SVG. A transparent logo looks best.") }}
+          {{ field(form.art_shape) }}
+          <div class="field">
+            {{ form.art_bg.label }} {{ form.art_bg(type="color") }}
+            {{ form.art_accent.label }} {{ form.art_accent(type="color") }}
+            {% for e in form.art_bg.errors + form.art_accent.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+          </div>
+          <div class="field">
+            {{ form.art_logo_scale.label }}
+            {{ form.art_logo_scale(class="control slider") }}
+            <output id="logo-scale-out">{{ form.art_logo_scale.data or 100 }}%</output>
+          </div>
+        </div>
+        <figure class="badge-preview" id="preview-wrap">
+          <img id="badge-preview" alt="badge preview"
+               {% if badge and badge.composed %}src="{{ url_for('public.badge_image', slug=badge.slug) }}"{% endif %}>
+          <figcaption>Live preview</figcaption>
+        </figure>
       </div>
     </fieldset>
 
-    {% if badge %}
+    {% if badge and not badge.composed %}
       <div class="field">
-        <span class="field-label">Current</span>
-        <p>
-          <img src="{{ url_for('public.badge_image', slug=badge.slug) }}" alt="" width="96" height="96">
-          {% if badge.composed %}
-            <img src="{{ url_for('public.badge_logo', slug=badge.slug) }}" alt="logo" width="64" height="64">
-          {% endif %}
-        </p>
+        <span class="field-label">Current image</span>
+        <p><img src="{{ url_for('public.badge_image', slug=badge.slug) }}" alt="" width="96" height="96"></p>
       </div>
     {% endif %}
 
     {{ form.submit(class="btn") }}
   </form>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='badge-preview.js') }}" defer></script>
 {% endblock %}

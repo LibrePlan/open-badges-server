@@ -90,6 +90,25 @@ input[type="color"] {
   vertical-align: middle;
   margin: 0 1rem .3rem .3rem;
 }
+input[type="range"].slider { width: 12rem; vertical-align: middle; }
+#logo-scale-out { display: inline-block; margin-left: .5rem; font-variant-numeric: tabular-nums; }
+
+.compose-grid { display: flex; gap: 1.4rem; flex-wrap: wrap; align-items: flex-start; }
+.compose-grid > div { flex: 1 1 18rem; min-width: 0; }
+.badge-preview {
+  margin: 0;
+  text-align: center;
+  flex: 0 0 auto;
+}
+.badge-preview img {
+  width: 200px;
+  height: 200px;
+  border-radius: 10px;
+  background:
+    repeating-conic-gradient(#e9e9e4 0 25%, #fff 0 50%) 0 0 / 20px 20px;
+  border: 1px solid var(--line);
+}
+.badge-preview figcaption { color: var(--muted); font-size: .8rem; margin-top: .3rem; }
 
 .btn, .linkbtn {
   font: inherit;

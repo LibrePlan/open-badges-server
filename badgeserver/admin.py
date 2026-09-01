@@ -11,6 +11,7 @@ from datetime import datetime, time, timezone
 
 from flask import (
     Blueprint,
+    Response,
     abort,
     current_app,
     flash,
@@ -216,6 +217,7 @@ def badge_edit(slug: str):
         form.art_mode.data = "compose" if badge.composed else "upload"
         form.art_bg.data = badge.art_bg or BadgeClass.ART_BG_DEFAULT
         form.art_accent.data = badge.art_accent or BadgeClass.ART_ACCENT_DEFAULT
+        form.art_logo_scale.data = badge.art_logo_scale
     if form.validate_on_submit():
         try:
             _apply_badge_form(badge, form, image_required=False)
@@ -259,6 +261,8 @@ def _apply_compose(badge: BadgeClass, form: BadgeClassForm) -> None:
     )
     badge.art_bg = (form.art_bg.data or BadgeClass.ART_BG_DEFAULT).strip()
     badge.art_accent = (form.art_accent.data or BadgeClass.ART_ACCENT_DEFAULT).strip()
+    lo, hi = BadgeClass.ART_LOGO_SCALE_RANGE
+    badge.art_logo_scale = max(lo, min(hi, form.art_logo_scale.data or 100))
 
     with open(os.path.join(_upload_dir(), badge.logo_path), "rb") as fh:
         logo_png = fh.read()
@@ -270,8 +274,74 @@ def _apply_compose(badge: BadgeClass, form: BadgeClassForm) -> None:
         accent=badge.art_accent,
         size=size,
         dest_path=os.path.join(_upload_dir(), f"badge-{badge.slug}.png"),
+        logo_scale=badge.art_logo_scale / 100,
     )
     badge.image_path = f"badge-{badge.slug}.png"
+
+
+def _placeholder_logo() -> bytes:
+    from io import BytesIO
+
+    from PIL import Image, ImageDraw
+
+    img = Image.new("RGBA", (240, 240), (0, 0, 0, 0))
+    ImageDraw.Draw(img).rounded_rectangle(
+        [24, 24, 216, 216], radius=28, fill=(255, 255, 255, 90)
+    )
+    buf = BytesIO()
+    img.save(buf, "PNG")
+    return buf.getvalue()
+
+
+@bp.post("/badges/preview")
+def badge_preview():
+    """Render a composed badge for the live form preview. Saves nothing."""
+    from io import BytesIO
+
+    from .badgeart import render_badge
+
+    data = request.form
+    lo, hi = BadgeClass.ART_LOGO_SCALE_RANGE
+    try:
+        scale = max(lo, min(hi, int(data.get("art_logo_scale") or 100)))
+    except ValueError:
+        scale = 100
+
+    logo_png = None
+    upload = request.files.get("logo")
+    if upload and upload.filename:
+        try:
+            logo_png = images.rasterize_to_png(upload.read(), 320)
+        except ImageError:
+            logo_png = None
+    if logo_png is None and data.get("slug", "").strip():
+        badge = db.session.get(BadgeClass, data["slug"].strip())
+        if badge and badge.logo_path:
+            path = os.path.join(_upload_dir(), badge.logo_path)
+            if os.path.exists(path):
+                with open(path, "rb") as fh:
+                    logo_png = fh.read()
+    if logo_png is None:
+        logo_png = _placeholder_logo()
+
+    try:
+        image = render_badge(
+            logo_png,
+            data.get("name", ""),
+            shape=data.get("art_shape", "octagon"),
+            bg=data.get("art_bg") or BadgeClass.ART_BG_DEFAULT,
+            accent=data.get("art_accent") or BadgeClass.ART_ACCENT_DEFAULT,
+            size=320,
+            logo_scale=scale / 100,
+        )
+    except Exception:  # noqa: BLE001 - preview must never 500
+        return Response("preview unavailable", status=422, mimetype="text/plain")
+
+    buf = BytesIO()
+    image.save(buf, "PNG")
+    resp = Response(buf.getvalue(), mimetype="image/png")
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
 
 
 @bp.post("/badges/<slug>/archive")

@@ -28,6 +28,7 @@ _ADDED_COLUMNS = {
         "art_shape": "VARCHAR(16) NOT NULL DEFAULT 'octagon'",
         "art_bg": "VARCHAR(7) NOT NULL DEFAULT ''",
         "art_accent": "VARCHAR(7) NOT NULL DEFAULT ''",
+        "art_logo_scale": "INTEGER NOT NULL DEFAULT 100",
     },
 }
 

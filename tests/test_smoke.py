@@ -225,6 +225,51 @@ def test_award_composed_badge_bakes(app, auth_client):
         assert img.text["openbadges"] == f"https://badges.test/a/{uuid}.json"
 
 
+def test_logo_scale_changes_image(app, auth_client):
+    import os
+
+    _compose(auth_client, name="Small", art_shape="octagon", art_logo_scale="60")
+    _compose(auth_client, name="Big", art_shape="octagon", art_logo_scale="150")
+    updir = app.config["UPLOAD_DIR"]
+    small = open(os.path.join(updir, "badge-small.png"), "rb").read()
+    big = open(os.path.join(updir, "badge-big.png"), "rb").read()
+    assert small != big
+    with app.app_context():
+        assert db.session.get(BadgeClass, "small").art_logo_scale == 60
+
+
+def test_preview_endpoint(app, auth_client, client):
+    r = auth_client.post(
+        "/admin/badges/preview",
+        data={
+            "name": "Preview", "art_shape": "shield", "art_bg": "#1f6f43",
+            "art_accent": "#d4af37", "art_logo_scale": "120",
+            "logo": (_png_bytes(), "logo.png"),
+        },
+        content_type="multipart/form-data",
+    )
+    assert r.status_code == 200
+    assert r.headers["Content-Type"] == "image/png" and len(r.data) > 500
+
+    # not logged in -> redirected to login
+    assert client.post(
+        "/admin/badges/preview", data={"name": "x"}, content_type="multipart/form-data"
+    ).status_code == 302
+
+
+def test_preview_falls_back_to_stored_logo(app, auth_client):
+    _compose(auth_client, name="Stored")
+    r = auth_client.post(
+        "/admin/badges/preview",
+        data={
+            "name": "Stored", "slug": "stored", "art_shape": "circle",
+            "art_bg": "#2b6cb0", "art_accent": "#b0872b", "art_logo_scale": "100",
+        },
+        content_type="multipart/form-data",
+    )
+    assert r.status_code == 200 and r.headers["Content-Type"] == "image/png"
+
+
 def test_svg_finished_upload(app, auth_client):
     import pytest
 

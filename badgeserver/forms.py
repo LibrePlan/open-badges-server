@@ -9,6 +9,7 @@ from flask_wtf.file import FileAllowed, FileField, FileRequired
 from wtforms import (
     BooleanField,
     DateField,
+    IntegerRangeField,
     PasswordField,
     RadioField,
     SelectField,
@@ -22,9 +23,11 @@ from wtforms.validators import (
     Email,
     EqualTo,
     Length,
+    NumberRange,
     Optional,
     Regexp,
 )
+from wtforms.widgets import RangeInput
 
 from .models import BadgeClass
 
@@ -98,6 +101,12 @@ class BadgeClassForm(FlaskForm):
     )
     art_accent = StringField(
         "Ring colour", default=BadgeClass.ART_ACCENT_DEFAULT, validators=[Optional(), _HEX_COLOUR]
+    )
+    art_logo_scale = IntegerRangeField(
+        "Logo size",
+        default=100,
+        widget=RangeInput(step=5),
+        validators=[Optional(), NumberRange(*BadgeClass.ART_LOGO_SCALE_RANGE)],
     )
 
     submit = SubmitField("Save badge")

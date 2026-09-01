@@ -19,7 +19,7 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 _CSP = {
     "default-src": "'self'",
-    "img-src": ["'self'", "data:"],
+    "img-src": ["'self'", "data:", "blob:"],
     "style-src": "'self'",
     "script-src": "'self'",
     "base-uri": "'self'",

@@ -78,6 +78,7 @@ class BadgeClass(db.Model):
     ART_SHAPES = ("octagon", "circle", "hexagon", "shield")
     ART_BG_DEFAULT = "#2b6cb0"
     ART_ACCENT_DEFAULT = "#b0872b"
+    ART_LOGO_SCALE_RANGE = (40, 160)
 
     slug = db.Column(db.String(64), primary_key=True)
     issuer_slug = db.Column(db.String(64), db.ForeignKey("issuer.slug"), nullable=False)
@@ -95,6 +96,7 @@ class BadgeClass(db.Model):
     art_shape = db.Column(db.String(16), nullable=False, default="octagon")
     art_bg = db.Column(db.String(7), nullable=False, default="")
     art_accent = db.Column(db.String(7), nullable=False, default="")
+    art_logo_scale = db.Column(db.Integer, nullable=False, default=100)
 
     issuer = db.relationship("Issuer", back_populates="badges")
     assertions = db.relationship(

@@ -156,7 +156,7 @@ def _draw_title(
         y += line_h
 
 
-def compose_badge(
+def render_badge(
     logo_png: bytes,
     title: str,
     *,
@@ -164,12 +164,18 @@ def compose_badge(
     bg: str,
     accent: str,
     size: int,
-    dest_path: str,
-) -> None:
+    logo_scale: float = 1.0,
+) -> Image.Image:
+    """Return the composed badge as an RGBA image.
+
+    *logo_scale* (1.0 = automatic) enlarges or shrinks the logo, clamped so it
+    cannot overflow the shape or reach into the title band.
+    """
     if shape not in SHAPES:
         shape = "octagon"
     bg_rgb = _hex_to_rgb(bg, _BG_FALLBACK)
     accent_rgb = _hex_to_rgb(accent, _ACCENT_FALLBACK)
+    scale = min(max(logo_scale or 1.0, 0.4), 1.7)
     stroke = max(3, size // 64)
 
     mask = _shape_mask(shape, size)
@@ -198,8 +204,10 @@ def compose_badge(
 
     with Image.open(io.BytesIO(logo_png)) as logo:
         logo = logo.convert("RGBA")
-        box_w = max(1, round(_row_span(mask, logo_centre_y) * 0.62))
-        box_h = round(size * (0.34 if has_title else 0.6))
+        box_w = max(1, round(_row_span(mask, logo_centre_y) * 0.62 * scale))
+        box_h = round(size * (0.34 if has_title else 0.6) * scale)
+        if has_title:  # keep the logo clear of the title
+            box_h = min(box_h, max(1, round(2 * (title_top - size * 0.02 - logo_centre_y))))
         logo = _contain(logo, box_w, box_h)
         canvas.alpha_composite(
             logo, ((size - logo.width) // 2, logo_centre_y - logo.height // 2)
@@ -223,4 +231,21 @@ def compose_badge(
 
     clipped = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     clipped.paste(canvas, (0, 0), mask)
-    clipped.save(dest_path, "PNG", optimize=True)
+    return clipped
+
+
+def compose_badge(
+    logo_png: bytes,
+    title: str,
+    *,
+    shape: str,
+    bg: str,
+    accent: str,
+    size: int,
+    dest_path: str,
+    logo_scale: float = 1.0,
+) -> None:
+    render_badge(
+        logo_png, title, shape=shape, bg=bg, accent=accent, size=size,
+        logo_scale=logo_scale,
+    ).save(dest_path, "PNG", optimize=True)
