@@ -19,8 +19,7 @@ SHAPES = ("octagon", "circle", "hexagon", "shield")
 _BG_FALLBACK = (43, 108, 176)
 _ACCENT_FALLBACK = (176, 135, 43)
 
-# vertical layout per shape: logo centre, and the title band (fractions of size)
-_LOGO_CY = {"octagon": 0.34, "circle": 0.37, "hexagon": 0.32, "shield": 0.30}
+# title band per shape (fractions of the canvas height)
 _TITLE_BAND = {
     "octagon": (0.56, 0.86),
     "circle": (0.55, 0.80),
@@ -198,20 +197,21 @@ def render_badge(
         )
 
     has_title = bool((title or "").strip())
-    # Vertical split: logo up top, title (if any) in a lower band.
-    logo_centre_y = round(size * (_LOGO_CY.get(shape, 0.34) if has_title else 0.5))
     title_top, title_bottom = (b * size for b in _TITLE_BAND.get(shape, (0.56, 0.86)))
 
     with Image.open(io.BytesIO(logo_png)) as logo:
         logo = logo.convert("RGBA")
-        box_w = max(1, round(_row_span(mask, logo_centre_y) * 0.62 * scale))
-        box_h = round(size * (0.34 if has_title else 0.6) * scale)
-        if has_title:  # keep the logo clear of the title
-            box_h = min(box_h, max(1, round(2 * (title_top - size * 0.02 - logo_centre_y))))
-        logo = _contain(logo, box_w, box_h)
-        canvas.alpha_composite(
-            logo, ((size - logo.width) // 2, logo_centre_y - logo.height // 2)
-        )
+        # The logo may occupy the area between the top of the shape and the
+        # title band. `logo_scale` (1.0 = automatic) grows/shrinks it within it.
+        top = size * 0.07
+        bottom = (title_top - size * 0.02) if has_title else size * 0.93
+        mid = (top + bottom) / 2
+        box_w = min(_row_span(mask, round(mid)) * 0.84, size * 0.42 * scale)
+        box_h = min(bottom - top, size * 0.42 * scale)
+        logo = _contain(logo, max(1, round(box_w)), max(1, round(box_h)))
+        ly = round(mid - logo.height / 2)
+        ly = max(round(top), min(ly, round(bottom - logo.height)))
+        canvas.alpha_composite(logo, ((size - logo.width) // 2, ly))
 
     if has_title:
         luminance = 0.299 * bg_rgb[0] + 0.587 * bg_rgb[1] + 0.114 * bg_rgb[2]
