@@ -124,6 +124,30 @@ recipient e-mail and status. Open one to:
 **Archive** a badge class (Badges list) to hide it from the public home page
 without touching any assertions already issued.
 
+## Verifying a badge
+
+`/verify` (also in the admin menu, and the public site header) checks whether a
+badge is legitimate. Paste any of:
+
+- a badge page / assertion-JSON URL, or a baked badge PNG URL;
+- the assertion JSON itself;
+- a signed-badge (JWS) token.
+
+Badges issued by **this** server are checked against the database directly.
+Anything else is fetched and validated as an Open Badges 2.0 badge: the
+assertion must be published at its own `id`, the badge class and issuer are
+fetched and checked, `revoked` is honoured, and **signed badges have their
+signature cryptographically verified** against the issuer's published key.
+Add the recipient's e-mail to also confirm who the badge was issued to.
+
+The result is `valid` / `revoked` / `expired` / `not verified` / `not checked`
+(Open Badges 3.0 and pre-2.0 are recognised but not verified), with a checklist
+of every check performed.
+
+The page is public and rate-limited (`RATELIMIT_VERIFY`, default
+`12/minute; 80/hour`). Outbound fetches are screened so they cannot reach
+private, loopback or link-local addresses.
+
 ## Quick reference
 
 | Task | Where |

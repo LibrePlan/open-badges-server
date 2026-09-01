@@ -3,7 +3,8 @@
 #   sudo apt install python3-flask python3-flask-sqlalchemy python3-flask-login \
 #     python3-flaskext.wtf python3-wtforms python3-email-validator \
 #     python3-flask-talisman python3-flask-limiter python3-pil python3-qrcode \
-#     python3-gunicorn fonts-dejavu-core python3-cairosvg
+#     python3-gunicorn fonts-dejavu-core python3-cairosvg \
+#     python3-requests python3-jwt python3-cryptography
 #
 # Package name            Provides / used for
 # ----------------------  -------------------------------------------------
@@ -21,6 +22,9 @@
 # fonts-dejavu-core       font used for composed badge titles
 # python3-cairosvg        rasterise SVG uploads (optional — without it, SVG
 #                         uploads are rejected with a clear message)
+# python3-requests        outbound fetches for the /verify badge checker
+# python3-jwt             verify signed (JWS) badges
+# python3-cryptography    load issuer public keys for signed-badge verification
 #
 # Standard library only: smtplib/email (SMTP), hashlib (recipient hashing),
 # werkzeug.security (password hashing).

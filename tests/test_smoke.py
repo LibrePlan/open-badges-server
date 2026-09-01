@@ -324,3 +324,150 @@ def test_svg_finished_upload(app, auth_client):
 
     img = Image.open(BytesIO(auth_client.get("/b/vector-badge/image").data))
     assert img.format == "PNG"
+
+
+# --- badge verification --------------------------------------------------
+
+
+def _award_local(app, auth_client, email="alice@example.com"):
+    _compose(auth_client, name="Verified", art_shape="circle")
+    with app.app_context():
+        from badgeserver.issuing import award_badge
+
+        badge = db.session.get(BadgeClass, "verified")
+        return award_badge(badge, email, send_email=False).assertion.uuid
+
+
+def test_verify_local_valid(app, auth_client):
+    uuid = _award_local(app, auth_client)
+    with app.app_context():
+        from badgeserver.verify import verify
+
+        r = verify(f"{app.config['EXTERNAL_URL']}/a/{uuid}")
+        assert r.verdict == "valid" and r.issued_by_us
+        assert r.badge["name"] == "Verified"
+        assert verify(f"{app.config['EXTERNAL_URL']}/a/{uuid}", "alice@example.com").recipient_match is True
+        assert verify(f"{app.config['EXTERNAL_URL']}/a/{uuid}", "bob@example.com").recipient_match is False
+
+
+def test_verify_local_revoked_and_unknown(app, auth_client):
+    uuid = _award_local(app, auth_client)
+    with app.app_context():
+        from badgeserver.verify import verify
+
+        db.session.get(Assertion, uuid).revoked = True
+        db.session.commit()
+        assert verify(f"{app.config['EXTERNAL_URL']}/a/{uuid}").verdict == "revoked"
+        assert verify(f"{app.config['EXTERNAL_URL']}/a/00000000-0000-0000-0000-000000000000").verdict == "invalid"
+
+
+def test_verify_ssrf_and_garbage(app):
+    with app.app_context():
+        from badgeserver.verify import VerifyError, check_url_allowed, verify
+
+        for bad in ("http://127.0.0.1/", "http://169.254.169.254/", "http://[::1]/", "file:///etc/passwd"):
+            try:
+                check_url_allowed(bad)
+                raise AssertionError(f"{bad} should be blocked")
+            except VerifyError:
+                pass
+        assert verify("hello world").verdict == "invalid"
+        assert verify("").verdict == "invalid"
+        assert verify(
+            '{"@context":"https://www.w3.org/ns/credentials/v2",'
+            '"type":["VerifiableCredential","OpenBadgeCredential"]}'
+        ).verdict == "unsupported"
+
+
+def test_verify_external_hosted(app, monkeypatch):
+    import json
+
+    import badgeserver.verify as V
+
+    docs = {
+        "https://acme.test/i.json": {
+            "@context": V_CONTEXT, "type": "Issuer", "id": "https://acme.test/i.json",
+            "name": "Acme", "url": "https://acme.test", "email": "b@acme.test",
+        },
+        "https://acme.test/b.json": {
+            "@context": V_CONTEXT, "type": "BadgeClass", "id": "https://acme.test/b.json",
+            "name": "Widget Master", "description": "d", "image": "https://acme.test/b.png",
+            "issuer": "https://acme.test/i.json",
+        },
+        "https://acme.test/a/1.json": {
+            "@context": V_CONTEXT, "type": "Assertion", "id": "https://acme.test/a/1.json",
+            "recipient": {"type": "email", "hashed": False, "identity": "u@acme.test"},
+            "badge": "https://acme.test/b.json", "issuedOn": "2026-01-02T00:00:00+00:00",
+            "verification": {"type": "hosted"},
+        },
+    }
+    monkeypatch.setattr(V, "check_url_allowed", lambda u: None)
+    monkeypatch.setattr(V, "_fetch", lambda url, *, max_bytes: (json.dumps(docs[url]).encode(), "application/json"))
+    with app.app_context():
+        r = V.verify("https://acme.test/a/1.json")
+        assert r.verdict == "valid" and not r.issued_by_us and r.issuer["name"] == "Acme"
+        assert V.verify("https://acme.test/a/1.json", "u@acme.test").recipient_match is True
+        # served from a URL that isn't its id
+        docs["https://evil.test/x.json"] = docs["https://acme.test/a/1.json"]
+        assert V.verify("https://evil.test/x.json").verdict == "invalid"
+
+
+def test_verify_signed(app, monkeypatch):
+    import json
+
+    pytest = __import__("pytest")
+    jwt = pytest.importorskip("jwt")
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa
+
+    import badgeserver.verify as V
+
+    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    pem = key.public_key().public_bytes(
+        serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo
+    ).decode()
+    payload = {
+        "@context": V_CONTEXT, "type": "Assertion", "id": "urn:uuid:sig1",
+        "recipient": {"type": "email", "hashed": False, "identity": "z@acme.test"},
+        "badge": "https://acme.test/b.json", "issuedOn": "2026-03-01T00:00:00+00:00",
+        "verification": {"type": "signed", "creator": "https://acme.test/key.json"},
+    }
+    token = jwt.PyJWS().encode(json.dumps(payload).encode(), key, algorithm="RS256")
+    docs = {
+        "https://acme.test/key.json": {
+            "type": "CryptographicKey", "id": "https://acme.test/key.json",
+            "owner": "https://acme.test/i.json", "publicKeyPem": pem,
+        },
+        "https://acme.test/i.json": {
+            "@context": V_CONTEXT, "type": "Issuer", "id": "https://acme.test/i.json",
+            "name": "Acme", "url": "https://acme.test", "email": "b@acme.test",
+            "publicKey": "https://acme.test/key.json",
+            "revocationList": "https://acme.test/rl.json",
+        },
+        "https://acme.test/b.json": {
+            "@context": V_CONTEXT, "type": "BadgeClass", "id": "https://acme.test/b.json",
+            "name": "Signed Badge", "description": "d", "issuer": "https://acme.test/i.json",
+        },
+        "https://acme.test/rl.json": {"revokedAssertions": []},
+    }
+    monkeypatch.setattr(V, "check_url_allowed", lambda u: None)
+    monkeypatch.setattr(V, "_fetch", lambda url, *, max_bytes: (json.dumps(docs[url]).encode(), "application/json"))
+    with app.app_context():
+        r = V.verify(token)
+        assert r.verdict == "valid"
+        assert any("Signature verified" in c.label and c.status == "pass" for c in r.checks)
+        assert V.verify(token[:-6] + "AAAAAA").verdict == "invalid"
+        docs["https://acme.test/rl.json"] = {"revokedAssertions": ["urn:uuid:sig1"]}
+        assert V.verify(token).verdict == "revoked"
+
+
+def test_verify_page(app, client, auth_client):
+    uuid = _award_local(app, auth_client)
+    assert client.get("/verify").status_code == 200
+    r = client.get(f"/verify?url={app.config['EXTERNAL_URL']}/a/{uuid}")
+    assert r.status_code == 200 and b"Valid badge" in r.data
+    # admin nav links to it
+    assert b'href="/verify"' in auth_client.get("/admin/").data
+
+
+V_CONTEXT = "https://w3id.org/openbadges/v2"

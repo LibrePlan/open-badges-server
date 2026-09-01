@@ -1,0 +1,88 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% extends "base.html" %}
+{% from "_formhelpers.html" import field %}
+{% block title %}Verify a badge · {{ site_title }}{% endblock %}
+{% block content %}
+  <h1>Verify a badge</h1>
+  <p class="muted">
+    Paste a badge page URL, an assertion JSON URL, the assertion JSON itself, or
+    a signed badge token. Add the recipient's e-mail to also confirm who it was
+    issued to. Badges from other Open Badges issuers can be checked too.
+  </p>
+
+  <form method="post" class="card">
+    {{ form.hidden_tag() }}
+    {{ field(form.source) }}
+    {{ field(form.recipient) }}
+    {{ form.submit(class="btn") }}
+  </form>
+
+  {% if result %}
+    {% set labels = {"valid": "Valid badge", "revoked": "Revoked",
+                     "expired": "Expired", "invalid": "Not verified",
+                     "unsupported": "Not checked"} %}
+    <section class="verify-result">
+      <p class="verdict verdict-{{ result.verdict }}">{{ labels.get(result.verdict, result.verdict) }}</p>
+
+      {% if result.error %}<p class="flash flash-error">{{ result.error }}</p>{% endif %}
+
+      {% if result.issuer %}
+        <p>
+          Issued by <strong>{{ result.issuer.name or result.issuer.id }}</strong>
+          {% if result.issued_by_us %}<span class="tag">this server</span>
+          {% else %}<span class="tag">external issuer</span>{% endif %}
+          {% if result.issuer.url %} &middot;
+            <a href="{{ result.issuer.url }}" rel="nofollow noopener noreferrer">{{ result.issuer.url }}</a>
+          {% endif %}
+        </p>
+      {% endif %}
+
+      {% if result.badge %}
+        <div class="detail">
+          {% if result.badge.image and result.issued_by_us %}
+            <img class="detail-image" src="{{ result.badge.image }}" alt="" width="120" height="120">
+          {% endif %}
+          <div>
+            <h2>{{ result.badge.name or "(unnamed badge)" }}</h2>
+            {% if result.badge.description %}<p>{{ result.badge.description }}</p>{% endif %}
+            {% if result.assertion %}
+              <p class="muted">
+                {% if result.assertion.issued_on %}Issued {{ result.assertion.issued_on }}{% endif %}
+                {% if result.assertion.recipient %} to {{ result.assertion.recipient }}{% endif %}
+              </p>
+            {% endif %}
+            {% if result.badge.image and not result.issued_by_us %}
+              <p class="muted"><a href="{{ result.badge.image }}" rel="nofollow noopener noreferrer">badge image</a></p>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
+      {% if result.recipient_match is not none %}
+        <p class="flash flash-{{ 'ok' if result.recipient_match else 'error' }}">
+          {{ "Confirmed: this badge was issued to that e-mail address."
+             if result.recipient_match
+             else "That e-mail address is not the recipient of this badge." }}
+        </p>
+      {% endif %}
+
+      {% if result.checks %}
+        <h3>Checks</h3>
+        <ul class="checklist">
+          {% for c in result.checks %}
+            <li data-status="{{ c.status }}">
+              {{ c.label }}{% if c.detail %} &mdash; <span class="muted">{{ c.detail }}</span>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if result.raw %}
+        <details>
+          <summary>Raw badge data ({{ result.format }})</summary>
+          <pre class="raw-json">{{ result.raw | tojson(indent=2) }}</pre>
+        </details>
+      {% endif %}
+    </section>
+  {% endif %}
+{% endblock %}

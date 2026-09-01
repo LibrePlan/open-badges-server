@@ -187,6 +187,41 @@ table.grid img { border-radius: 6px; vertical-align: middle; }
 
 code { background: #eef0f3; padding: .05rem .3rem; border-radius: 4px; }
 
+/* --- badge verification --- */
+.verify-result { margin-top: 1.5rem; }
+.verdict {
+  display: inline-block;
+  font-weight: 700;
+  padding: .35rem .9rem;
+  border-radius: 999px;
+  margin: 0 0 1rem;
+}
+.verdict-valid { background: var(--ok-bg); color: #1c6b34; }
+.verdict-revoked, .verdict-expired { background: var(--warn-bg); color: #8a5a00; }
+.verdict-invalid { background: var(--err-bg); color: var(--danger); }
+.verdict-unsupported { background: #eef0f3; color: var(--muted); }
+
+.checklist { list-style: none; padding: 0; }
+.checklist li { padding: .3rem 0 .3rem 1.6rem; position: relative; }
+.checklist li::before {
+  position: absolute;
+  left: 0;
+  font-weight: 700;
+}
+.checklist li[data-status="pass"]::before { content: "\2713"; color: #1c6b34; }
+.checklist li[data-status="warn"]::before { content: "!"; color: #8a5a00; }
+.checklist li[data-status="fail"]::before { content: "\2717"; color: var(--danger); }
+
+.raw-json {
+  background: #f4f5f7;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: .8rem;
+  overflow-x: auto;
+  font-size: .8rem;
+}
+textarea.control { min-height: 6rem; font-family: ui-monospace, monospace; font-size: .85rem; }
+
 @media (max-width: 40rem) {
   .admin-layout { flex-direction: column; }
   .admin-nav { flex-direction: row; flex-wrap: wrap; }

@@ -8,6 +8,8 @@ The convention (Open Badges "baking") is a PNG ``iTXt`` chunk whose keyword is
 
 from __future__ import annotations
 
+import io
+
 from PIL import Image, PngImagePlugin
 
 BAKE_KEYWORD = "openbadges"
@@ -24,3 +26,13 @@ def bake_png(source_png_path: str, assertion_url: str, dest_path: str) -> None:
 def read_baked_url(png_path: str) -> str | None:
     with Image.open(png_path) as img:
         return img.text.get(BAKE_KEYWORD) if hasattr(img, "text") else None
+
+
+def read_baked_from_bytes(data: bytes) -> str | None:
+    """Return the ``openbadges`` value (URL or JWS) baked into a PNG's bytes."""
+    try:
+        with Image.open(io.BytesIO(data)) as img:
+            img.load()
+            return img.text.get(BAKE_KEYWORD) if hasattr(img, "text") else None
+    except (OSError, ValueError):
+        return None

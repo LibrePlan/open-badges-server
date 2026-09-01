@@ -82,9 +82,11 @@ def create_app(config_overrides: dict | None = None, *, data_dir: str | None = N
 
     from .admin import bp as admin_bp
     from .public import bp as public_bp
+    from .verify_views import bp as verify_bp
 
     app.register_blueprint(public_bp)
     app.register_blueprint(admin_bp, url_prefix="/admin")
+    app.register_blueprint(verify_bp)
 
     from . import cli
 

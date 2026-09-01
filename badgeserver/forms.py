@@ -165,3 +165,14 @@ class ConfirmForm(FlaskForm):
     """A bare form carrying only the CSRF token, for one-click POST actions."""
 
     submit = SubmitField("Confirm")
+
+
+class VerifyForm(FlaskForm):
+    source = TextAreaField(
+        "Badge URL, assertion JSON, or signed badge token",
+        validators=[DataRequired(), Length(max=20000)],
+    )
+    recipient = StringField(
+        "Recipient e-mail (optional)", validators=[Optional(), Email(), Length(max=255)]
+    )
+    submit = SubmitField("Verify")
