@@ -175,6 +175,19 @@ table.grid img { border-radius: 6px; vertical-align: middle; }
   font-size: .8rem;
   margin-right: .3rem;
 }
+.tag-open { background: var(--ok-bg); color: #1c6b34; }
+
+.claim-card {
+  margin-top: 1.4rem;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  max-width: 30rem;
+}
+.claim-card h2 { margin-top: 0; }
+.claim-card form { display: flex; gap: .5rem; flex-wrap: wrap; }
+.claim-card .control { flex: 1 1 14rem; }
 
 .issuer-card { display: flex; gap: 1.2rem; align-items: center; margin-bottom: 1.5rem; }
 .issuer-logo { width: 84px; height: 84px; border-radius: 10px; }

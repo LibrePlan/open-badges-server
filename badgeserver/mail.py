@@ -92,3 +92,19 @@ def send_award_email(assertion: Assertion) -> None:
     msg.set_content(render_template("email/award.txt", **ctx))
     msg.add_alternative(render_template("email/award.html", **ctx), subtype="html")
     _send(msg)
+
+
+def send_claim_confirmation(claim, confirm_url: str) -> None:
+    """Send the 'confirm your badge' link for a self-service claim. Raises on failure."""
+    badge = claim.badge
+    ctx = {
+        "badge": badge,
+        "issuer": badge.issuer,
+        "confirm_url": confirm_url,
+        "expires_hours": current_app.config["CLAIM_EXPIRY_HOURS"],
+        "site_title": current_app.config["SITE_TITLE"],
+    }
+    msg = _base_message(claim.email, f"Confirm your {badge.name} badge")
+    msg.set_content(render_template("email/claim.txt", **ctx))
+    msg.add_alternative(render_template("email/claim.html", **ctx), subtype="html")
+    _send(msg)

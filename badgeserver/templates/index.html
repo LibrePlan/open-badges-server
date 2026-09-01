@@ -27,6 +27,7 @@
           <a href="{{ url_for('public.badge_page', slug=badge.slug) }}">
             <img src="{{ badge_image_url(badge) }}" alt="" width="96" height="96">
             <span>{{ badge.name }}</span>
+            {% if badge.self_service %}<span class="tag tag-open">claimable</span>{% endif %}
           </a>
         </li>
       {% endfor %}

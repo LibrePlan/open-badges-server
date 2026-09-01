@@ -1,6 +1,6 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% extends "admin/base.html" %}
-{% from "_formhelpers.html" import field %}
+{% from "_formhelpers.html" import field, checkbox %}
 
 {% macro slider(f, fallback, unit, hint="") %}
   <div class="field">
@@ -28,6 +28,7 @@
     {{ field(form.criteria_narrative, "Plain text describing what earns this badge.") }}
     {{ field(form.criteria_url) }}
     {{ field(form.tags) }}
+    {{ checkbox(form.self_service, "Anyone can claim this badge for their own e-mail address (they confirm by clicking a link). Needs e-mail to be configured.") }}
 
     <div class="field">
       <span class="field-label">Badge image</span>

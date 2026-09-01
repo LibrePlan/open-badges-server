@@ -69,6 +69,12 @@ class Config:
 
         self.RATELIMIT_STORAGE_URI = _str("RATELIMIT_STORAGE_URI", "memory://")
         self.RATELIMIT_LOGIN = _str("RATELIMIT_LOGIN", "5 per minute; 30 per hour")
+        self.RATELIMIT_VERIFY = _str("RATELIMIT_VERIFY", "12 per minute; 80 per hour")
+        self.RATELIMIT_CLAIM = _str("RATELIMIT_CLAIM", "4 per minute; 15 per hour; 40 per day")
+
+        # Self-service badges: visitors may claim badges flagged as such.
+        self.SELF_SERVICE_ENABLED = _bool("SELF_SERVICE_ENABLED", True)
+        self.CLAIM_EXPIRY_HOURS = _int("CLAIM_EXPIRY_HOURS", 24)
 
         self.MAX_CONTENT_LENGTH = _int("MAX_UPLOAD_BYTES", 3 * 1024 * 1024)
         self.BADGE_IMAGE_SIZE = _int("BADGE_IMAGE_SIZE", 512)

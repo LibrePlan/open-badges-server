@@ -148,6 +148,24 @@ The page is public and rate-limited (`RATELIMIT_VERIFY`, default
 `12/minute; 80/hour`). Outbound fetches are screened so they cannot reach
 private, loopback or link-local addresses.
 
+## Self-service badges
+
+Tick **Let anyone claim this badge** on a badge (Badges → edit) to open it for
+public self-claiming — a "fan" badge, an event badge, etc. On the badge's public
+page a visitor enters their e-mail, gets a **confirmation link**, and the badge
+is issued only when they click it (link valid `CLAIM_EXPIRY_HOURS`, default 24).
+
+- E-mail (SMTP) must be configured — the confirmation link is the whole point.
+- Self-service badges show a *claimable* marker on the home page and in the
+  admin badge list.
+- The claim endpoint is rate-limited (`RATELIMIT_CLAIM`, default
+  `4/minute; 15/hour; 40/day`).
+- Turn the whole feature off with `SELF_SERVICE_ENABLED=false` in `badges.env`
+  (the per-badge tick is then ignored).
+
+Claimed badges are ordinary assertions — revoke them from **Assertions** like
+any other.
+
 ## Quick reference
 
 | Task | Where |

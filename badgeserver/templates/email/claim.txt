@@ -1,0 +1,13 @@
+Confirm your {{ badge.name }} badge
+
+Someone (hopefully you) asked to claim the "{{ badge.name }}" badge from
+{{ issuer.name }} for this e-mail address.
+
+Confirm and receive your badge:
+{{ confirm_url }}
+
+This link is valid for about {{ expires_hours }} hours. If you did not request
+this, you can ignore this message -- no badge is issued until the link is used.
+
+--
+{{ site_title }}

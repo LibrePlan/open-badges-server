@@ -239,6 +239,7 @@ def _apply_badge_form(badge: BadgeClass, form: BadgeClassForm, *, image_required
     badge.criteria_narrative = (form.criteria_narrative.data or "").strip()
     badge.criteria_url = (form.criteria_url.data or "").strip()
     badge.tags = BadgeClass.normalise_tags(form.tags.data or "")
+    badge.self_service = bool(form.self_service.data)
 
     if form.art_mode.data == "compose":
         _apply_compose(badge, form)

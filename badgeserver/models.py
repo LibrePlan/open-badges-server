@@ -10,8 +10,9 @@ from __future__ import annotations
 
 import hashlib
 import re
+import secrets
 import uuid as uuidlib
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -29,6 +30,10 @@ def new_uuid() -> str:
 
 def new_salt() -> str:
     return uuidlib.uuid4().hex
+
+
+def new_token() -> str:
+    return secrets.token_urlsafe(32)
 
 
 _SLUG_RE = re.compile(r"[^a-z0-9]+")
@@ -104,6 +109,9 @@ class BadgeClass(db.Model):
     art_logo_offset = db.Column(db.Integer, nullable=False, default=0)
     art_title_offset = db.Column(db.Integer, nullable=False, default=0)
 
+    # When true, any visitor may claim this badge for their own e-mail address.
+    self_service = db.Column(db.Boolean, nullable=False, default=False)
+
     issuer = db.relationship("Issuer", back_populates="badges")
     assertions = db.relationship(
         "Assertion", back_populates="badge", lazy="dynamic", cascade="all, delete-orphan"
@@ -171,3 +179,37 @@ class Assertion(db.Model):
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone.utc)
         return dt.astimezone(timezone.utc)
+
+
+class BadgeClaim(db.Model):
+    """A pending self-service claim, awaiting e-mail confirmation."""
+
+    __tablename__ = "badge_claim"
+
+    token = db.Column(db.String(64), primary_key=True, default=new_token)
+    badge_slug = db.Column(
+        db.String(64), db.ForeignKey("badge_class.slug"), nullable=False, index=True
+    )
+    email = db.Column(db.String(255), nullable=False, index=True)
+    created_on = db.Column(db.DateTime, nullable=False, default=_utcnow)
+    expires_on = db.Column(db.DateTime, nullable=False)
+    confirmed_on = db.Column(db.DateTime)
+    assertion_uuid = db.Column(db.String(36))
+
+    badge = db.relationship("BadgeClass")
+
+    @staticmethod
+    def make(badge_slug: str, email: str, hours: int) -> "BadgeClaim":
+        return BadgeClaim(
+            token=new_token(),
+            badge_slug=badge_slug,
+            email=email.strip(),
+            expires_on=_utcnow() + timedelta(hours=hours),
+        )
+
+    @property
+    def expired(self) -> bool:
+        dt = self.expires_on
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return _utcnow() > dt

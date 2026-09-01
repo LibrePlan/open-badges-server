@@ -107,9 +107,24 @@ def badge_logo(slug: str):
 
 @bp.get("/b/<slug>")
 def badge_page(slug: str):
+    from .forms import ClaimForm
+    from .mail import mail_configured
+
     badge = _get_badge_or_404(slug)
     awarded = badge.assertions.filter_by(revoked=False).count()
-    return render_template("badge.html", badge=badge, awarded=awarded)
+    claimable = (
+        current_app.config["SELF_SERVICE_ENABLED"]
+        and badge.self_service
+        and not badge.archived
+    )
+    return render_template(
+        "badge.html",
+        badge=badge,
+        awarded=awarded,
+        claimable=claimable,
+        mail_ready=mail_configured(),
+        claim_form=ClaimForm(),
+    )
 
 
 # --- Assertions ---------------------------------------------------------

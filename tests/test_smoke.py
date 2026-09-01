@@ -471,3 +471,96 @@ def test_verify_page(app, client, auth_client):
 
 
 V_CONTEXT = "https://w3id.org/openbadges/v2"
+
+
+# --- self-service claiming ---------------------------------------------
+
+
+def _self_service_badge(app, auth_client, **kw):
+    kw.setdefault("self_service", "y")
+    _compose(auth_client, name="Fan", art_shape="circle", **kw)
+    with app.app_context():
+        return db.session.get(BadgeClass, "fan")
+
+
+def _mailable(app, monkeypatch):
+    app.config.update(MAIL_ENABLED=True, SMTP_HOST="smtp.test", MAIL_FROM="b@test")
+    sent = []
+    monkeypatch.setattr("badgeserver.mail._send", lambda msg: sent.append(msg))
+    return sent
+
+
+def test_claim_flow(app, client, auth_client, monkeypatch):
+    from badgeserver.models import Assertion, BadgeClaim
+
+    _self_service_badge(app, auth_client)
+    sent = _mailable(app, monkeypatch)
+
+    assert b'action="/b/fan/claim"' in client.get("/b/fan").data
+    assert b"claimable" in client.get("/").data
+
+    r = client.post("/b/fan/claim", data={"email": "fan@example.com", "submit": "x"})
+    assert r.status_code == 200 and b"Check your e-mail" in r.data
+    assert len(sent) == 1 and "Confirm your Fan badge" in sent[0]["Subject"]
+    with app.app_context():
+        claim = BadgeClaim.query.one()
+        assert claim.confirmed_on is None and Assertion.query.count() == 0
+        token = claim.token
+
+    sent.clear()
+    r = client.get(f"/claim/{token}", follow_redirects=False)
+    assert r.status_code == 302 and "/a/" in r.headers["Location"]
+    assert r.headers["Cache-Control"] == "no-store"
+    uuid = r.headers["Location"].rstrip("/").rsplit("/", 1)[-1]
+    with app.app_context():
+        a = db.session.get(Assertion, uuid)
+        assert a and a.recipient_email == "fan@example.com"
+        assert db.session.get(BadgeClaim, token).confirmed_on is not None
+    assert any("awarded: Fan" in m["Subject"] for m in sent)
+
+    # idempotent
+    r2 = client.get(f"/claim/{token}", follow_redirects=False)
+    assert r2.status_code == 302 and r2.headers["Location"].rstrip("/").endswith(uuid)
+    with app.app_context():
+        assert Assertion.query.count() == 1
+
+
+def test_claim_expired(app, client, auth_client, monkeypatch):
+    from datetime import datetime, timedelta, timezone
+
+    from badgeserver.models import Assertion, BadgeClaim
+
+    _self_service_badge(app, auth_client)
+    _mailable(app, monkeypatch)
+    with app.app_context():
+        entry = BadgeClaim.make("fan", "old@example.com", 24)
+        entry.expires_on = datetime.now(timezone.utc) - timedelta(hours=1)
+        db.session.add(entry)
+        db.session.commit()
+        token = entry.token
+    r = client.get(f"/claim/{token}")
+    assert r.status_code == 200 and b"has expired" in r.data
+    with app.app_context():
+        assert Assertion.query.count() == 0
+
+
+def test_claim_guards(app, client, auth_client, monkeypatch):
+    _self_service_badge(app, auth_client)
+    _compose(auth_client, name="Private", art_shape="circle")  # self_service off
+    sent = _mailable(app, monkeypatch)
+
+    assert client.post("/b/private/claim", data={"email": "a@b.com", "submit": "x"}).status_code == 404
+
+    app.config["SELF_SERVICE_ENABLED"] = False
+    assert client.post("/b/fan/claim", data={"email": "a@b.com", "submit": "x"}).status_code == 404
+    assert b"/b/fan/claim" not in client.get("/b/fan").data
+    app.config["SELF_SERVICE_ENABLED"] = True
+
+    # SMTP not configured
+    app.config["MAIL_ENABLED"] = False
+    r = client.post("/b/fan/claim", data={"email": "z@b.com", "submit": "x"}, follow_redirects=False)
+    assert r.status_code == 302 and r.headers["Location"].endswith("/b/fan")
+    with app.app_context():
+        from badgeserver.models import BadgeClaim
+
+        assert BadgeClaim.query.count() == 0

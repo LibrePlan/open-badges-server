@@ -79,6 +79,7 @@ class BadgeClassForm(FlaskForm):
         "Criteria URL (optional)", validators=[Optional(), URL(), Length(max=255)]
     )
     tags = StringField("Tags (comma separated)", validators=[Optional(), Length(max=512)])
+    self_service = BooleanField("Let anyone claim this badge")
 
     art_mode = RadioField(
         "Badge image",
@@ -165,6 +166,13 @@ class ConfirmForm(FlaskForm):
     """A bare form carrying only the CSRF token, for one-click POST actions."""
 
     submit = SubmitField("Confirm")
+
+
+class ClaimForm(FlaskForm):
+    email = StringField(
+        "Your e-mail address", validators=[DataRequired(), Email(), Length(max=255)]
+    )
+    submit = SubmitField("Claim this badge")
 
 
 class VerifyForm(FlaskForm):

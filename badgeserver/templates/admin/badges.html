@@ -15,7 +15,10 @@
             <td>{{ b.name }}</td>
             <td><code>{{ b.slug }}</code></td>
             <td>{{ b.assertions.filter_by(revoked=False).count() }}</td>
-            <td>{{ "archived" if b.archived else "active" }}</td>
+            <td>
+              {{ "archived" if b.archived else "active" }}
+              {% if b.self_service %}<span class="tag tag-open">claimable</span>{% endif %}
+            </td>
             <td class="actions">
               <a href="{{ url_for('admin.award', slug=b.slug) }}">Award</a>
               <a href="{{ url_for('admin.award_csv', slug=b.slug) }}">CSV</a>

@@ -23,6 +23,22 @@
         <a href="{{ url_for('public.badge_doc', slug=badge.slug) }}">badge JSON</a> ·
         issued by <a href="{{ url_for('public.issuer_doc', slug=badge.issuer_slug) }}">{{ badge.issuer.name }}</a>
       </p>
+
+      {% if claimable %}
+        <div class="claim-card">
+          <h2>Claim this badge</h2>
+          {% if mail_ready %}
+            <p class="muted">Enter your e-mail and we'll send you a link to confirm.</p>
+            <form method="post" action="{{ url_for('claim.claim', slug=badge.slug) }}">
+              {{ claim_form.hidden_tag() }}
+              {{ claim_form.email(class="control", placeholder="you@example.com") }}
+              {{ claim_form.submit(class="btn") }}
+            </form>
+          {% else %}
+            <p class="muted">Claiming is temporarily unavailable.</p>
+          {% endif %}
+        </div>
+      {% endif %}
     </div>
   </article>
 {% endblock %}

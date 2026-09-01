@@ -32,6 +32,7 @@ _ADDED_COLUMNS = {
         "art_border_width": "INTEGER NOT NULL DEFAULT 8",
         "art_logo_offset": "INTEGER NOT NULL DEFAULT 0",
         "art_title_offset": "INTEGER NOT NULL DEFAULT 0",
+        "self_service": "BOOLEAN NOT NULL DEFAULT 0",
     },
 }
 
