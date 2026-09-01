@@ -7,6 +7,8 @@ from __future__ import annotations
 import smtplib
 import ssl
 from email.message import EmailMessage
+from email.utils import formatdate, make_msgid, parseaddr
+from urllib.parse import urlsplit
 
 from flask import current_app, render_template
 
@@ -54,12 +56,25 @@ def _send(msg: EmailMessage) -> None:
         server.send_message(msg)
 
 
+def _sender_domain() -> str:
+    cfg = current_app.config
+    _name, addr = parseaddr(cfg.get("MAIL_FROM", ""))
+    if "@" in addr:
+        return addr.rsplit("@", 1)[1]
+    host = urlsplit(cfg.get("EXTERNAL_URL", "")).hostname
+    return host or "localhost"
+
+
 def _base_message(to_addr: str, subject: str) -> EmailMessage:
     cfg = current_app.config
     msg = EmailMessage()
     msg["From"] = cfg["MAIL_FROM"]
     msg["To"] = to_addr
     msg["Subject"] = subject
+    # Date and Message-ID are required by RFC 5322 and expected by most
+    # filters; EmailMessage/smtplib do not add them.
+    msg["Date"] = formatdate(localtime=True)
+    msg["Message-ID"] = make_msgid(domain=_sender_domain())
     if cfg.get("MAIL_REPLY_TO"):
         msg["Reply-To"] = cfg["MAIL_REPLY_TO"]
     return msg
