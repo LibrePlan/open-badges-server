@@ -10,6 +10,7 @@ fail with a clear message and raster uploads still work.
 from __future__ import annotations
 
 import io
+import warnings
 
 from flask_babel import gettext as _
 from PIL import Image, UnidentifiedImageError
@@ -20,6 +21,10 @@ except Exception:  # noqa: BLE001 - ImportError, or OSError if cairo libs are ab
     cairosvg = None
 
 ACCEPTED_FORMATS = {"PNG", "JPEG", "WEBP", "GIF"}
+
+# Refuse to decode anything that would expand past this many pixels
+# (decompression-bomb guard). Badge art tops out well under a megapixel.
+Image.MAX_IMAGE_PIXELS = 40_000_000
 
 
 class ImageError(ValueError):
@@ -48,7 +53,14 @@ def rasterize_to_png(raw: bytes, size: int) -> bytes:
                 )
             )
         try:
-            raw = cairosvg.svg2png(bytestring=raw, output_width=size, output_height=size)
+            # unsafe=False (the default) blocks external-resource fetches and
+            # XML entity expansion in the uploaded SVG -- keep it explicit.
+            raw = cairosvg.svg2png(
+                bytestring=raw,
+                output_width=size,
+                output_height=size,
+                unsafe=False,
+            )
         except Exception as exc:  # noqa: BLE001
             raise ImageError(_("Could not render the SVG: %(error)s", error=exc)) from exc
 
@@ -56,6 +68,17 @@ def rasterize_to_png(raw: bytes, size: int) -> bytes:
 
 
 def _square_png_bytes(raw: bytes, size: int) -> bytes:
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", Image.DecompressionBombWarning)
+            return _square_png_unguarded(raw, size)
+    except Image.DecompressionBombError:
+        raise ImageError(_("That image is too large to process.")) from None
+    except Image.DecompressionBombWarning:
+        raise ImageError(_("That image is too large to process.")) from None
+
+
+def _square_png_unguarded(raw: bytes, size: int) -> bytes:
     try:
         with Image.open(io.BytesIO(raw)) as probe:
             probe.verify()

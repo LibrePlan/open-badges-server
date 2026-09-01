@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from flask import current_app
+from sqlalchemy.exc import IntegrityError
 
 from .baking import bake_png
 from .extensions import db
@@ -70,7 +71,18 @@ def award_badge(
         narrative=narrative.strip(),
     )
     db.session.add(assertion)
-    db.session.flush()  # assign relationships / uuid before baking
+    try:
+        db.session.flush()  # assign relationships / uuid before baking
+    except IntegrityError:
+        # Lost a race against a concurrent award for the same badge+recipient
+        # (the partial unique index on Assertion). Treat it as a duplicate.
+        db.session.rollback()
+        existing = Assertion.query.filter_by(
+            badge_slug=badge.slug, recipient_email=email, revoked=False
+        ).first()
+        if existing is not None:
+            raise AlreadyAwarded(existing) from None
+        raise
 
     try:
         _bake(assertion)

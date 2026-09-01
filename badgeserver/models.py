@@ -137,6 +137,18 @@ class BadgeClass(db.Model):
 
 class Assertion(db.Model):
     __tablename__ = "assertion"
+    __table_args__ = (
+        # At most one *active* (non-revoked) assertion per badge + recipient.
+        # Partial index -> a revoked assertion does not block re-awarding.
+        # SQLite-scoped, like the ALTER-based migration in cli.py.
+        db.Index(
+            "uq_assertion_active_recipient",
+            "badge_slug",
+            "recipient_email",
+            unique=True,
+            sqlite_where=db.text("revoked = 0"),
+        ),
+    )
 
     uuid = db.Column(db.String(36), primary_key=True, default=new_uuid)
     badge_slug = db.Column(

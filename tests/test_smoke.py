@@ -508,7 +508,14 @@ def test_claim_flow(app, client, auth_client, monkeypatch):
         token = claim.token
 
     sent.clear()
+    # the landing page is a GET that awards nothing yet
     r = client.get(f"/claim/{token}", follow_redirects=False)
+    assert r.status_code == 200 and b"Get my badge" in r.data
+    with app.app_context():
+        assert Assertion.query.count() == 0
+
+    # the POST performs the award
+    r = client.post(f"/claim/{token}", data={"submit": "x"}, follow_redirects=False)
     assert r.status_code == 302 and "/a/" in r.headers["Location"]
     assert r.headers["Cache-Control"] == "no-store"
     uuid = r.headers["Location"].rstrip("/").rsplit("/", 1)[-1]
@@ -518,9 +525,11 @@ def test_claim_flow(app, client, auth_client, monkeypatch):
         assert db.session.get(BadgeClaim, token).confirmed_on is not None
     assert any("awarded: Fan" in m["Subject"] for m in sent)
 
-    # idempotent
+    # idempotent: GET and POST both just return to the existing assertion
     r2 = client.get(f"/claim/{token}", follow_redirects=False)
     assert r2.status_code == 302 and r2.headers["Location"].rstrip("/").endswith(uuid)
+    r3 = client.post(f"/claim/{token}", data={"submit": "x"}, follow_redirects=False)
+    assert r3.status_code == 302 and r3.headers["Location"].rstrip("/").endswith(uuid)
     with app.app_context():
         assert Assertion.query.count() == 1
 
@@ -615,3 +624,148 @@ def test_confirmation_email_follows_visitor_language(app, client, auth_client, m
     assert sent[0]["Subject"] == "Bevestig je Fan-badge"
     body = sent[0].get_body(("plain",)).get_content()
     assert "Bevestig en ontvang je badge" in body
+
+
+# --- security hardening --------------------------------------------------
+
+
+def test_claim_does_not_leak_existing_holders(app, client, auth_client, monkeypatch):
+    _self_service_badge(app, auth_client)
+    _mailable(app, monkeypatch)
+    with app.app_context():
+        from badgeserver.issuing import award_badge
+
+        award_badge(db.session.get(BadgeClass, "fan"), "member@example.com", send_email=False)
+
+    r = client.post(
+        "/b/fan/claim", data={"email": "member@example.com", "submit": "x"},
+        follow_redirects=False,
+    )
+    # same generic "check your e-mail" page as a first-time claimant -- no 302
+    # to the existing assertion that would confirm the address holds the badge
+    assert r.status_code == 200 and b"Check your e-mail" in r.data
+
+
+def test_login_next_open_redirect_blocked(app):
+    for evil in ("//evil.example", "/\\evil.example", "https://evil.example"):
+        c = app.test_client()
+        r = c.post(
+            f"/admin/login?next={evil}",
+            data={"username": "admin", "password": "correct-horse-battery"},
+            follow_redirects=False,
+        )
+        assert r.status_code == 302 and "evil.example" not in r.headers["Location"]
+    # a genuine local path is still honoured
+    c = app.test_client()
+    r = c.post(
+        "/admin/login?next=/admin/issuer",
+        data={"username": "admin", "password": "correct-horse-battery"},
+        follow_redirects=False,
+    )
+    assert r.headers["Location"].endswith("/admin/issuer")
+
+
+def test_admin_pages_are_not_cacheable(auth_client):
+    assert auth_client.get("/admin/").headers.get("Cache-Control") == "no-store"
+
+
+def test_csv_award_rejects_bad_addresses(app, auth_client):
+    _compose(auth_client, name="Bulk List")
+    from io import BytesIO
+
+    blob = (
+        b"good@example.com\n"
+        b'"inject@example.com\nBcc: evil@example.net"\n'
+        b"not-an-email\n"
+        b"other@example.com\n"
+    )
+    r = auth_client.post(
+        "/admin/badges/bulk-list/award-csv",
+        data={"file": (BytesIO(blob), "list.csv"), "submit": "x"},
+        content_type="multipart/form-data", follow_redirects=True,
+    )
+    assert r.status_code == 200
+    with app.app_context():
+        held = {a.recipient_email for a in Assertion.query.all()}
+    assert held == {"good@example.com", "other@example.com"}
+
+
+def test_duplicate_active_award_is_blocked(app, auth_client):
+    _compose(auth_client, name="Once Only")
+    with app.app_context():
+        from badgeserver.issuing import AlreadyAwarded, award_badge
+
+        badge = db.session.get(BadgeClass, "once-only")
+        award_badge(badge, "dup@example.com", send_email=False)
+        # even bypassing the pre-check, the partial unique index stops a 2nd
+        import pytest
+
+        with pytest.raises(AlreadyAwarded):
+            award_badge(badge, "dup@example.com", send_email=False, allow_duplicate=True)
+        assert Assertion.query.filter_by(recipient_email="dup@example.com").count() == 1
+
+
+def test_verify_bounds_baked_png_recursion(app, monkeypatch):
+    import badgeserver.verify as V
+
+    calls = []
+
+    def fake_fetch(url, *, max_bytes):
+        calls.append(url)
+        return b"\x89PNG\r\n\x1a\n" + b"payload", "image/png"
+
+    monkeypatch.setattr(V, "check_url_allowed", lambda u: ["93.184.216.34"])
+    monkeypatch.setattr(V, "_fetch", fake_fetch)
+    monkeypatch.setattr(V, "read_baked_from_bytes", lambda b: "https://loop.test/next.png")
+
+    with app.app_context():
+        r = V.verify("https://loop.test/start.png")
+
+    assert r.verdict == "invalid"
+    assert "nested images" in (r.error or "")
+    assert len(calls) <= V._MAX_PNG_DEPTH + 1
+
+
+def test_verify_fetch_budget_unit():
+    import pytest
+
+    import badgeserver.verify as V
+
+    b = V._Budget()
+    for _ in range(V._MAX_FETCHES):
+        b.spend_fetch()
+    with pytest.raises(V.VerifyError):
+        b.spend_fetch()
+
+
+def test_pinned_adapter_connects_to_screened_ip(app):
+    import http.server
+    import socketserver
+    import threading
+
+    import badgeserver.verify as V
+
+    seen = []
+
+    class H(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            seen.append(self.headers.get("Host"))
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(b"{}")
+
+        def log_message(self, *a):
+            pass
+
+    with socketserver.TCPServer(("127.0.0.1", 0), H) as srv:
+        port = srv.server_address[1]
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        with app.app_context():
+            session = V._pinned_session({("example.invalid", port): "127.0.0.1"})
+            # "example.invalid" never resolves -- only pinning can reach the server
+            resp = session.get(f"http://example.invalid:{port}/x", timeout=5)
+        srv.shutdown()
+
+    assert resp.status_code == 200
+    assert seen and seen[0].startswith("example.invalid")

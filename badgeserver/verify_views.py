@@ -16,7 +16,9 @@ bp = Blueprint("verify", __name__)
 @bp.route("/verify", methods=["GET", "POST"])
 @limiter.limit(
     lambda: current_app.config.get("RATELIMIT_VERIFY", "12 per minute; 80 per hour"),
-    methods=["POST"],
+    # A bare GET only renders the form; a GET with ?url= runs the full check
+    # (outbound fetches), so it is rate-limited exactly like the POST.
+    exempt_when=lambda: request.method == "GET" and not request.args.get("url"),
 )
 def index():
     form = VerifyForm()

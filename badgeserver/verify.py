@@ -8,13 +8,15 @@ an e-mail address is supplied, whether it was issued to that recipient.
 
 Badges issued by this server are checked against the database directly. Anything
 else is fetched over HTTP; every outbound request is screened so it cannot reach
-a private / loopback / link-local address (basic SSRF protection -- the
-DNS-rebinding TOCTOU window is accepted for this low-frequency tool).
+a private / loopback / link-local address, the fetch connects to the exact IP
+that was screened (closing the DNS-rebinding window), and a per-verification
+budget caps the number of requests and the depth of baked-PNG indirection.
 """
 
 from __future__ import annotations
 
 import base64
+import contextvars
 import hashlib
 import ipaddress
 import json
@@ -28,6 +30,7 @@ from urllib.parse import urljoin, urlsplit
 import requests
 from flask import current_app
 from flask_babel import gettext as _
+from requests.adapters import HTTPAdapter
 
 from .baking import read_baked_from_bytes
 from .extensions import db
@@ -49,9 +52,56 @@ _EXTRA_BLOCKED = [
     ipaddress.ip_network("198.18.0.0/15"),
 ]
 
+#: caps for a single top-level verify() call (shared by nested calls)
+_MAX_FETCHES = 12
+_MAX_PNG_DEPTH = 2
+
 
 class VerifyError(Exception):
     """A problem that stops verification (bad input, unreachable, disallowed)."""
+
+
+class _Budget:
+    """Per-verification limits, carried on a ContextVar."""
+
+    __slots__ = ("fetches", "png_depth")
+
+    def __init__(self) -> None:
+        self.fetches = 0
+        self.png_depth = 0
+
+    def spend_fetch(self) -> None:
+        self.fetches += 1
+        if self.fetches > _MAX_FETCHES:
+            raise VerifyError(_("Too many outbound requests for one verification."))
+
+    def enter_png(self) -> None:
+        self.png_depth += 1
+        if self.png_depth > _MAX_PNG_DEPTH:
+            raise VerifyError(_("This badge points through too many nested images."))
+
+
+_budget_var: contextvars.ContextVar[_Budget] = contextvars.ContextVar("verify_budget")
+
+
+def _budget() -> _Budget:
+    existing = _budget_var.get(None)
+    if existing is None:
+        existing = _Budget()
+        _budget_var.set(existing)
+    return existing
+
+
+def _safe_link(value) -> str:
+    """Return *value* only if it is a plain http(s) URL, else ``""``.
+
+    Guards ``href`` / ``src`` attributes built from externally fetched
+    documents against ``javascript:`` and similar (the CSP already blocks
+    execution; this is defence in depth).
+    """
+    if isinstance(value, str) and value.lower().startswith(("http://", "https://")):
+        return value
+    return ""
 
 
 @dataclass
@@ -100,7 +150,14 @@ def _ip_blocked(addr: str) -> bool:
     return any(ip in net for net in _EXTRA_BLOCKED)
 
 
-def check_url_allowed(url: str) -> None:
+def check_url_allowed(url: str) -> list[str]:
+    """Validate *url* as a fetch target and return its screened IP addresses.
+
+    Raises :class:`VerifyError` for a non-http(s) scheme, a missing host, an
+    unresolvable host, or a host that resolves to any private / loopback /
+    link-local / reserved address. The returned IPs are what :func:`_fetch`
+    connects to, so ``requests`` never re-resolves the name.
+    """
     parts = urlsplit(url)
     if parts.scheme not in ("http", "https"):
         raise VerifyError(_("Only http(s) URLs can be verified."))
@@ -112,48 +169,106 @@ def check_url_allowed(url: str) -> None:
         infos = socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)
     except socket.gaierror:
         raise VerifyError(_("Could not resolve %(host)r.", host=host))
+    ips: list[str] = []
     for info in infos:
-        if _ip_blocked(info[4][0]):
+        addr = info[4][0]
+        if _ip_blocked(addr):
             raise VerifyError(_("The address behind %(host)r is not allowed.", host=host))
+        if addr not in ips:
+            ips.append(addr)
+    return ips
+
+
+class _PinnedHTTPAdapter(HTTPAdapter):
+    """Force connections for known hosts to a pre-screened IP.
+
+    Keeps the original host name for the TLS SNI / certificate check and the
+    ``Host`` header, so only the DNS lookup is bypassed.
+    """
+
+    def __init__(self, pinned: dict[tuple[str, int], str], **kw) -> None:
+        self._pinned = pinned
+        super().__init__(**kw)
+
+    def build_connection_pool_key_attributes(self, request, verify, cert=None):
+        host_params, pool_kwargs = super().build_connection_pool_key_attributes(
+            request, verify, cert
+        )
+        parts = urlsplit(request.url)
+        port = parts.port or (443 if parts.scheme == "https" else 80)
+        ip = self._pinned.get((parts.hostname, port))
+        if ip and parts.hostname:
+            original = parts.hostname
+            host_params = {**host_params, "host": ip}
+            if parts.scheme == "https":
+                pool_kwargs = {
+                    **pool_kwargs,
+                    "assert_hostname": original,
+                    "server_hostname": original,
+                }
+            request.headers["Host"] = (
+                original if port in (80, 443) else f"{original}:{port}"
+            )
+        return host_params, pool_kwargs
+
+
+# requests >= 2.32 exposes the pool-key hook the pinned adapter overrides.
+_CAN_PIN = hasattr(HTTPAdapter, "build_connection_pool_key_attributes")
+
+
+def _pinned_session(pinned: dict[tuple[str, int], str]) -> requests.Session:
+    session = requests.Session()
+    if pinned and _CAN_PIN:
+        adapter = _PinnedHTTPAdapter(pinned)
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+    return session
 
 
 def _fetch(url: str, *, max_bytes: int) -> tuple[bytes, str]:
     for _hop in range(5):
-        check_url_allowed(url)
-        resp = requests.get(
-            url,
-            stream=True,
-            allow_redirects=False,
-            timeout=_TIMEOUT,
-            headers={
-                "User-Agent": _UA,
-                "Accept": "application/ld+json, application/json, image/png, text/plain, */*",
-            },
-        )
+        _budget().spend_fetch()
+        ips = check_url_allowed(url)
+        parts = urlsplit(url)
+        port = parts.port or (443 if parts.scheme == "https" else 80)
+        session = _pinned_session({(parts.hostname, port): ips[0]} if ips else {})
         try:
-            if resp.status_code in (301, 302, 303, 307, 308):
-                target = resp.headers.get("Location")
-                if not target:
-                    raise VerifyError(_("Got a redirect with no target."))
-                url = urljoin(url, target)
-                continue
-            if resp.status_code != 200:
-                raise VerifyError(
-                    _(
-                        "%(url)s returned HTTP %(code)s.",
-                        url=url,
-                        code=resp.status_code,
+            resp = session.get(
+                url,
+                stream=True,
+                allow_redirects=False,
+                timeout=_TIMEOUT,
+                headers={
+                    "User-Agent": _UA,
+                    "Accept": "application/ld+json, application/json, image/png, text/plain, */*",
+                },
+            )
+            try:
+                if resp.status_code in (301, 302, 303, 307, 308):
+                    target = resp.headers.get("Location")
+                    if not target:
+                        raise VerifyError(_("Got a redirect with no target."))
+                    url = urljoin(url, target)
+                    continue
+                if resp.status_code != 200:
+                    raise VerifyError(
+                        _(
+                            "%(url)s returned HTTP %(code)s.",
+                            url=url,
+                            code=resp.status_code,
+                        )
                     )
-                )
-            ctype = (resp.headers.get("Content-Type") or "").split(";")[0].strip().lower()
-            body = bytearray()
-            for chunk in resp.iter_content(16384):
-                body += chunk
-                if len(body) > max_bytes:
-                    raise VerifyError(_("The response is larger than allowed."))
-            return bytes(body), ctype
+                ctype = (resp.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+                body = bytearray()
+                for chunk in resp.iter_content(16384):
+                    body += chunk
+                    if len(body) > max_bytes:
+                        raise VerifyError(_("The response is larger than allowed."))
+                return bytes(body), ctype
+            finally:
+                resp.close()
         finally:
-            resp.close()
+            session.close()
     raise VerifyError(_("Too many redirects."))
 
 
@@ -246,6 +361,17 @@ def _recipient_match(recipient: dict, email: str) -> bool | None:
 
 
 def verify(source: str, recipient: str | None = None) -> Result:
+    token = None
+    if _budget_var.get(None) is None:
+        token = _budget_var.set(_Budget())
+    try:
+        return _verify(source, recipient)
+    finally:
+        if token is not None:
+            _budget_var.reset(token)
+
+
+def _verify(source: str, recipient: str | None = None) -> Result:
     source = (source or "").strip()
     recipient = (recipient or "").strip() or None
     result = Result()
@@ -287,10 +413,10 @@ def _verify_url(url: str, recipient: str | None, result: Result) -> None:
         _verify_local(local, recipient, result)
         return
 
-    check_url_allowed(url)
     max_bytes = _MAX_IMAGE if url.lower().endswith(".png") else _MAX_JSON
-    body, ctype = _fetch(url, max_bytes=max_bytes)
+    body, ctype = _fetch(url, max_bytes=max_bytes)  # screens + pins DNS per hop
     if ctype == "image/png" or body[:8] == b"\x89PNG\r\n\x1a\n":
+        _budget().enter_png()
         inner = read_baked_from_bytes(body)
         if not inner:
             raise VerifyError(_("That PNG has no Open Badges data baked into it."))
@@ -517,7 +643,7 @@ def _resolve_badge_and_issuer(doc: dict, result: Result) -> None:
         result.badge = {
             "name": badge_doc.get("name", ""),
             "description": badge_doc.get("description", ""),
-            "image": image if isinstance(image, str) else (image or {}).get("id", ""),
+            "image": _safe_link(image if isinstance(image, str) else (image or {}).get("id", "")),
             "id": badge_doc.get("id", ""),
         }
         issuer_ref = badge_doc.get("issuer")
@@ -531,7 +657,7 @@ def _resolve_badge_and_issuer(doc: dict, result: Result) -> None:
                    "" if ok_type else f"type = {issuer_doc.get('type')!r}")
         result.issuer = {
             "name": issuer_doc.get("name", ""),
-            "url": issuer_doc.get("url", ""),
+            "url": _safe_link(issuer_doc.get("url", "")),
             "email": issuer_doc.get("email", ""),
             "id": issuer_doc.get("id", ""),
         }

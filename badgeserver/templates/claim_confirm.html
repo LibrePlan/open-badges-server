@@ -1,0 +1,11 @@
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% extends "base.html" %}
+{% block title %}{% trans name=badge.name %}Claim {{ name }}{% endtrans %} · {{ site_title }}{% endblock %}
+{% block content %}
+  <h1>{% trans name=badge.name %}Claim the {{ name }} badge{% endtrans %}</h1>
+  <p>{{ _("Click the button to issue this badge to your e-mail address.") }}</p>
+  <form method="post" action="{{ url_for('claim.confirm_submit', token=token) }}">
+    {{ form.hidden_tag() }}
+    <button type="submit" class="btn">{{ _("Get my badge") }}</button>
+  </form>
+{% endblock %}

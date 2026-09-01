@@ -19,8 +19,8 @@ from flask import (
 from flask_babel import gettext as _
 
 from .extensions import db, limiter
-from .forms import ClaimForm
-from .issuing import AlreadyAwarded, award_badge, find_existing
+from .forms import ClaimForm, ConfirmForm
+from .issuing import AlreadyAwarded, award_badge
 from .mail import mail_configured, send_claim_confirmation
 from .models import BadgeClaim, BadgeClass
 
@@ -54,11 +54,11 @@ def claim(slug: str):
         return redirect(badge_page)
 
     email = form.email.data.strip()
-    existing = find_existing(badge, email)
-    if existing is not None:
-        flash(_("You already have this badge."), "ok")
-        return redirect(url_for("public.assertion_page", uuid=existing.uuid))
-
+    # Everyone gets the same "check your e-mail" response, whether or not this
+    # address already holds the badge -- so an anonymous visitor cannot use the
+    # claim form to test who has a badge. A repeat holder simply lands back on
+    # their existing assertion when they follow the link (award_badge raises
+    # AlreadyAwarded, which the confirm step handles).
     now = datetime.now(timezone.utc)
     BadgeClaim.query.filter(
         BadgeClaim.confirmed_on.is_(None), BadgeClaim.expires_on < now
@@ -90,28 +90,60 @@ def claim(slug: str):
     )
 
 
-@bp.get("/claim/<token>")
-@limiter.limit("20 per minute")
-def confirm(token: str):
+def _pending_claim_or_response(token: str):
+    """Return ``(entry, badge)`` for a still-pending claim, or a ready response.
+
+    Handles the not-found / already-confirmed / expired / not-claimable cases
+    the same way for both the GET landing page and the POST that awards.
+    """
     entry = db.session.get(BadgeClaim, token)
     if entry is None:
         abort(404)
-
     if entry.confirmed_on and entry.assertion_uuid:
-        return _no_store(redirect(url_for("public.assertion_page", uuid=entry.assertion_uuid)))
-
+        return None, _no_store(
+            redirect(url_for("public.assertion_page", uuid=entry.assertion_uuid))
+        )
     if entry.expired:
-        return _no_store(
+        return None, _no_store(
             render_template("claim_result.html", status="expired", badge=entry.badge)
         )
-
     badge = entry.badge
     if badge is None or not badge.self_service:
         abort(404)
+    return (entry, badge), None
+
+
+@bp.get("/claim/<token>")
+@limiter.limit("30 per minute")
+def confirm(token: str):
+    pending, response = _pending_claim_or_response(token)
+    if response is not None:
+        return response
+    _entry, badge = pending
+    return _no_store(
+        render_template(
+            "claim_confirm.html", badge=badge, token=token, form=ConfirmForm()
+        )
+    )
+
+
+@bp.post("/claim/<token>")
+@limiter.limit("20 per minute")
+def confirm_submit(token: str):
+    pending, response = _pending_claim_or_response(token)
+    if response is not None:
+        return response
+    entry, badge = pending
+
+    if not ConfirmForm().validate_on_submit():
+        return _no_store(
+            render_template(
+                "claim_confirm.html", badge=badge, token=token, form=ConfirmForm()
+            )
+        )
 
     try:
-        result = award_badge(badge, entry.email, send_email=True)
-        assertion = result.assertion
+        assertion = award_badge(badge, entry.email, send_email=True).assertion
     except AlreadyAwarded as exc:
         assertion = exc.assertion
 

@@ -8,6 +8,7 @@ import csv as csvmod
 import io
 import os
 from datetime import datetime, time, timezone
+from urllib.parse import urlsplit
 
 from flask import (
     Blueprint,
@@ -55,6 +56,13 @@ def _require_login():
     return None
 
 
+@bp.after_request
+def _no_store(response):
+    """Admin pages carry recipient e-mails etc. -- never cache them."""
+    response.headers.setdefault("Cache-Control", "no-store")
+    return response
+
+
 # --- helpers --------------------------------------------------------------
 
 
@@ -100,6 +108,20 @@ def _as_utc_datetime(d) -> datetime | None:
     return datetime.combine(d, time(12, 0), tzinfo=timezone.utc)
 
 
+def _safe_redirect_target(target: str) -> str | None:
+    """A post-login ``next`` value, only if it is a local same-site path."""
+    if not target:
+        return None
+    # Browsers treat backslashes in a URL as slashes; normalise before checking.
+    probe = target.replace("\\", "/")
+    parts = urlsplit(probe)
+    if parts.scheme or parts.netloc:  # absolute or protocol-relative
+        return None
+    if not probe.startswith("/") or probe.startswith("//"):
+        return None
+    return target
+
+
 # --- auth ----------------------------------------------------------------
 
 
@@ -114,8 +136,8 @@ def login():
         if user and user.check_password(form.password.data):
             login_user(user)
             current_app.logger.info("Admin %s signed in", user.username)
-            nxt = request.args.get("next", "")
-            if nxt.startswith("/") and not nxt.startswith("//"):
+            nxt = _safe_redirect_target(request.args.get("next", ""))
+            if nxt:
                 return redirect(nxt)
             return redirect(url_for("admin.dashboard"))
         flash(_("Incorrect username or password."), "error")
@@ -430,8 +452,13 @@ def award_csv(slug: str):
     results: list[dict] = []
     if form.validate_on_submit():
         raw = form.file.data.read().decode("utf-8-sig", errors="replace")
-        emails = _extract_emails(raw)
+        emails, skipped = _extract_emails(raw)
         cap = current_app.config["CSV_AWARD_MAX_ROWS"]
+        if skipped:
+            flash(
+                _("Skipped %(n)d row(s) with an unreadable e-mail address.", n=skipped),
+                "error",
+            )
         if len(emails) > cap:
             flash(
                 _(
@@ -462,17 +489,33 @@ def award_csv(slug: str):
     )
 
 
-def _extract_emails(text: str) -> list[str]:
+def _extract_emails(text: str) -> tuple[list[str], int]:
+    """Return ``(valid_addresses, skipped_count)`` from a CSV / plain-text blob.
+
+    The first cell of each row that contains ``@`` is treated as the candidate
+    address and validated with ``email_validator``; anything that fails to
+    parse (including a cell with an embedded newline) is counted as skipped.
+    """
+    from email_validator import EmailNotValidError, validate_email
+
     out: list[str] = []
+    skipped = 0
+    seen: set[str] = set()
     for row in csvmod.reader(io.StringIO(text)):
         for cell in row:
             cell = cell.strip()
-            if "@" in cell and "." in cell.split("@")[-1]:
-                out.append(cell)
-                break
-    # de-duplicate, preserve order
-    seen: set[str] = set()
-    return [e for e in out if not (e.lower() in seen or seen.add(e.lower()))]
+            if "@" not in cell:
+                continue
+            try:
+                normalized = validate_email(cell, check_deliverability=False).normalized
+            except EmailNotValidError:
+                skipped += 1
+            else:
+                if normalized.lower() not in seen:
+                    seen.add(normalized.lower())
+                    out.append(normalized)
+            break
+    return out, skipped
 
 
 def _award_one_csv_row(badge: BadgeClass, email: str, send_email: bool) -> dict:

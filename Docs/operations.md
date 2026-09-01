@@ -145,15 +145,19 @@ The result is `valid` / `revoked` / `expired` / `not verified` / `not checked`
 of every check performed.
 
 The page is public and rate-limited (`RATELIMIT_VERIFY`, default
-`12/minute; 80/hour`). Outbound fetches are screened so they cannot reach
-private, loopback or link-local addresses.
+`12/minute; 80/hour`) — the limit applies to `GET /verify?url=…` too, not only
+the form POST. Outbound fetches are screened so they cannot reach private,
+loopback or link-local addresses, each fetch connects to the exact IP that was
+screened (no DNS-rebinding window), and one verification is capped at a dozen
+requests and two levels of baked-PNG indirection.
 
 ## Self-service badges
 
 Tick **Let anyone claim this badge** on a badge (Badges → edit) to open it for
 public self-claiming — a "fan" badge, an event badge, etc. On the badge's public
-page a visitor enters their e-mail, gets a **confirmation link**, and the badge
-is issued only when they click it (link valid `CLAIM_EXPIRY_HOURS`, default 24).
+page a visitor enters their e-mail and gets a **confirmation link**; following it
+opens a page with a single button, and the badge is issued only when they press
+it (link valid `CLAIM_EXPIRY_HOURS`, default 24).
 
 - E-mail (SMTP) must be configured — the confirmation link is the whole point.
 - Self-service badges show a *claimable* marker on the home page and in the
@@ -197,6 +201,24 @@ contrib/i18n.sh compile      # rebuild the .mo files
 Commit the changed `.po` **and** `.mo` files. To add a language:
 `contrib/i18n.sh init <code>`, translate it, `compile`, then add the code to
 `LANGUAGES` and to `LANGUAGE_NAMES` in `badgeserver/i18n.py`.
+
+## Security notes
+
+- **Rate limits and multiple workers.** Limits are counted in each gunicorn
+  worker's own memory by default, so with `WEB_CONCURRENCY=3` the effective
+  limit is roughly three times the configured value and it resets whenever a
+  worker recycles. For exact enforcement set `RATELIMIT_STORAGE_URI` to a shared
+  store, e.g. `redis://127.0.0.1:6379/0`, or run a single worker.
+- **Reverse proxy and client IPs.** Rate limits key on the client IP. Behind a
+  proxy, set `PROXY_FIX_HOPS` to the number of proxies you control so the real
+  client IP is used — and never set it higher than that, or a client could spoof
+  `X-Forwarded-For` to dodge the limit.
+- **Recipient e-mail privacy.** A published assertion JSON contains the salted
+  SHA-256 of the recipient's e-mail plus the salt (required by Open Badges 2.0
+  hosted verification). E-mail addresses are low-entropy, so a determined party
+  with the assertion can brute-force the address offline. This is a property of
+  the badge format, not of this server; treat "who holds badge X" as
+  semi-public.
 
 ## Quick reference
 

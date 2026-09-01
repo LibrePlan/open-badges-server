@@ -52,6 +52,48 @@ def _sync_columns() -> None:
                     conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}"))
                     click.echo(f"added {table}.{name}")
 
+    _sync_active_award_index(inspector)
+
+
+def _sync_active_award_index(inspector) -> None:
+    """Add the partial unique index guarding against duplicate active awards.
+
+    Created automatically for a fresh database by ``create_all()``; this brings
+    an existing one up to date. Aborts (with a clear message) if current data
+    already violates it, so no award is silently lost.
+    """
+    from sqlalchemy import text
+
+    if "assertion" not in set(inspector.get_table_names()):
+        return
+    index_name = "uq_assertion_active_recipient"
+    if any(ix["name"] == index_name for ix in inspector.get_indexes("assertion")):
+        return
+
+    with db.engine.begin() as conn:
+        dupes = conn.execute(
+            text(
+                "SELECT badge_slug, recipient_email, COUNT(*) c FROM assertion "
+                "WHERE revoked = 0 GROUP BY badge_slug, recipient_email HAVING c > 1"
+            )
+        ).all()
+        if dupes:
+            click.echo(
+                "Cannot add the duplicate-award guard: these badge+recipient "
+                "pairs already have more than one active assertion. Revoke the "
+                "extras, then re-run init-db:"
+            )
+            for badge_slug, email, count in dupes:
+                click.echo(f"  {badge_slug}  {email}  ({count})")
+            return
+        conn.execute(
+            text(
+                f"CREATE UNIQUE INDEX IF NOT EXISTS {index_name} "
+                "ON assertion (badge_slug, recipient_email) WHERE revoked = 0"
+            )
+        )
+        click.echo(f"added index {index_name}")
+
 
 @click.command("init-db")
 @with_appcontext
