@@ -18,6 +18,7 @@ import base64
 import hashlib
 import ipaddress
 import json
+import os
 import re
 import socket
 from dataclasses import dataclass, field
@@ -330,10 +331,14 @@ def _verify_local(uuid: str, recipient: str | None, result: Result) -> None:
     result.add("Issuer profile", "pass" if issuer else "warn", issuer.name if issuer else "missing")
 
     base = current_app.config["EXTERNAL_URL"].rstrip("/")
+    try:
+        version = int(os.path.getmtime(os.path.join(current_app.config["UPLOAD_DIR"], badge.image_path)))
+    except OSError:
+        version = 0
     result.badge = {
         "name": badge.name,
         "description": badge.description,
-        "image": f"{base}/b/{badge.slug}/image",
+        "image": f"{base}/b/{badge.slug}/image?v={version}",
         "id": ob_badgeclass_id(badge.slug),
     }
     result.assertion = {
