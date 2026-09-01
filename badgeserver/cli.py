@@ -30,6 +30,8 @@ _ADDED_COLUMNS = {
         "art_accent": "VARCHAR(7) NOT NULL DEFAULT ''",
         "art_logo_scale": "INTEGER NOT NULL DEFAULT 100",
         "art_border_width": "INTEGER NOT NULL DEFAULT 8",
+        "art_logo_offset": "INTEGER NOT NULL DEFAULT 0",
+        "art_title_offset": "INTEGER NOT NULL DEFAULT 0",
     },
 }
 

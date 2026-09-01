@@ -16,7 +16,7 @@
 
   var FIELDS = [
     "name", "art_shape", "art_bg", "art_accent",
-    "art_logo_scale", "art_border_width",
+    "art_logo_scale", "art_border_width", "art_logo_offset", "art_title_offset",
   ];
   var lastUrl = null;
   var timer = null;

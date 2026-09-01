@@ -242,14 +242,31 @@ def test_border_width_changes_image(app, auth_client):
     import os
 
     _compose(auth_client, name="Thin", art_shape="octagon", art_border_width="0")
-    _compose(auth_client, name="Thick", art_shape="octagon", art_border_width="20")
+    _compose(auth_client, name="Thick", art_shape="octagon", art_border_width="30")
     updir = app.config["UPLOAD_DIR"]
     thin = open(os.path.join(updir, "badge-thin.png"), "rb").read()
     thick = open(os.path.join(updir, "badge-thick.png"), "rb").read()
     assert thin != thick
     with app.app_context():
         assert db.session.get(BadgeClass, "thin").art_border_width == 0
-        assert db.session.get(BadgeClass, "thick").art_border_width == 20
+        assert db.session.get(BadgeClass, "thick").art_border_width == 30
+
+
+def test_position_offsets_change_image(app, auth_client):
+    import os
+
+    _compose(auth_client, name="Centered", art_shape="octagon")
+    _compose(
+        auth_client, name="Shifted", art_shape="octagon",
+        art_logo_offset="15", art_title_offset="-15", art_logo_scale="200",
+    )
+    updir = app.config["UPLOAD_DIR"]
+    a = open(os.path.join(updir, "badge-centered.png"), "rb").read()
+    b = open(os.path.join(updir, "badge-shifted.png"), "rb").read()
+    assert a != b
+    with app.app_context():
+        s = db.session.get(BadgeClass, "shifted")
+        assert (s.art_logo_offset, s.art_title_offset, s.art_logo_scale) == (15, -15, 200)
 
 
 def test_preview_endpoint(app, auth_client, client):

@@ -64,12 +64,13 @@ issue *assertions* of it to people.
 - **Upload a finished image** — PNG / JPEG / WEBP / GIF / SVG; it is made square
   and resized to 512 px and used as-is.
 - **Compose from a logo** — upload just a logo (SVG works well), pick a shape
-  (octagon / circle / hexagon / shield), background + ring colours, a **Logo
-  size** slider and a **Border width** slider (0 = no border). The **live
-  preview** beside the form updates as you change any of these or the title.
-  The server draws the badge with the logo on top and the title wrapped
-  underneath, re-rendering it on every save. Text colour auto-contrasts with
-  the background.
+  (octagon / circle / hexagon / shield) and background + ring colours, then
+  fine-tune with sliders: **Logo size** (40–200 %), **Border width** (0–30 px,
+  0 = no border), **Logo position** and **Title position** (nudge each up or
+  down). The **live preview** beside the form updates as you change any of
+  these or the title. The server draws the badge with the logo on top and the
+  title wrapped underneath, re-rendering it on every save. Text colour
+  auto-contrasts with the background.
 
 Save. The badge now appears on the public home page and at `/b/<slug>`.
 

@@ -1,6 +1,16 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% extends "admin/base.html" %}
 {% from "_formhelpers.html" import field %}
+
+{% macro slider(f, fallback, unit, hint="") %}
+  <div class="field">
+    {{ f.label }}
+    {{ f(class="control slider", data_unit=unit) }}
+    <output id="{{ f.id }}-out">{{ (f.data if f.data is not none else fallback) }}{{ unit }}</output>
+    {% if hint %}<span class="hint">{{ hint }}</span>{% endif %}
+    {% for e in f.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+  </div>
+{% endmacro %}
 {% block title %}{{ "Edit badge" if badge else "New badge" }} · {{ site_title }}{% endblock %}
 {% block admin_content %}
   <h1>{{ "Edit badge" if badge else "New badge" }}</h1>
@@ -46,16 +56,10 @@
             {{ form.art_accent.label }} {{ form.art_accent(type="color") }}
             {% for e in form.art_bg.errors + form.art_accent.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
           </div>
-          <div class="field">
-            {{ form.art_logo_scale.label }}
-            {{ form.art_logo_scale(class="control slider", data_unit="%") }}
-            <output id="art_logo_scale-out">{{ form.art_logo_scale.data or 100 }}%</output>
-          </div>
-          <div class="field">
-            {{ form.art_border_width.label }}
-            {{ form.art_border_width(class="control slider", data_unit=" px") }}
-            <output id="art_border_width-out">{{ form.art_border_width.data if form.art_border_width.data is not none else 8 }} px</output>
-          </div>
+          {{ slider(form.art_logo_scale, form.art_logo_scale.data or 100, "%") }}
+          {{ slider(form.art_border_width, 8, " px") }}
+          {{ slider(form.art_logo_offset, 0, "%", "positive = lower") }}
+          {{ slider(form.art_title_offset, 0, "%", "negative = higher") }}
         </div>
         <figure class="badge-preview" id="preview-wrap">
           <img id="badge-preview" alt="badge preview"

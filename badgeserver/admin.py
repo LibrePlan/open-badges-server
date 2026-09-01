@@ -219,6 +219,8 @@ def badge_edit(slug: str):
         form.art_accent.data = badge.art_accent or BadgeClass.ART_ACCENT_DEFAULT
         form.art_logo_scale.data = badge.art_logo_scale
         form.art_border_width.data = badge.art_border_width
+        form.art_logo_offset.data = badge.art_logo_offset
+        form.art_title_offset.data = badge.art_title_offset
     if form.validate_on_submit():
         try:
             _apply_badge_form(badge, form, image_required=False)
@@ -268,6 +270,12 @@ def _apply_compose(badge: BadgeClass, form: BadgeClassForm) -> None:
     badge.art_border_width = _clamp(
         form.art_border_width.data, BadgeClass.ART_BORDER_WIDTH_RANGE, 8
     )
+    badge.art_logo_offset = _clamp(
+        form.art_logo_offset.data, BadgeClass.ART_LOGO_OFFSET_RANGE, 0
+    )
+    badge.art_title_offset = _clamp(
+        form.art_title_offset.data, BadgeClass.ART_TITLE_OFFSET_RANGE, 0
+    )
 
     with open(os.path.join(_upload_dir(), badge.logo_path), "rb") as fh:
         logo_png = fh.read()
@@ -281,6 +289,8 @@ def _apply_compose(badge: BadgeClass, form: BadgeClassForm) -> None:
         dest_path=os.path.join(_upload_dir(), f"badge-{badge.slug}.png"),
         logo_scale=badge.art_logo_scale / 100,
         border_width=badge.art_border_width,
+        logo_offset=badge.art_logo_offset,
+        title_offset=badge.art_title_offset,
     )
     badge.image_path = f"badge-{badge.slug}.png"
 
@@ -317,6 +327,8 @@ def badge_preview():
     data = request.form
     scale = _clamp(data.get("art_logo_scale"), BadgeClass.ART_LOGO_SCALE_RANGE, 100)
     border = _clamp(data.get("art_border_width"), BadgeClass.ART_BORDER_WIDTH_RANGE, 8)
+    logo_off = _clamp(data.get("art_logo_offset"), BadgeClass.ART_LOGO_OFFSET_RANGE, 0)
+    title_off = _clamp(data.get("art_title_offset"), BadgeClass.ART_TITLE_OFFSET_RANGE, 0)
 
     logo_png = None
     upload = request.files.get("logo")
@@ -345,6 +357,8 @@ def badge_preview():
             size=320,
             logo_scale=scale / 100,
             border_width=border,
+            logo_offset=logo_off,
+            title_offset=title_off,
         )
     except Exception:  # noqa: BLE001 - preview must never 500
         return Response("preview unavailable", status=422, mimetype="text/plain")

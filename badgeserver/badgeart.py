@@ -28,6 +28,10 @@ _TITLE_BAND = {
 }
 
 
+def _clampf(value: float, low: float, high: float) -> float:
+    return max(low, min(high, value))
+
+
 def _hex_to_rgb(value: str, fallback: tuple[int, int, int]) -> tuple[int, int, int]:
     v = (value or "").strip().lstrip("#")
     if len(v) == 3:
@@ -169,18 +173,23 @@ def render_badge(
     size: int,
     logo_scale: float = 1.0,
     border_width: int = BORDER_WIDTH_DEFAULT,
+    logo_offset: int = 0,
+    title_offset: int = 0,
 ) -> Image.Image:
     """Return the composed badge as an RGBA image.
 
-    *logo_scale* (1.0 = automatic) enlarges or shrinks the logo, clamped so it
-    cannot overflow the shape or reach into the title band. *border_width* is
-    in pixels at a 512 px canvas (0 = no border) and is scaled to *size*.
+    *logo_scale* (1.0 = automatic) enlarges or shrinks the logo. *border_width*
+    is in pixels at a 512 px canvas (0 = no border) and scaled to *size*.
+    *logo_offset* / *title_offset* nudge the logo and the title vertically, in
+    percent of the canvas height (positive = down).
     """
     if shape not in SHAPES:
         shape = "octagon"
     bg_rgb = _hex_to_rgb(bg, _BG_FALLBACK)
     accent_rgb = _hex_to_rgb(accent, _ACCENT_FALLBACK)
-    scale = min(max(logo_scale or 1.0, 0.4), 1.7)
+    scale = min(max(logo_scale or 1.0, 0.4), 2.0)
+    logo_dy = (logo_offset or 0) / 100 * size
+    title_dy = (title_offset or 0) / 100 * size
     bw = BORDER_WIDTH_DEFAULT if border_width is None else max(0, border_width)
     stroke = round(bw * size / 512)
     outline = accent_rgb + (255,) if stroke > 0 else None
@@ -205,28 +214,32 @@ def render_badge(
         )
 
     has_title = bool((title or "").strip())
-    title_top, title_bottom = (b * size for b in _TITLE_BAND.get(shape, (0.56, 0.86)))
+    band0, band1 = _TITLE_BAND.get(shape, (0.56, 0.86))
+    title_top = _clampf(band0 * size + title_dy, size * 0.10, size * 0.80)
+    title_bottom = _clampf(band1 * size + title_dy, title_top + size * 0.08, size * 0.98)
 
     with Image.open(io.BytesIO(logo_png)) as logo:
         logo = logo.convert("RGBA")
-        # The logo may occupy the area between the top of the shape and the
-        # title band. `logo_scale` (1.0 = automatic) grows/shrinks it within it.
+        # The logo occupies the area between the top of the shape and the title.
         top = size * 0.07
         bottom = (title_top - size * 0.02) if has_title else size * 0.93
-        mid = (top + bottom) / 2
-        box_w = min(_row_span(mask, round(mid)) * 0.84, size * 0.42 * scale)
-        box_h = min(bottom - top, size * 0.42 * scale)
+        avail_mid = (top + bottom) / 2
+        # Beyond 100 %, the logo is allowed to grow past its nominal area (and
+        # over the title) -- the title-position slider and the live preview let
+        # the operator sort out the overlap.
+        headroom = (bottom - top) * (1.0 if scale <= 1.05 else 1.7)
+        box_w = min(_row_span(mask, round(avail_mid)) * 0.90, size * 0.44 * scale)
+        box_h = min(headroom, size * 0.44 * scale)
         logo = _contain(logo, max(1, round(box_w)), max(1, round(box_h)))
-        ly = round(mid - logo.height / 2)
-        ly = max(round(top), min(ly, round(bottom - logo.height)))
+        ly = round(avail_mid - logo.height / 2 + logo_dy)
+        ly = int(_clampf(ly, size * 0.02, size * 0.98 - logo.height))
         canvas.alpha_composite(logo, ((size - logo.width) // 2, ly))
 
     if has_title:
         luminance = 0.299 * bg_rgb[0] + 0.587 * bg_rgb[1] + 0.114 * bg_rgb[2]
         text_colour = (0, 0, 0) if luminance > 150 else (255, 255, 255)
-        band_w = min(
-            _row_span(mask, y) for y in range(int(title_top), int(title_bottom), 8)
-        )
+        spans = [_row_span(mask, y) for y in range(int(title_top), int(title_bottom), 8)]
+        band_w = min(spans) if spans else 0
         _draw_title(
             canvas,
             title,
@@ -253,8 +266,11 @@ def compose_badge(
     dest_path: str,
     logo_scale: float = 1.0,
     border_width: int = BORDER_WIDTH_DEFAULT,
+    logo_offset: int = 0,
+    title_offset: int = 0,
 ) -> None:
     render_badge(
         logo_png, title, shape=shape, bg=bg, accent=accent, size=size,
         logo_scale=logo_scale, border_width=border_width,
+        logo_offset=logo_offset, title_offset=title_offset,
     ).save(dest_path, "PNG", optimize=True)
