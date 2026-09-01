@@ -57,13 +57,13 @@
             {% for e in form.art_bg.errors + form.art_accent.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
           </div>
           {{ slider(form.art_logo_scale, form.art_logo_scale.data or 100, "%") }}
-          {{ slider(form.art_border_width, 8, " px") }}
           {{ slider(form.art_logo_offset, 0, "%", "positive = lower") }}
           {{ slider(form.art_title_offset, 0, "%", "negative = higher") }}
+          {{ slider(form.art_border_width, 8, " px") }}
         </div>
         <figure class="badge-preview" id="preview-wrap">
           <img id="badge-preview" alt="badge preview"
-               {% if badge and badge.composed %}src="{{ url_for('public.badge_image', slug=badge.slug) }}"{% endif %}>
+               {% if badge and badge.composed %}src="{{ badge_image_url(badge) }}"{% endif %}>
           <figcaption>Live preview</figcaption>
         </figure>
       </div>
@@ -72,7 +72,7 @@
     {% if badge and not badge.composed %}
       <div class="field">
         <span class="field-label">Current image</span>
-        <p><img src="{{ url_for('public.badge_image', slug=badge.slug) }}" alt="" width="96" height="96"></p>
+        <p><img src="{{ badge_image_url(badge) }}" alt="" width="96" height="96"></p>
       </div>
     {% endif %}
 

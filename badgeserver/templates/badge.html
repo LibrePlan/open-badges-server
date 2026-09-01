@@ -3,7 +3,7 @@
 {% block title %}{{ badge.name }} · {{ site_title }}{% endblock %}
 {% block content %}
   <article class="detail">
-    <img class="detail-image" src="{{ url_for('public.badge_image', slug=badge.slug) }}" alt="" width="180" height="180">
+    <img class="detail-image" src="{{ badge_image_url(badge) }}" alt="" width="180" height="180">
     <div>
       <h1>{{ badge.name }}</h1>
       {% if badge.archived %}<p class="flash flash-error">This badge is archived.</p>{% endif %}

@@ -11,7 +11,7 @@
       <tbody>
         {% for b in badges %}
           <tr>
-            <td><img src="{{ url_for('public.badge_image', slug=b.slug) }}" alt="" width="40" height="40"></td>
+            <td><img src="{{ badge_image_url(b) }}" alt="" width="40" height="40"></td>
             <td>{{ b.name }}</td>
             <td><code>{{ b.slug }}</code></td>
             <td>{{ b.assertions.filter_by(revoked=False).count() }}</td>

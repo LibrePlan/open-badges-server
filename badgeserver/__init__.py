@@ -100,6 +100,17 @@ def create_app(config_overrides: dict | None = None, *, data_dir: str | None = N
 
     @app.context_processor
     def _inject_globals():
-        return {"site_title": app.config["SITE_TITLE"]}
+        from flask import url_for
+
+        def badge_image_url(badge):
+            """Badge image URL with a cache-busting version from the file mtime."""
+            path = os.path.join(app.config["UPLOAD_DIR"], badge.image_path or "")
+            try:
+                version = int(os.path.getmtime(path))
+            except OSError:
+                version = 0
+            return url_for("public.badge_image", slug=badge.slug, v=version)
+
+        return {"site_title": app.config["SITE_TITLE"], "badge_image_url": badge_image_url}
 
     return app
