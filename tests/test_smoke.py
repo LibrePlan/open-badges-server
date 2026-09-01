@@ -37,6 +37,15 @@ def test_public_pages(client):
     assert client.get("/nope").status_code == 404
 
 
+def test_project_logo_links_to_repo(client, auth_client):
+    repo = "https://github.com/libreplan/libreplan-open-badges-server"
+    for page in (client.get("/"), auth_client.get("/admin/")):
+        body = page.data.decode()
+        assert "/static/project-logo.png" in body
+        assert f'href="{repo}"' in body
+    assert client.get("/static/project-logo.png").status_code == 200
+
+
 def test_issuer_json(client):
     doc = client.get("/issuer/main.json").get_json()
     assert doc["@context"] == "https://w3id.org/openbadges/v2"

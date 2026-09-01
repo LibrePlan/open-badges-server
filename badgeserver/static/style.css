@@ -34,7 +34,10 @@ a { color: var(--accent); }
   border-bottom: 1px solid var(--line);
   background: var(--card);
 }
+.site-header .brand-group { align-items: center; display: flex; gap: .7rem; min-width: 0; }
 .site-header .brand { font-weight: 700; text-decoration: none; color: var(--fg); }
+.site-header .repo-logo { display: inline-flex; flex: none; }
+.site-header .repo-logo img { display: block; height: 32px; width: auto; }
 .site-header nav { align-items: baseline; display: flex; flex-wrap: wrap; }
 .site-header nav a { margin-left: 1rem; }
 

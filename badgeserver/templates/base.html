@@ -9,8 +9,16 @@
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
 </head>
 <body>
+{% set repo_url = "https://github.com/libreplan/libreplan-open-badges-server" %}
 <header class="site-header">
-  <a class="brand" href="{{ url_for('public.index') }}">{{ site_title }}</a>
+  <span class="brand-group">
+    <a class="repo-logo" href="{{ repo_url }}" target="_blank" rel="noopener noreferrer"
+       aria-label="{{ _('LibrePlan Open Badges Server on GitHub') }}">
+      <img src="{{ url_for('static', filename='project-logo.png') }}"
+           alt="LibrePlan Open Badges Server" height="32">
+    </a>
+    <a class="brand" href="{{ url_for('public.index') }}">{{ site_title }}</a>
+  </span>
   <nav>
     <a href="{{ url_for('public.index') }}">{{ _("Badges") }}</a>
     <a href="{{ url_for('verify.index') }}">{{ _("Verify") }}</a>
@@ -37,8 +45,7 @@
 
 <footer class="site-footer">
   <p>{{ _("Self-hosted Open Badges 2.0 issuer") }} &middot;
-    <a href="https://github.com/libreplan/libreplan-open-badges-server"
-       rel="noopener noreferrer">LibrePlan Open Badges Server</a></p>
+    <a href="{{ repo_url }}" rel="noopener noreferrer">LibrePlan Open Badges Server</a></p>
 </footer>
 {% block scripts %}{% endblock %}
 </body>

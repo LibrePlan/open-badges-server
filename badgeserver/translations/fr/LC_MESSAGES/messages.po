@@ -372,7 +372,7 @@ msgid "Recipient e-mail (optional)"
 msgstr "E-mail du destinataire (facultatif)"
 
 #: badgeserver/forms.py:187 badgeserver/templates/admin/base.html:17
-#: badgeserver/templates/base.html:16
+#: badgeserver/templates/base.html:24
 msgid "Verify"
 msgstr "Vérifier"
 
@@ -434,220 +434,220 @@ msgstr "Impossible de résoudre %(host)r."
 msgid "The address behind %(host)r is not allowed."
 msgstr "L’adresse derrière %(host)r n’est pas autorisée."
 
-#: badgeserver/verify.py:248
+#: badgeserver/verify.py:250
 msgid "Got a redirect with no target."
 msgstr "Redirection reçue sans cible."
 
-#: badgeserver/verify.py:254
+#: badgeserver/verify.py:256
 #, python-format
 msgid "%(url)s returned HTTP %(code)s."
 msgstr "%(url)s a renvoyé HTTP %(code)s."
 
-#: badgeserver/verify.py:264
+#: badgeserver/verify.py:266
 msgid "The response is larger than allowed."
 msgstr "La réponse est plus grande que ce qui est autorisé."
 
-#: badgeserver/verify.py:270
+#: badgeserver/verify.py:272
 msgid "Too many redirects."
 msgstr "Trop de redirections."
 
-#: badgeserver/verify.py:278
+#: badgeserver/verify.py:280
 #, python-format
 msgid "%(url)s did not return JSON."
 msgstr "%(url)s n’a pas renvoyé de JSON."
 
-#: badgeserver/verify.py:280
+#: badgeserver/verify.py:282
 #, python-format
 msgid "%(url)s returned JSON that is not an object."
 msgstr "%(url)s a renvoyé un JSON qui n’est pas un objet."
 
-#: badgeserver/verify.py:379
+#: badgeserver/verify.py:381
 msgid "Paste a badge URL, its assertion JSON, or a signed badge token."
 msgstr "Collez une URL de badge, son JSON d’assertion ou un jeton de badge signé."
 
-#: badgeserver/verify.py:387
+#: badgeserver/verify.py:389
 msgid "That does not look like valid JSON."
 msgstr "Cela ne ressemble pas à du JSON valide."
 
-#: badgeserver/verify.py:393
+#: badgeserver/verify.py:395
 msgid "Paste an http(s) URL, the assertion JSON, or a signed badge token."
 msgstr "Collez une URL http(s), le JSON de l’assertion ou un jeton de badge signé."
 
-#: badgeserver/verify.py:401
+#: badgeserver/verify.py:403
 msgid "The badge data could not be processed."
 msgstr "Les données du badge n’ont pas pu être traitées."
 
-#: badgeserver/verify.py:420
+#: badgeserver/verify.py:422
 msgid "That PNG has no Open Badges data baked into it."
 msgstr "Ce PNG ne contient aucune donnée Open Badges intégrée."
 
 #: badgeserver/templates/admin/assertion_detail.html:15
-#: badgeserver/verify.py:422
+#: badgeserver/verify.py:424
 msgid "Baked PNG"
 msgstr "PNG intégré"
 
-#: badgeserver/verify.py:422
+#: badgeserver/verify.py:424
 msgid "read the assertion reference from the image"
 msgstr "référence d’assertion lue depuis l’image"
 
-#: badgeserver/verify.py:434
+#: badgeserver/verify.py:436
 msgid "That URL did not return badge data. Use the assertion JSON URL (often ends in .json) or the badge PNG."
 msgstr "Cette URL n’a pas renvoyé de données de badge. Utilisez l’URL du JSON d’assertion (se termine souvent par .json) ou le PNG du badge."
 
-#: badgeserver/verify.py:439
+#: badgeserver/verify.py:441
 msgid "That URL returned JSON that is not an object."
 msgstr "Cette URL a renvoyé un JSON qui n’est pas un objet."
 
-#: badgeserver/verify.py:455
+#: badgeserver/verify.py:457
 msgid "No badge with that identifier has been issued by this server."
 msgstr "Aucun badge portant cet identifiant n’a été émis par ce serveur."
 
-#: badgeserver/verify.py:457 badgeserver/verify.py:460
+#: badgeserver/verify.py:459 badgeserver/verify.py:462
 msgid "Assertion exists on this server"
 msgstr "L’assertion existe sur ce serveur"
 
-#: badgeserver/verify.py:462
+#: badgeserver/verify.py:464
 msgid "Linked badge class"
 msgstr "Classe de badge liée"
 
-#: badgeserver/templates/admin/issuer.html:6 badgeserver/verify.py:471
+#: badgeserver/templates/admin/issuer.html:6 badgeserver/verify.py:473
 msgid "Issuer profile"
 msgstr "Profil de l’émetteur"
 
-#: badgeserver/verify.py:473 badgeserver/verify.py:573
-#: badgeserver/verify.py:601
+#: badgeserver/verify.py:475 badgeserver/verify.py:575
+#: badgeserver/verify.py:603
 msgid "missing"
 msgstr "manquant"
 
-#: badgeserver/verify.py:497 badgeserver/verify.py:501
-#: badgeserver/verify.py:681 badgeserver/verify.py:686
+#: badgeserver/verify.py:499 badgeserver/verify.py:503
+#: badgeserver/verify.py:683 badgeserver/verify.py:688
 msgid "Not revoked"
 msgstr "Non révoqué"
 
 #: badgeserver/templates/admin/assertion_detail.html:29
 #: badgeserver/templates/admin/assertions.html:34
 #: badgeserver/templates/admin/dashboard.html:20
-#: badgeserver/templates/admin/dashboard.html:35 badgeserver/verify.py:497
-#: badgeserver/verify.py:683 badgeserver/verify.py:839
+#: badgeserver/templates/admin/dashboard.html:35 badgeserver/verify.py:499
+#: badgeserver/verify.py:685 badgeserver/verify.py:841
 msgid "revoked"
 msgstr "révoqué"
 
-#: badgeserver/verify.py:507 badgeserver/verify.py:709
+#: badgeserver/verify.py:509 badgeserver/verify.py:711
 msgid "Recipient e-mail matches"
 msgstr "L’e-mail du destinataire correspond"
 
-#: badgeserver/verify.py:509 badgeserver/verify.py:711
+#: badgeserver/verify.py:511 badgeserver/verify.py:713
 msgid "this badge was issued to a different address"
 msgstr "ce badge a été délivré à une autre adresse"
 
-#: badgeserver/verify.py:527
+#: badgeserver/verify.py:529
 msgid "This is an Open Badges 3.0 / Verifiable Credential. This tool verifies Open Badges 2.0 badges."
 msgstr "Ceci est un Open Badges 3.0 / Verifiable Credential. Cet outil vérifie les badges Open Badges 2.0."
 
-#: badgeserver/verify.py:547
+#: badgeserver/verify.py:549
 msgid "Signed badge"
 msgstr "Badge signé"
 
-#: badgeserver/verify.py:550
+#: badgeserver/verify.py:552
 msgid "provide the signed token or the baked PNG so the signature can be checked"
 msgstr "fournissez le jeton signé ou le PNG intégré afin que la signature puisse être vérifiée"
 
-#: badgeserver/verify.py:567 badgeserver/verify.py:569
+#: badgeserver/verify.py:569 badgeserver/verify.py:571
 msgid "Document type is Assertion"
 msgstr "Le type de document est Assertion"
 
-#: badgeserver/verify.py:573 badgeserver/verify.py:575
+#: badgeserver/verify.py:575 badgeserver/verify.py:577
 #, python-format
 msgid "Has %(field)s"
 msgstr "Possède %(field)s"
 
-#: badgeserver/verify.py:585 badgeserver/verify.py:591
-#: badgeserver/verify.py:596
+#: badgeserver/verify.py:587 badgeserver/verify.py:593
+#: badgeserver/verify.py:598
 msgid "Assertion is published at its own URL"
 msgstr "L’assertion est publiée à sa propre URL"
 
-#: badgeserver/verify.py:587
+#: badgeserver/verify.py:589
 msgid "the copy at that URL has a different id"
 msgstr "la copie à cette URL a un identifiant différent"
 
-#: badgeserver/verify.py:601
+#: badgeserver/verify.py:603
 msgid "Assertion has an id"
 msgstr "L’assertion a un identifiant"
 
-#: badgeserver/verify.py:629
+#: badgeserver/verify.py:631
 #, python-format
 msgid "%(kind)s fetched"
 msgstr "%(kind)s récupéré"
 
-#: badgeserver/verify.py:638
+#: badgeserver/verify.py:640
 msgid "Badge class is well-formed"
 msgstr "La classe de badge est bien formée"
 
-#: badgeserver/verify.py:654
+#: badgeserver/verify.py:656
 msgid "Issuer profile is well-formed"
 msgstr "Le profil de l’émetteur est bien formé"
 
-#: badgeserver/verify.py:667
+#: badgeserver/verify.py:669
 msgid "Issuer and assertion share a domain"
 msgstr "L’émetteur et l’assertion partagent un domaine"
 
-#: badgeserver/verify.py:669
+#: badgeserver/verify.py:671
 msgid "the issuer is hosted on a different domain"
 msgstr "l’émetteur est hébergé sur un domaine différent"
 
-#: badgeserver/verify.py:689
+#: badgeserver/verify.py:691
 msgid "Issue date is valid"
 msgstr "La date d’émission est valide"
 
-#: badgeserver/verify.py:694
+#: badgeserver/verify.py:696
 msgid "Not expired"
 msgstr "Non expiré"
 
-#: badgeserver/verify.py:737
+#: badgeserver/verify.py:739
 msgid "Signed-badge verification needs the python3-jwt and python3-cryptography packages."
 msgstr "La vérification des badges signés nécessite les paquets python3-jwt et python3-cryptography."
 
-#: badgeserver/verify.py:748
+#: badgeserver/verify.py:750
 msgid "Could not decode that signed badge token."
 msgstr "Impossible de décoder ce jeton de badge signé."
 
-#: badgeserver/verify.py:751
+#: badgeserver/verify.py:753
 msgid "The signed token payload is not an Open Badges assertion."
 msgstr "Le contenu du jeton signé n’est pas une assertion Open Badges."
 
-#: badgeserver/verify.py:755
+#: badgeserver/verify.py:757
 msgid "Signed badge token decoded"
 msgstr "Jeton de badge signé décodé"
 
-#: badgeserver/verify.py:765
+#: badgeserver/verify.py:767
 msgid "The signed badge does not reference a public key (verification.creator)."
 msgstr "Le badge signé ne référence aucune clé publique (verification.creator)."
 
-#: badgeserver/verify.py:774
+#: badgeserver/verify.py:776
 msgid "The referenced key document has no publicKeyPem."
 msgstr "Le document de clé référencé n’a pas de publicKeyPem."
 
-#: badgeserver/verify.py:779 badgeserver/verify.py:783
+#: badgeserver/verify.py:781 badgeserver/verify.py:785
 msgid "Signature verified with the issuer's key"
 msgstr "Signature vérifiée avec la clé de l’émetteur"
 
-#: badgeserver/verify.py:795
+#: badgeserver/verify.py:797
 msgid "Key belongs to the issuer"
 msgstr "La clé appartient à l’émetteur"
 
-#: badgeserver/verify.py:806
+#: badgeserver/verify.py:808
 msgid "Issuer lists this key"
 msgstr "L’émetteur répertorie cette clé"
 
-#: badgeserver/verify.py:808
+#: badgeserver/verify.py:810
 msgid "the issuer profile does not reference this key"
 msgstr "le profil de l’émetteur ne référence pas cette clé"
 
-#: badgeserver/verify.py:823
+#: badgeserver/verify.py:825
 msgid "Checked the issuer revocation list"
 msgstr "Liste de révocation de l’émetteur vérifiée"
 
-#: badgeserver/verify.py:837 badgeserver/verify.py:842
+#: badgeserver/verify.py:839 badgeserver/verify.py:844
 msgid "Not on the revocation list"
 msgstr "Absent de la liste de révocation"
 
@@ -749,17 +749,21 @@ msgstr "Saisissez votre e-mail et nous vous enverrons un lien de confirmation."
 msgid "Claiming is temporarily unavailable."
 msgstr "La demande est temporairement indisponible."
 
+#: badgeserver/templates/base.html:16
+msgid "LibrePlan Open Badges Server on GitHub"
+msgstr "LibrePlan Open Badges Server sur GitHub"
+
 #: badgeserver/templates/admin/badges.html:3
-#: badgeserver/templates/admin/base.html:14 badgeserver/templates/base.html:15
+#: badgeserver/templates/admin/base.html:14 badgeserver/templates/base.html:23
 #: badgeserver/templates/index.html:22
 msgid "Badges"
 msgstr "Badges"
 
-#: badgeserver/templates/base.html:17
+#: badgeserver/templates/base.html:25
 msgid "Admin"
 msgstr "Administration"
 
-#: badgeserver/templates/base.html:39
+#: badgeserver/templates/base.html:47
 msgid "Self-hosted Open Badges 2.0 issuer"
 msgstr "Émetteur Open Badges 2.0 auto-hébergé"
 
