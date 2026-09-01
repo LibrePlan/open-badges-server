@@ -84,6 +84,7 @@ Minimum to set:
 | `SECRET_KEY` | the random string just generated |
 | `EXTERNAL_URL` | the exact public origin, e.g. `http://badges.dsg.lan:4000` |
 | `BIND` | `0.0.0.0:4000` for direct access, `127.0.0.1:4000` behind a proxy |
+| `SITE_TITLE` | the name shown in the header, page titles and e-mails |
 | `SMTP_HOST` / `SMTP_PORT` / `SMTP_SECURITY` / `SMTP_USERNAME` / `SMTP_PASSWORD` / `MAIL_FROM` | your mail relay |
 
 `EXTERNAL_URL` is baked into every badge URL. Changing it later rewrites all
