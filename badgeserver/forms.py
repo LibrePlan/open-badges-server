@@ -108,6 +108,12 @@ class BadgeClassForm(FlaskForm):
         widget=RangeInput(step=5),
         validators=[Optional(), NumberRange(*BadgeClass.ART_LOGO_SCALE_RANGE)],
     )
+    art_border_width = IntegerRangeField(
+        "Border width",
+        default=8,
+        widget=RangeInput(step=1),
+        validators=[Optional(), NumberRange(*BadgeClass.ART_BORDER_WIDTH_RANGE)],
+    )
 
     submit = SubmitField("Save badge")
 

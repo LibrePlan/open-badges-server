@@ -238,6 +238,20 @@ def test_logo_scale_changes_image(app, auth_client):
         assert db.session.get(BadgeClass, "small").art_logo_scale == 60
 
 
+def test_border_width_changes_image(app, auth_client):
+    import os
+
+    _compose(auth_client, name="Thin", art_shape="octagon", art_border_width="0")
+    _compose(auth_client, name="Thick", art_shape="octagon", art_border_width="20")
+    updir = app.config["UPLOAD_DIR"]
+    thin = open(os.path.join(updir, "badge-thin.png"), "rb").read()
+    thick = open(os.path.join(updir, "badge-thick.png"), "rb").read()
+    assert thin != thick
+    with app.app_context():
+        assert db.session.get(BadgeClass, "thin").art_border_width == 0
+        assert db.session.get(BadgeClass, "thick").art_border_width == 20
+
+
 def test_preview_endpoint(app, auth_client, client):
     r = auth_client.post(
         "/admin/badges/preview",

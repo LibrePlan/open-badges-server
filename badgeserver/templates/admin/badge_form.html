@@ -48,8 +48,13 @@
           </div>
           <div class="field">
             {{ form.art_logo_scale.label }}
-            {{ form.art_logo_scale(class="control slider") }}
-            <output id="logo-scale-out">{{ form.art_logo_scale.data or 100 }}%</output>
+            {{ form.art_logo_scale(class="control slider", data_unit="%") }}
+            <output id="art_logo_scale-out">{{ form.art_logo_scale.data or 100 }}%</output>
+          </div>
+          <div class="field">
+            {{ form.art_border_width.label }}
+            {{ form.art_border_width(class="control slider", data_unit=" px") }}
+            <output id="art_border_width-out">{{ form.art_border_width.data if form.art_border_width.data is not none else 8 }} px</output>
           </div>
         </div>
         <figure class="badge-preview" id="preview-wrap">

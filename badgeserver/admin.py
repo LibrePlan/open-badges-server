@@ -218,6 +218,7 @@ def badge_edit(slug: str):
         form.art_bg.data = badge.art_bg or BadgeClass.ART_BG_DEFAULT
         form.art_accent.data = badge.art_accent or BadgeClass.ART_ACCENT_DEFAULT
         form.art_logo_scale.data = badge.art_logo_scale
+        form.art_border_width.data = badge.art_border_width
     if form.validate_on_submit():
         try:
             _apply_badge_form(badge, form, image_required=False)
@@ -261,8 +262,12 @@ def _apply_compose(badge: BadgeClass, form: BadgeClassForm) -> None:
     )
     badge.art_bg = (form.art_bg.data or BadgeClass.ART_BG_DEFAULT).strip()
     badge.art_accent = (form.art_accent.data or BadgeClass.ART_ACCENT_DEFAULT).strip()
-    lo, hi = BadgeClass.ART_LOGO_SCALE_RANGE
-    badge.art_logo_scale = max(lo, min(hi, form.art_logo_scale.data or 100))
+    badge.art_logo_scale = _clamp(
+        form.art_logo_scale.data, BadgeClass.ART_LOGO_SCALE_RANGE, 100
+    )
+    badge.art_border_width = _clamp(
+        form.art_border_width.data, BadgeClass.ART_BORDER_WIDTH_RANGE, 8
+    )
 
     with open(os.path.join(_upload_dir(), badge.logo_path), "rb") as fh:
         logo_png = fh.read()
@@ -275,8 +280,17 @@ def _apply_compose(badge: BadgeClass, form: BadgeClassForm) -> None:
         size=size,
         dest_path=os.path.join(_upload_dir(), f"badge-{badge.slug}.png"),
         logo_scale=badge.art_logo_scale / 100,
+        border_width=badge.art_border_width,
     )
     badge.image_path = f"badge-{badge.slug}.png"
+
+
+def _clamp(value, bounds: tuple[int, int], default: int) -> int:
+    lo, hi = bounds
+    try:
+        return max(lo, min(hi, int(value)))
+    except (TypeError, ValueError):
+        return default
 
 
 def _placeholder_logo() -> bytes:
@@ -301,11 +315,8 @@ def badge_preview():
     from .badgeart import render_badge
 
     data = request.form
-    lo, hi = BadgeClass.ART_LOGO_SCALE_RANGE
-    try:
-        scale = max(lo, min(hi, int(data.get("art_logo_scale") or 100)))
-    except ValueError:
-        scale = 100
+    scale = _clamp(data.get("art_logo_scale"), BadgeClass.ART_LOGO_SCALE_RANGE, 100)
+    border = _clamp(data.get("art_border_width"), BadgeClass.ART_BORDER_WIDTH_RANGE, 8)
 
     logo_png = None
     upload = request.files.get("logo")
@@ -333,6 +344,7 @@ def badge_preview():
             accent=data.get("art_accent") or BadgeClass.ART_ACCENT_DEFAULT,
             size=320,
             logo_scale=scale / 100,
+            border_width=border,
         )
     except Exception:  # noqa: BLE001 - preview must never 500
         return Response("preview unavailable", status=422, mimetype="text/plain")

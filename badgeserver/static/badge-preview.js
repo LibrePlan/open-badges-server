@@ -10,12 +10,14 @@
 
   var img = document.getElementById("badge-preview");
   var wrap = document.getElementById("preview-wrap");
-  var scaleOut = document.getElementById("logo-scale-out");
   var url = form.getAttribute("data-preview-url");
   var tokenEl = form.querySelector('input[name="csrf_token"]');
   var token = tokenEl ? tokenEl.value : "";
 
-  var FIELDS = ["name", "art_shape", "art_bg", "art_accent", "art_logo_scale"];
+  var FIELDS = [
+    "name", "art_shape", "art_bg", "art_accent",
+    "art_logo_scale", "art_border_width",
+  ];
   var lastUrl = null;
   var timer = null;
   var busy = false;
@@ -69,12 +71,14 @@
     if (composing) refresh();
   }
 
-  var scaleEl = form.elements.art_logo_scale;
-  if (scaleEl && scaleOut) {
-    scaleEl.addEventListener("input", function () {
-      scaleOut.textContent = scaleEl.value + "%";
-    });
-  }
+  // slider value read-outs (<output id="<field>-out">, with an optional data-unit)
+  form.querySelectorAll("input.slider").forEach(function (el) {
+    var out = document.getElementById(el.id + "-out");
+    if (!out) return;
+    var unit = el.getAttribute("data-unit") || "";
+    el.addEventListener("input", function () { out.textContent = el.value + unit; });
+  });
+
   FIELDS.forEach(function (name) {
     var el = form.elements[name];
     if (el) {

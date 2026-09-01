@@ -155,6 +155,10 @@ def _draw_title(
         y += line_h
 
 
+#: default border width, in pixels at a 512 px canvas (matches size // 64)
+BORDER_WIDTH_DEFAULT = 8
+
+
 def render_badge(
     logo_png: bytes,
     title: str,
@@ -164,18 +168,22 @@ def render_badge(
     accent: str,
     size: int,
     logo_scale: float = 1.0,
+    border_width: int = BORDER_WIDTH_DEFAULT,
 ) -> Image.Image:
     """Return the composed badge as an RGBA image.
 
     *logo_scale* (1.0 = automatic) enlarges or shrinks the logo, clamped so it
-    cannot overflow the shape or reach into the title band.
+    cannot overflow the shape or reach into the title band. *border_width* is
+    in pixels at a 512 px canvas (0 = no border) and is scaled to *size*.
     """
     if shape not in SHAPES:
         shape = "octagon"
     bg_rgb = _hex_to_rgb(bg, _BG_FALLBACK)
     accent_rgb = _hex_to_rgb(accent, _ACCENT_FALLBACK)
     scale = min(max(logo_scale or 1.0, 0.4), 1.7)
-    stroke = max(3, size // 64)
+    bw = BORDER_WIDTH_DEFAULT if border_width is None else max(0, border_width)
+    stroke = round(bw * size / 512)
+    outline = accent_rgb + (255,) if stroke > 0 else None
 
     mask = _shape_mask(shape, size)
 
@@ -183,17 +191,17 @@ def render_badge(
     draw = ImageDraw.Draw(canvas)
     if shape == "circle":
         draw.ellipse(
-            [stroke, stroke, size - stroke, size - stroke],
+            [stroke, stroke, size - 1 - stroke, size - 1 - stroke],
             fill=bg_rgb + (255,),
-            outline=accent_rgb + (255,),
-            width=stroke,
+            outline=outline,
+            width=max(1, stroke),
         )
     else:
         draw.polygon(
             _polygon(shape, size, stroke),
             fill=bg_rgb + (255,),
-            outline=accent_rgb + (255,),
-            width=stroke,
+            outline=outline,
+            width=max(1, stroke),
         )
 
     has_title = bool((title or "").strip())
@@ -244,8 +252,9 @@ def compose_badge(
     size: int,
     dest_path: str,
     logo_scale: float = 1.0,
+    border_width: int = BORDER_WIDTH_DEFAULT,
 ) -> None:
     render_badge(
         logo_png, title, shape=shape, bg=bg, accent=accent, size=size,
-        logo_scale=logo_scale,
+        logo_scale=logo_scale, border_width=border_width,
     ).save(dest_path, "PNG", optimize=True)
