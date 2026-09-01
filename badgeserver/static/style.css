@@ -193,8 +193,30 @@ table.grid img { border-radius: 6px; vertical-align: middle; }
 .issuer-logo { width: 84px; height: 84px; border-radius: 10px; }
 
 .admin-layout { display: flex; gap: 1.6rem; align-items: flex-start; }
-.admin-nav { display: flex; flex-direction: column; gap: .5rem; min-width: 9rem; }
-.admin-nav a { text-decoration: none; }
+.admin-nav { display: flex; flex-direction: column; gap: .45rem; min-width: 10rem; }
+.admin-nav a,
+.admin-nav .navbtn {
+  display: block;
+  width: 100%;
+  padding: .5rem .8rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--fg);
+  text-decoration: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.admin-nav a:hover,
+.admin-nav .navbtn:hover { border-color: var(--accent); color: var(--accent); }
+.admin-nav a.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+.admin-nav form.inline { display: block; }
 .admin-main { flex: 1; min-width: 0; }
 .action-grid { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
 
@@ -238,4 +260,7 @@ textarea.control { min-height: 6rem; font-family: ui-monospace, monospace; font-
 @media (max-width: 40rem) {
   .admin-layout { flex-direction: column; }
   .admin-nav { flex-direction: row; flex-wrap: wrap; }
+  .admin-nav a,
+  .admin-nav .navbtn { width: auto; }
+  .admin-nav form.inline { display: inline; }
 }

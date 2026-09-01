@@ -1,17 +1,24 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% extends "base.html" %}
+
+{% macro navlink(endpoint, label, active) %}
+  <a href="{{ url_for(endpoint) }}"{% if active %} class="active"{% endif %}>{{ label }}</a>
+{% endmacro %}
+
+{% set ep = request.endpoint or "" %}
 {% block content %}
   <div class="admin-layout">
     <aside class="admin-nav">
-      <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
-      <a href="{{ url_for('admin.issuer') }}">Issuer</a>
-      <a href="{{ url_for('admin.badges') }}">Badges</a>
-      <a href="{{ url_for('admin.assertions') }}">Assertions</a>
-      <a href="{{ url_for('verify.index') }}">Verify</a>
-      <a href="{{ url_for('admin.change_password') }}">Password</a>
+      {{ navlink("admin.dashboard", "Dashboard", ep == "admin.dashboard") }}
+      {{ navlink("admin.issuer", "Issuer", ep == "admin.issuer") }}
+      {{ navlink("admin.badges", "Badges",
+                 ep.startswith("admin.badge") or ep in ["admin.award", "admin.award_csv"]) }}
+      {{ navlink("admin.assertions", "Assertions", ep.startswith("admin.assertion")) }}
+      {{ navlink("verify.index", "Verify", ep == "verify.index") }}
+      {{ navlink("admin.change_password", "Password", ep == "admin.change_password") }}
       <form method="post" action="{{ url_for('admin.logout') }}" class="inline">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="linkbtn">Sign out</button>
+        <button type="submit" class="navbtn">Sign out</button>
       </form>
     </aside>
     <section class="admin-main">
