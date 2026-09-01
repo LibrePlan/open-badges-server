@@ -1,17 +1,17 @@
-You have been awarded a badge: {{ badge.name }}
+{% trans name=badge.name %}You have been awarded a badge: {{ name }}{% endtrans %}
 
 {{ badge.description }}
 
-Issued by: {{ issuer.name }} ({{ issuer.url }})
-{% if assertion.narrative %}Note: {{ assertion.narrative }}
+{% trans name=issuer.name, url=issuer.url %}Issued by: {{ name }} ({{ url }}){% endtrans %}
+{% if assertion.narrative %}{% trans note=assertion.narrative %}Note: {{ note }}{% endtrans %}
 {% endif %}
-Your badge page:
+{% trans %}Your badge page:{% endtrans %}
 {{ assertion_url }}
 
-Badge image (Open Badges "baked" PNG):
+{% trans %}Badge image (Open Badges "baked" PNG):{% endtrans %}
 {{ badge_png_url }}
 
-Verification data (Open Badges 2.0 assertion):
+{% trans %}Verification data (Open Badges 2.0 assertion):{% endtrans %}
 {{ assertion_json_url }}
 
 --

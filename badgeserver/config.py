@@ -93,6 +93,15 @@ class Config:
 
         self.SITE_TITLE = _str("SITE_TITLE", "Open Badges")
 
+        # Internationalisation
+        self.LANGUAGES = [
+            code.strip()
+            for code in _str("LANGUAGES", "en,es,de,fr,nl").split(",")
+            if code.strip()
+        ]
+        self.BABEL_DEFAULT_LOCALE = _str("BABEL_DEFAULT_LOCALE", "en")
+        self.BABEL_DEFAULT_TIMEZONE = "UTC"
+
     def as_dict(self) -> dict:
         return {k: v for k, v in vars(self).items() if k.isupper()}
 

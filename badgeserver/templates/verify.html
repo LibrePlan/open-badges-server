@@ -1,14 +1,10 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% extends "base.html" %}
 {% from "_formhelpers.html" import field %}
-{% block title %}Verify a badge · {{ site_title }}{% endblock %}
+{% block title %}{{ _("Verify a badge") }} · {{ site_title }}{% endblock %}
 {% block content %}
-  <h1>Verify a badge</h1>
-  <p class="muted">
-    Paste a badge page URL, an assertion JSON URL, the assertion JSON itself, or
-    a signed badge token. Add the recipient's e-mail to also confirm who it was
-    issued to. Badges from other Open Badges issuers can be checked too.
-  </p>
+  <h1>{{ _("Verify a badge") }}</h1>
+  <p class="muted">{{ _("Paste a badge page URL, an assertion JSON URL, the assertion JSON itself, or a signed badge token. Add the recipient's e-mail to also confirm who it was issued to. Badges from other Open Badges issuers can be checked too.") }}</p>
 
   <form method="post" class="card">
     {{ form.hidden_tag() }}
@@ -18,9 +14,9 @@
   </form>
 
   {% if result %}
-    {% set labels = {"valid": "Valid badge", "revoked": "Revoked",
-                     "expired": "Expired", "invalid": "Not verified",
-                     "unsupported": "Not checked"} %}
+    {% set labels = {
+      "valid": _("Valid badge"), "revoked": _("Revoked"), "expired": _("Expired"),
+      "invalid": _("Not verified"), "unsupported": _("Not checked")} %}
     <section class="verify-result">
       <p class="verdict verdict-{{ result.verdict }}">{{ labels.get(result.verdict, result.verdict) }}</p>
 
@@ -28,9 +24,9 @@
 
       {% if result.issuer %}
         <p>
-          Issued by <strong>{{ result.issuer.name or result.issuer.id }}</strong>
-          {% if result.issued_by_us %}<span class="tag">this server</span>
-          {% else %}<span class="tag">external issuer</span>{% endif %}
+          {% trans name=(result.issuer.name or result.issuer.id) %}Issued by <strong>{{ name }}</strong>{% endtrans %}
+          {% if result.issued_by_us %}<span class="tag">{{ _("this server") }}</span>
+          {% else %}<span class="tag">{{ _("external issuer") }}</span>{% endif %}
           {% if result.issuer.url %} &middot;
             <a href="{{ result.issuer.url }}" rel="nofollow noopener noreferrer">{{ result.issuer.url }}</a>
           {% endif %}
@@ -43,16 +39,16 @@
             <img class="detail-image" src="{{ result.badge.image }}" alt="" width="120" height="120">
           {% endif %}
           <div>
-            <h2>{{ result.badge.name or "(unnamed badge)" }}</h2>
+            <h2>{{ result.badge.name or _("(unnamed badge)") }}</h2>
             {% if result.badge.description %}<p>{{ result.badge.description }}</p>{% endif %}
             {% if result.assertion %}
               <p class="muted">
-                {% if result.assertion.issued_on %}Issued {{ result.assertion.issued_on }}{% endif %}
-                {% if result.assertion.recipient %} to {{ result.assertion.recipient }}{% endif %}
+                {% if result.assertion.issued_on %}{% trans d=result.assertion.issued_on %}Issued {{ d }}{% endtrans %}{% endif %}
+                {% if result.assertion.recipient %} {% trans r=result.assertion.recipient %}to {{ r }}{% endtrans %}{% endif %}
               </p>
             {% endif %}
             {% if result.badge.image and not result.issued_by_us %}
-              <p class="muted"><a href="{{ result.badge.image }}" rel="nofollow noopener noreferrer">badge image</a></p>
+              <p class="muted"><a href="{{ result.badge.image }}" rel="nofollow noopener noreferrer">{{ _("badge image") }}</a></p>
             {% endif %}
           </div>
         </div>
@@ -60,14 +56,14 @@
 
       {% if result.recipient_match is not none %}
         <p class="flash flash-{{ 'ok' if result.recipient_match else 'error' }}">
-          {{ "Confirmed: this badge was issued to that e-mail address."
+          {{ _("Confirmed: this badge was issued to that e-mail address.")
              if result.recipient_match
-             else "That e-mail address is not the recipient of this badge." }}
+             else _("That e-mail address is not the recipient of this badge.") }}
         </p>
       {% endif %}
 
       {% if result.checks %}
-        <h3>Checks</h3>
+        <h3>{{ _("Checks") }}</h3>
         <ul class="checklist">
           {% for c in result.checks %}
             <li data-status="{{ c.status }}">
@@ -79,7 +75,7 @@
 
       {% if result.raw %}
         <details>
-          <summary>Raw badge data ({{ result.format }})</summary>
+          <summary>{% trans fmt=result.format %}Raw badge data ({{ fmt }}){% endtrans %}</summary>
           <pre class="raw-json">{{ result.raw | tojson(indent=2) }}</pre>
         </details>
       {% endif %}

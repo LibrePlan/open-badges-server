@@ -1,7 +1,7 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% extends "base.html" %}
-{% block title %}Not found · {{ site_title }}{% endblock %}
+{% block title %}{{ _("Not found") }} · {{ site_title }}{% endblock %}
 {% block content %}
-  <h1>Not found</h1>
-  <p>That page or badge does not exist.</p>
+  <h1>{{ _("Not found") }}</h1>
+  <p>{{ _("That page or badge does not exist.") }}</p>
 {% endblock %}

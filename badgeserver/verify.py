@@ -27,6 +27,7 @@ from urllib.parse import urljoin, urlsplit
 
 import requests
 from flask import current_app
+from flask_babel import gettext as _
 
 from .baking import read_baked_from_bytes
 from .extensions import db
@@ -102,18 +103,18 @@ def _ip_blocked(addr: str) -> bool:
 def check_url_allowed(url: str) -> None:
     parts = urlsplit(url)
     if parts.scheme not in ("http", "https"):
-        raise VerifyError("Only http(s) URLs can be verified.")
+        raise VerifyError(_("Only http(s) URLs can be verified."))
     host = parts.hostname
     if not host:
-        raise VerifyError("That URL has no host name.")
+        raise VerifyError(_("That URL has no host name."))
     port = parts.port or (443 if parts.scheme == "https" else 80)
     try:
         infos = socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)
     except socket.gaierror:
-        raise VerifyError(f"Could not resolve {host!r}.")
+        raise VerifyError(_("Could not resolve %(host)r.", host=host))
     for info in infos:
         if _ip_blocked(info[4][0]):
-            raise VerifyError(f"The address behind {host!r} is not allowed.")
+            raise VerifyError(_("The address behind %(host)r is not allowed.", host=host))
 
 
 def _fetch(url: str, *, max_bytes: int) -> tuple[bytes, str]:
@@ -133,21 +134,27 @@ def _fetch(url: str, *, max_bytes: int) -> tuple[bytes, str]:
             if resp.status_code in (301, 302, 303, 307, 308):
                 target = resp.headers.get("Location")
                 if not target:
-                    raise VerifyError("Got a redirect with no target.")
+                    raise VerifyError(_("Got a redirect with no target."))
                 url = urljoin(url, target)
                 continue
             if resp.status_code != 200:
-                raise VerifyError(f"{url} returned HTTP {resp.status_code}.")
+                raise VerifyError(
+                    _(
+                        "%(url)s returned HTTP %(code)s.",
+                        url=url,
+                        code=resp.status_code,
+                    )
+                )
             ctype = (resp.headers.get("Content-Type") or "").split(";")[0].strip().lower()
             body = bytearray()
             for chunk in resp.iter_content(16384):
                 body += chunk
                 if len(body) > max_bytes:
-                    raise VerifyError("The response is larger than allowed.")
+                    raise VerifyError(_("The response is larger than allowed."))
             return bytes(body), ctype
         finally:
             resp.close()
-    raise VerifyError("Too many redirects.")
+    raise VerifyError(_("Too many redirects."))
 
 
 def _fetch_json(url: str) -> dict:
@@ -155,9 +162,9 @@ def _fetch_json(url: str) -> dict:
     try:
         data = json.loads(body)
     except ValueError as exc:
-        raise VerifyError(f"{url} did not return JSON.") from exc
+        raise VerifyError(_("%(url)s did not return JSON.", url=url)) from exc
     if not isinstance(data, dict):
-        raise VerifyError(f"{url} returned JSON that is not an object.")
+        raise VerifyError(_("%(url)s returned JSON that is not an object.", url=url))
     return data
 
 
@@ -244,20 +251,22 @@ def verify(source: str, recipient: str | None = None) -> Result:
     result = Result()
     try:
         if not source:
-            raise VerifyError("Paste a badge URL, its assertion JSON, or a signed badge token.")
+            raise VerifyError(
+                _("Paste a badge URL, its assertion JSON, or a signed badge token.")
+            )
         if _JWS_RE.match(source):
             _verify_signed(source, recipient, result)
         elif source.startswith("{"):
             try:
                 doc = json.loads(source)
             except ValueError as exc:
-                raise VerifyError("That does not look like valid JSON.") from exc
+                raise VerifyError(_("That does not look like valid JSON.")) from exc
             _dispatch_doc(doc, fetched_from=None, recipient=recipient, result=result)
         elif re.match(r"^https?://", source, re.I):
             _verify_url(source, recipient, result)
         else:
             raise VerifyError(
-                "Paste an http(s) URL, the assertion JSON, or a signed badge token."
+                _("Paste an http(s) URL, the assertion JSON, or a signed badge token.")
             )
     except VerifyError as exc:
         result.verdict = result.verdict or "invalid"
@@ -265,7 +274,7 @@ def verify(source: str, recipient: str | None = None) -> Result:
     except Exception:  # noqa: BLE001 - the verifier must never 500
         current_app.logger.exception("Badge verification crashed")
         result.verdict = "invalid"
-        result.error = "The badge data could not be processed."
+        result.error = _("The badge data could not be processed.")
     if result.verdict is None:
         result.verdict = "invalid" if any(c.status == "fail" for c in result.checks) else "valid"
     return result
@@ -284,8 +293,10 @@ def _verify_url(url: str, recipient: str | None, result: Result) -> None:
     if ctype == "image/png" or body[:8] == b"\x89PNG\r\n\x1a\n":
         inner = read_baked_from_bytes(body)
         if not inner:
-            raise VerifyError("That PNG has no Open Badges data baked into it.")
-        result.add("Baked PNG", "pass", "read the assertion reference from the image")
+            raise VerifyError(_("That PNG has no Open Badges data baked into it."))
+        result.add(
+            _("Baked PNG"), "pass", _("read the assertion reference from the image")
+        )
         sub = verify(inner, recipient)
         sub.checks[:0] = result.checks
         result.__dict__.update(sub.__dict__)
@@ -295,11 +306,13 @@ def _verify_url(url: str, recipient: str | None, result: Result) -> None:
         doc = json.loads(body)
     except ValueError as exc:
         raise VerifyError(
-            "That URL did not return badge data. Use the assertion JSON URL "
-            "(often ends in .json) or the badge PNG."
+            _(
+                "That URL did not return badge data. Use the assertion JSON URL "
+                "(often ends in .json) or the badge PNG."
+            )
         ) from exc
     if not isinstance(doc, dict):
-        raise VerifyError("That URL returned JSON that is not an object.")
+        raise VerifyError(_("That URL returned JSON that is not an object."))
     _dispatch_doc(doc, fetched_from=url, recipient=recipient, result=result)
 
 
@@ -314,13 +327,15 @@ def _verify_local(uuid: str, recipient: str | None, result: Result) -> None:
     assertion = db.session.get(Assertion, uuid)
     if assertion is None:
         result.verdict = "invalid"
-        result.error = "No badge with that identifier has been issued by this server."
-        result.add("Assertion exists on this server", "fail", uuid)
+        result.error = _(
+            "No badge with that identifier has been issued by this server."
+        )
+        result.add(_("Assertion exists on this server"), "fail", uuid)
         return
 
-    result.add("Assertion exists on this server", "pass", "")
+    result.add(_("Assertion exists on this server"), "pass", "")
     badge = assertion.badge
-    result.add("Linked badge class", "pass", badge.name)
+    result.add(_("Linked badge class"), "pass", badge.name)
 
     issuer = Issuer.query.order_by(Issuer.created_on).first()
     result.issuer = (
@@ -328,7 +343,11 @@ def _verify_local(uuid: str, recipient: str | None, result: Result) -> None:
         if issuer
         else None
     )
-    result.add("Issuer profile", "pass" if issuer else "warn", issuer.name if issuer else "missing")
+    result.add(
+        _("Issuer profile"),
+        "pass" if issuer else "warn",
+        issuer.name if issuer else _("missing"),
+    )
 
     base = current_app.config["EXTERNAL_URL"].rstrip("/")
     try:
@@ -350,18 +369,20 @@ def _verify_local(uuid: str, recipient: str | None, result: Result) -> None:
 
     if assertion.revoked:
         result.verdict = "revoked"
-        result.add("Not revoked", "fail", assertion.revocation_reason or "revoked")
+        result.add(
+            _("Not revoked"), "fail", assertion.revocation_reason or _("revoked")
+        )
     else:
         result.verdict = "valid"
-        result.add("Not revoked", "pass", "")
+        result.add(_("Not revoked"), "pass", "")
 
     if recipient:
         ok = recipient.strip().lower() == assertion.recipient_email.lower()
         result.recipient_match = ok
         result.add(
-            "Recipient e-mail matches",
+            _("Recipient e-mail matches"),
             "pass" if ok else "fail",
-            "" if ok else "this badge was issued to a different address",
+            "" if ok else _("this badge was issued to a different address"),
         )
 
 
@@ -378,7 +399,7 @@ def _dispatch_doc(doc: dict, *, fetched_from: str | None, recipient: str | None,
     if "w3.org/ns/credentials" in context_s or "OpenBadgeCredential" in all_types:
         result.format = "ob3"
         result.verdict = "unsupported"
-        result.error = (
+        result.error = _(
             "This is an Open Badges 3.0 / Verifiable Credential. "
             "This tool verifies Open Badges 2.0 badges."
         )
@@ -399,9 +420,12 @@ def _dispatch_doc(doc: dict, *, fetched_from: str | None, recipient: str | None,
         result.format = "ob2-signed"
         result.raw = doc
         result.add(
-            "Signed badge",
+            _("Signed badge"),
             "warn",
-            "provide the signed token or the baked PNG so the signature can be checked",
+            _(
+                "provide the signed token or the baked PNG so the signature "
+                "can be checked"
+            ),
         )
         _resolve_badge_and_issuer(doc, result)
         _finish_common(doc, recipient, result)
@@ -416,15 +440,15 @@ def _verify_hosted(doc: dict, fetched_from: str | None, recipient: str | None, r
     assertion_id = doc.get("id") or (doc.get("verify") or {}).get("url")
 
     if "Assertion" not in _as_types(doc.get("type")) and "assertion" not in str(doc.get("type", "")).lower():
-        result.add("Document type is Assertion", "warn", f"type = {doc.get('type')!r}")
+        result.add(_("Document type is Assertion"), "warn", f"type = {doc.get('type')!r}")
     else:
-        result.add("Document type is Assertion", "pass", "")
+        result.add(_("Document type is Assertion"), "pass", "")
 
     for field_name in ("recipient", "badge"):
         if field_name not in doc:
-            result.add(f"Has {field_name}", "fail", "missing")
+            result.add(_("Has %(field)s", field=field_name), "fail", _("missing"))
         else:
-            result.add(f"Has {field_name}", "pass", "")
+            result.add(_("Has %(field)s", field=field_name), "pass", "")
 
     # Hosted authenticity: the assertion must be served from its own id.
     if assertion_id:
@@ -434,21 +458,23 @@ def _verify_hosted(doc: dict, fetched_from: str | None, recipient: str | None, r
                 hosted = _fetch_json(assertion_id)
                 same = hosted.get("id") == doc.get("id")
                 result.add(
-                    "Assertion is published at its own URL",
+                    _("Assertion is published at its own URL"),
                     "pass" if same else "fail",
-                    "" if same else "the copy at that URL has a different id",
+                    "" if same else _("the copy at that URL has a different id"),
                 )
             except VerifyError as exc:
-                result.add("Assertion is published at its own URL", "warn", str(exc))
+                result.add(
+                    _("Assertion is published at its own URL"), "warn", str(exc)
+                )
         else:
             same = _norm_url(fetched_from) == _norm_url(assertion_id)
             result.add(
-                "Assertion is published at its own URL",
+                _("Assertion is published at its own URL"),
                 "pass" if same else "fail",
                 "" if same else f"served from {fetched_from} but claims id {assertion_id}",
             )
     else:
-        result.add("Assertion has an id", "fail", "missing")
+        result.add(_("Assertion has an id"), "fail", _("missing"))
 
     _resolve_badge_and_issuer(doc, result)
     _finish_common(doc, recipient, result)
@@ -476,7 +502,7 @@ def _resolve_ref(ref, kind: str, result: Result) -> dict | None:
         check_url_allowed(ref)
         return _fetch_json(ref)
     except VerifyError as exc:
-        result.add(f"{kind.title()} fetched", "warn", str(exc))
+        result.add(_("%(kind)s fetched", kind=kind.title()), "warn", str(exc))
         return None
 
 
@@ -485,7 +511,7 @@ def _resolve_badge_and_issuer(doc: dict, result: Result) -> None:
 
     if badge_doc:
         is_bc = "BadgeClass" in _as_types(badge_doc.get("type"))
-        result.add("Badge class is well-formed", "pass" if is_bc else "warn",
+        result.add(_("Badge class is well-formed"), "pass" if is_bc else "warn",
                    "" if is_bc else f"type = {badge_doc.get('type')!r}")
         image = badge_doc.get("image")
         result.badge = {
@@ -501,7 +527,7 @@ def _resolve_badge_and_issuer(doc: dict, result: Result) -> None:
     issuer_doc = _resolve_ref(issuer_ref, "issuer", result)
     if issuer_doc:
         ok_type = bool({"Issuer", "Profile"} & set(_as_types(issuer_doc.get("type"))))
-        result.add("Issuer profile is well-formed", "pass" if ok_type else "warn",
+        result.add(_("Issuer profile is well-formed"), "pass" if ok_type else "warn",
                    "" if ok_type else f"type = {issuer_doc.get('type')!r}")
         result.issuer = {
             "name": issuer_doc.get("name", ""),
@@ -514,9 +540,9 @@ def _resolve_badge_and_issuer(doc: dict, result: Result) -> None:
         if aid and result.issuer["id"]:
             same_host = _host_key(aid)[1] == _host_key(result.issuer["id"])[1]
             result.add(
-                "Issuer and assertion share a domain",
+                _("Issuer and assertion share a domain"),
                 "pass" if same_host else "warn",
-                "" if same_host else "the issuer is hosted on a different domain",
+                "" if same_host else _("the issuer is hosted on a different domain"),
             )
     # is this us?
     external = current_app.config.get("EXTERNAL_URL", "")
@@ -527,17 +553,21 @@ def _resolve_badge_and_issuer(doc: dict, result: Result) -> None:
 def _finish_common(doc: dict, recipient: str | None, result: Result) -> None:
     if doc.get("revoked") is True:
         result.verdict = "revoked"
-        result.add("Not revoked", "fail", str(doc.get("revocationReason") or "revoked"))
+        result.add(
+            _("Not revoked"),
+            "fail",
+            str(doc.get("revocationReason") or _("revoked")),
+        )
     else:
-        result.add("Not revoked", "pass", "")
+        result.add(_("Not revoked"), "pass", "")
 
     issued = _parse_when(doc.get("issuedOn"))
-    result.add("Issue date is valid", "pass" if issued else "warn",
+    result.add(_("Issue date is valid"), "pass" if issued else "warn",
                issued.date().isoformat() if issued else str(doc.get("issuedOn")))
     expires = _parse_when(doc.get("expires") or doc.get("expiresOn"))
     if expires:
         past = expires < datetime.now(timezone.utc)
-        result.add("Not expired", "fail" if past else "pass", expires.date().isoformat())
+        result.add(_("Not expired"), "fail" if past else "pass", expires.date().isoformat())
         if past and result.verdict is None:
             result.verdict = "expired"
 
@@ -552,9 +582,9 @@ def _finish_common(doc: dict, recipient: str | None, result: Result) -> None:
         result.recipient_match = match
         if match is not None:
             result.add(
-                "Recipient e-mail matches",
+                _("Recipient e-mail matches"),
                 "pass" if match else "fail",
-                "" if match else "this badge was issued to a different address",
+                "" if match else _("this badge was issued to a different address"),
             )
 
 
@@ -579,8 +609,10 @@ def _verify_signed(token: str, recipient: str | None, result: Result) -> None:
         from cryptography.hazmat.primitives.serialization import load_pem_public_key
     except ImportError as exc:  # pragma: no cover - packaging guard
         raise VerifyError(
-            "Signed-badge verification needs the python3-jwt and "
-            "python3-cryptography packages."
+            _(
+                "Signed-badge verification needs the python3-jwt and "
+                "python3-cryptography packages."
+            )
         ) from exc
 
     result.format = "ob2-signed"
@@ -589,30 +621,45 @@ def _verify_signed(token: str, recipient: str | None, result: Result) -> None:
         header = json.loads(base64.urlsafe_b64decode(parts[0] + "=="))
         doc = json.loads(base64.urlsafe_b64decode(parts[1] + "=="))
     except Exception as exc:  # noqa: BLE001
-        raise VerifyError("Could not decode that signed badge token.") from exc
+        raise VerifyError(_("Could not decode that signed badge token.")) from exc
     if not isinstance(doc, dict):
-        raise VerifyError("The signed token payload is not an Open Badges assertion.")
+        raise VerifyError(
+            _("The signed token payload is not an Open Badges assertion.")
+        )
     result.raw = doc
-    result.add("Signed badge token decoded", "pass", f"algorithm {header.get('alg', '?')}")
+    result.add(
+        _("Signed badge token decoded"),
+        "pass",
+        f"algorithm {header.get('alg', '?')}",
+    )
 
     verification = doc.get("verification") or doc.get("verify") or {}
     creator = verification.get("creator") or verification.get("url")
     if not creator:
-        raise VerifyError("The signed badge does not reference a public key (verification.creator).")
+        raise VerifyError(
+            _(
+                "The signed badge does not reference a public key "
+                "(verification.creator)."
+            )
+        )
 
     check_url_allowed(creator)
     key_doc = _fetch_json(creator)
     pem = key_doc.get("publicKeyPem")
     if not pem:
-        raise VerifyError("The referenced key document has no publicKeyPem.")
+        raise VerifyError(_("The referenced key document has no publicKeyPem."))
 
     try:
         public_key = load_pem_public_key(pem.encode() if isinstance(pem, str) else pem)
         pyjwt.PyJWS().decode(token, key=public_key, algorithms=_SIG_ALGS)
-        result.add("Signature verified with the issuer's key", "pass", "")
+        result.add(_("Signature verified with the issuer's key"), "pass", "")
     except Exception as exc:  # noqa: BLE001
         result.verdict = "invalid"
-        result.add("Signature verified with the issuer's key", "fail", type(exc).__name__)
+        result.add(
+            _("Signature verified with the issuer's key"),
+            "fail",
+            type(exc).__name__,
+        )
 
     _resolve_badge_and_issuer(doc, result)
 
@@ -621,7 +668,7 @@ def _verify_signed(token: str, recipient: str | None, result: Result) -> None:
     issuer_id_val = (result.issuer or {}).get("id")
     if owner and issuer_id_val:
         result.add(
-            "Key belongs to the issuer",
+            _("Key belongs to the issuer"),
             "pass" if owner == issuer_id_val else "fail",
             "" if owner == issuer_id_val else f"key owner {owner} != issuer {issuer_id_val}",
         )
@@ -632,9 +679,9 @@ def _verify_signed(token: str, recipient: str | None, result: Result) -> None:
     if key_doc.get("id"):
         listed = key_doc["id"] in declared_ids
         result.add(
-            "Issuer lists this key",
+            _("Issuer lists this key"),
             "pass" if listed else "warn",
-            "" if listed else "the issuer profile does not reference this key",
+            "" if listed else _("the issuer profile does not reference this key"),
         )
 
     _check_revocation_list(doc, issuer_raw, result)
@@ -649,7 +696,7 @@ def _check_revocation_list(doc: dict, issuer_raw: dict, result: Result) -> None:
         check_url_allowed(rl_url)
         rl = _fetch_json(rl_url)
     except VerifyError as exc:
-        result.add("Checked the issuer revocation list", "warn", str(exc))
+        result.add(_("Checked the issuer revocation list"), "warn", str(exc))
         return
     revoked = rl.get("revokedAssertions") or []
     aid = doc.get("id")
@@ -662,6 +709,10 @@ def _check_revocation_list(doc: dict, issuer_raw: dict, result: Result) -> None:
             hit = entry
     if hit is not None:
         result.verdict = "revoked"
-        result.add("Not on the revocation list", "fail", str(hit.get("revocationReason") or "revoked"))
+        result.add(
+            _("Not on the revocation list"),
+            "fail",
+            str(hit.get("revocationReason") or _("revoked")),
+        )
     else:
-        result.add("Not on the revocation list", "pass", "")
+        result.add(_("Not on the revocation list"), "pass", "")

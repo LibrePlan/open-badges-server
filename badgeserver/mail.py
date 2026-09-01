@@ -11,6 +11,7 @@ from email.utils import formatdate, make_msgid, parseaddr
 from urllib.parse import urlsplit
 
 from flask import current_app, render_template
+from flask_babel import gettext as _
 
 from .models import Assertion
 from .openbadges import assertion_id
@@ -102,7 +103,8 @@ def send_award_email(assertion: Assertion) -> None:
         "site_title": current_app.config["SITE_TITLE"],
     }
     msg = _base_message(
-        assertion.recipient_email, f"You have been awarded: {badge.name}"
+        assertion.recipient_email,
+        _("You have been awarded: %(badge)s", badge=badge.name),
     )
     msg.set_content(render_template("email/award.txt", **ctx))
     msg.add_alternative(render_template("email/award.html", **ctx), subtype="html")
@@ -119,7 +121,9 @@ def send_claim_confirmation(claim, confirm_url: str) -> None:
         "expires_hours": current_app.config["CLAIM_EXPIRY_HOURS"],
         "site_title": current_app.config["SITE_TITLE"],
     }
-    msg = _base_message(claim.email, f"Confirm your {badge.name} badge")
+    msg = _base_message(
+        claim.email, _("Confirm your %(badge)s badge", badge=badge.name)
+    )
     msg.set_content(render_template("email/claim.txt", **ctx))
     msg.add_alternative(render_template("email/claim.html", **ctx), subtype="html")
     _send(msg)

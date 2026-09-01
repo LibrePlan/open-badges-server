@@ -1,52 +1,52 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% extends "admin/base.html" %}
 {% from "_formhelpers.html" import field %}
-{% block title %}Assertion {{ assertion.uuid[:8] }} · {{ site_title }}{% endblock %}
+{% block title %}{% trans id=assertion.uuid[:8] %}Assertion {{ id }}{% endtrans %} · {{ site_title }}{% endblock %}
 {% block admin_content %}
-  <h1>Assertion</h1>
+  <h1>{{ _("Assertion") }}</h1>
 
   <dl class="facts">
-    <dt>Badge</dt><dd><a href="{{ url_for('admin.badge_edit', slug=badge.slug) }}">{{ badge.name }}</a></dd>
-    <dt>Recipient</dt><dd>{{ assertion.recipient_email }}</dd>
-    <dt>UUID</dt><dd><code>{{ assertion.uuid }}</code></dd>
-    <dt>Issued on</dt><dd>{{ assertion.issued_on_utc().strftime('%Y-%m-%d') }}</dd>
-    <dt>Public page</dt><dd><a href="{{ page_url }}">{{ page_url }}</a></dd>
-    <dt>Assertion JSON</dt><dd><a href="{{ json_url }}">{{ json_url }}</a></dd>
-    <dt>Baked PNG</dt><dd><a href="{{ url_for('public.assertion_badge_png', uuid=assertion.uuid) }}">download</a></dd>
-    {% if assertion.evidence_url %}<dt>Evidence</dt><dd><a href="{{ assertion.evidence_url }}">{{ assertion.evidence_url }}</a></dd>{% endif %}
-    {% if assertion.narrative %}<dt>Note</dt><dd>{{ assertion.narrative }}</dd>{% endif %}
-    <dt>E-mail</dt>
+    <dt>{{ _("Badge") }}</dt><dd><a href="{{ url_for('admin.badge_edit', slug=badge.slug) }}">{{ badge.name }}</a></dd>
+    <dt>{{ _("Recipient") }}</dt><dd>{{ assertion.recipient_email }}</dd>
+    <dt>{{ _("UUID") }}</dt><dd><code>{{ assertion.uuid }}</code></dd>
+    <dt>{{ _("Issued on") }}</dt><dd>{{ assertion.issued_on_utc() | dateformat("medium") }}</dd>
+    <dt>{{ _("Public page") }}</dt><dd><a href="{{ page_url }}">{{ page_url }}</a></dd>
+    <dt>{{ _("Assertion JSON") }}</dt><dd><a href="{{ json_url }}">{{ json_url }}</a></dd>
+    <dt>{{ _("Baked PNG") }}</dt><dd><a href="{{ url_for('public.assertion_badge_png', uuid=assertion.uuid) }}">{{ _("download") }}</a></dd>
+    {% if assertion.evidence_url %}<dt>{{ _("Evidence") }}</dt><dd><a href="{{ assertion.evidence_url }}">{{ assertion.evidence_url }}</a></dd>{% endif %}
+    {% if assertion.narrative %}<dt>{{ _("Note") }}</dt><dd>{{ assertion.narrative }}</dd>{% endif %}
+    <dt>{{ _("E-mail") }}</dt>
     <dd>
       {% if assertion.email_sent %}
-        sent {{ assertion.email_sent_at.strftime('%Y-%m-%d %H:%M') if assertion.email_sent_at }}
+        {% trans when=(assertion.email_sent_at | datetimeformat("short")) if assertion.email_sent_at else "" %}sent {{ when }}{% endtrans %}
       {% elif assertion.email_error %}
-        <span class="field-error">failed: {{ assertion.email_error }}</span>
+        <span class="field-error">{% trans err=assertion.email_error %}failed: {{ err }}{% endtrans %}</span>
       {% else %}
-        not sent
+        {{ _("not sent") }}
       {% endif %}
     </dd>
-    <dt>Status</dt>
-    <dd>{% if assertion.revoked %}<strong>revoked</strong>{% if assertion.revocation_reason %} &ndash; {{ assertion.revocation_reason }}{% endif %}{% else %}active{% endif %}</dd>
+    <dt>{{ _("Status") }}</dt>
+    <dd>{% if assertion.revoked %}<strong>{{ _("revoked") }}</strong>{% if assertion.revocation_reason %} &ndash; {{ assertion.revocation_reason }}{% endif %}{% else %}{{ _("active") }}{% endif %}</dd>
   </dl>
 
   <div class="action-grid">
     {% if mail_ready %}
       <form method="post" action="{{ url_for('admin.assertion_resend', uuid=assertion.uuid) }}">
         {{ confirm_form.hidden_tag() }}
-        <button type="submit" class="btn">Re-send e-mail</button>
+        <button type="submit" class="btn">{{ _("Re-send e-mail") }}</button>
       </form>
     {% endif %}
 
     {% if assertion.revoked %}
       <form method="post" action="{{ url_for('admin.assertion_unrevoke', uuid=assertion.uuid) }}">
         {{ confirm_form.hidden_tag() }}
-        <button type="submit" class="btn">Re-instate</button>
+        <button type="submit" class="btn">{{ _("Re-instate") }}</button>
       </form>
     {% else %}
       <form method="post" action="{{ url_for('admin.assertion_revoke', uuid=assertion.uuid) }}" class="card narrow">
         {{ revoke_form.hidden_tag() }}
         {{ field(revoke_form.reason) }}
-        <button type="submit" class="btn btn-danger">Revoke</button>
+        <button type="submit" class="btn btn-danger">{{ _("Revoke") }}</button>
       </form>
     {% endif %}
   </div>

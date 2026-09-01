@@ -11,7 +11,7 @@ from flask_talisman import Talisman
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from .config import Config
-from .extensions import csrf, db, limiter, login_manager
+from .extensions import babel, csrf, db, limiter, login_manager
 
 __all__ = ["create_app"]
 
@@ -64,6 +64,11 @@ def create_app(config_overrides: dict | None = None, *, data_dir: str | None = N
     csrf.init_app(app)
     limiter.init_app(app)
 
+    from .i18n import remember_locale, select_locale
+
+    babel.init_app(app, locale_selector=select_locale)
+    app.before_request(remember_locale)
+
     Talisman(
         app,
         force_https=False,
@@ -105,6 +110,9 @@ def create_app(config_overrides: dict | None = None, *, data_dir: str | None = N
     @app.context_processor
     def _inject_globals():
         from flask import url_for
+        from flask_babel import get_locale
+
+        from .i18n import languages, switch_url
 
         def badge_image_url(badge):
             """Badge image URL with a cache-busting version from the file mtime."""
@@ -115,6 +123,12 @@ def create_app(config_overrides: dict | None = None, *, data_dir: str | None = N
                 version = 0
             return url_for("public.badge_image", slug=badge.slug, v=version)
 
-        return {"site_title": app.config["SITE_TITLE"], "badge_image_url": badge_image_url}
+        return {
+            "site_title": app.config["SITE_TITLE"],
+            "badge_image_url": badge_image_url,
+            "languages": languages(),
+            "current_locale": str(get_locale() or app.config["BABEL_DEFAULT_LOCALE"]),
+            "switch_url": switch_url,
+        }
 
     return app

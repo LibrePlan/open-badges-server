@@ -1,18 +1,22 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% extends "base.html" %}
-{% block title %}Claim {{ badge.name }} · {{ site_title }}{% endblock %}
+{% block title %}{% trans name=badge.name %}Claim {{ name }}{% endtrans %} · {{ site_title }}{% endblock %}
 {% block content %}
   {% if status == "sent" %}
-    <h1>Check your e-mail</h1>
-    <p>We've sent a confirmation link for the <strong>{{ badge.name }}</strong>
-      badge to <strong>{{ email }}</strong>. Click it to receive your badge.</p>
-    <p class="muted">The link is valid for a limited time. Didn't get it? Check
-      your spam folder, then
-      <a href="{{ url_for('public.badge_page', slug=badge.slug) }}">try again</a>.</p>
+    <h1>{{ _("Check your e-mail") }}</h1>
+    <p>{% trans name=badge.name, email=email -%}
+      We've sent a confirmation link for the <strong>{{ name }}</strong> badge to
+      <strong>{{ email }}</strong>. Click it to receive your badge.
+    {%- endtrans %}</p>
+    <p class="muted">{% trans url=url_for('public.badge_page', slug=badge.slug) -%}
+      The link is valid for a limited time. Didn't get it? Check your spam folder,
+      then <a href="{{ url }}">try again</a>.
+    {%- endtrans %}</p>
   {% elif status == "expired" %}
-    <h1>That link has expired</h1>
-    <p>The confirmation link for the <strong>{{ badge.name }}</strong> badge is no
-      longer valid.</p>
-    <p><a class="btn" href="{{ url_for('public.badge_page', slug=badge.slug) }}">Start over</a></p>
+    <h1>{{ _("That link has expired") }}</h1>
+    <p>{% trans name=badge.name -%}
+      The confirmation link for the <strong>{{ name }}</strong> badge is no longer valid.
+    {%- endtrans %}</p>
+    <p><a class="btn" href="{{ url_for('public.badge_page', slug=badge.slug) }}">{{ _("Start over") }}</a></p>
   {% endif %}
 {% endblock %}

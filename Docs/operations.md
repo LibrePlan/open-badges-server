@@ -166,6 +166,38 @@ is issued only when they click it (link valid `CLAIM_EXPIRY_HOURS`, default 24).
 Claimed badges are ordinary assertions — revoke them from **Assertions** like
 any other.
 
+## Languages
+
+The interface ships in **English** (source), **Spanish**, **German**,
+**French** and **Dutch**.
+
+- **Visitors** switch with the links in the page header. The choice is kept in
+  their session and travels as `?lang=<code>` on links. With no choice made,
+  the browser's `Accept-Language` decides, then `BABEL_DEFAULT_LOCALE`.
+- **Notification e-mails** follow the language in effect when they are sent:
+  a self-service confirmation is in the visitor's language; an admin-issued
+  award notice is in the language the admin had selected.
+- `LANGUAGES` (in `badges.env`, default `en,es,de,fr,nl`) sets which languages
+  are offered — drop codes to hide them. The header switcher disappears when
+  only one language is listed.
+
+### Editing the translations
+
+Catalogs live in `badgeserver/translations/<code>/LC_MESSAGES/messages.po`.
+The compiled `.mo` files are committed, so deployments need no build step.
+`contrib/i18n.sh` wraps `pybabel` (from `python3-babel`):
+
+```sh
+contrib/i18n.sh extract      # rescan the code + templates into messages.pot
+contrib/i18n.sh update       # merge new/changed strings into every .po
+# ...edit the msgstr entries in the .po files...
+contrib/i18n.sh compile      # rebuild the .mo files
+```
+
+Commit the changed `.po` **and** `.mo` files. To add a language:
+`contrib/i18n.sh init <code>`, translate it, `compile`, then add the code to
+`LANGUAGES` and to `LANGUAGE_NAMES` in `badgeserver/i18n.py`.
+
 ## Quick reference
 
 | Task | Where |

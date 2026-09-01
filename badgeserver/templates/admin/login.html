@@ -1,9 +1,9 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% extends "base.html" %}
 {% from "_formhelpers.html" import field %}
-{% block title %}Sign in · {{ site_title }}{% endblock %}
+{% block title %}{{ _("Sign in") }} · {{ site_title }}{% endblock %}
 {% block content %}
-  <h1>Admin sign in</h1>
+  <h1>{{ _("Admin sign in") }}</h1>
   <form method="post" class="card narrow">
     {{ form.hidden_tag() }}
     {{ field(form.username) }}

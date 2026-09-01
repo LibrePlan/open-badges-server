@@ -35,7 +35,17 @@ a { color: var(--accent); }
   background: var(--card);
 }
 .site-header .brand { font-weight: 700; text-decoration: none; color: var(--fg); }
+.site-header nav { align-items: baseline; display: flex; flex-wrap: wrap; }
 .site-header nav a { margin-left: 1rem; }
+
+.lang-switch {
+  border-left: 1px solid var(--line);
+  margin-left: 1rem;
+  padding-left: .25rem;
+  font-size: .85rem;
+}
+.lang-switch a { color: var(--muted); }
+.lang-switch a.active { color: var(--fg); font-weight: 600; text-decoration: none; }
 
 .wrap { max-width: 60rem; margin: 1.6rem auto; padding: 0 1.4rem; }
 .site-footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 2rem 0; }

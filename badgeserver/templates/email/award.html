@@ -1,20 +1,21 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{ current_locale }}">
 <body style="font-family: system-ui, sans-serif; color: #1a1a1a; line-height: 1.5;">
-  <p>You have been awarded a badge:</p>
+  <p>{{ _("You have been awarded a badge:") }}</p>
   <h2 style="margin: 0 0 .5em;">{{ badge.name }}</h2>
   <p>{{ badge.description }}</p>
-  <p style="color:#555;">Issued by <strong>{{ issuer.name }}</strong> &ndash;
-    <a href="{{ issuer.url }}">{{ issuer.url }}</a></p>
+  <p style="color:#555;">{% trans name=issuer.name, url=issuer.url -%}
+    Issued by <strong>{{ name }}</strong> &ndash; <a href="{{ url }}">{{ url }}</a>
+  {%- endtrans %}</p>
   {% if assertion.narrative %}<p><em>{{ assertion.narrative }}</em></p>{% endif %}
   <p>
     <a href="{{ assertion_url }}"
        style="display:inline-block;padding:.6em 1.1em;background:#2b6cb0;color:#fff;text-decoration:none;border-radius:6px;">
-       View your badge</a>
+       {{ _("View your badge") }}</a>
   </p>
   <p style="color:#555;font-size:.9em;">
-    Badge image: <a href="{{ badge_png_url }}">{{ badge_png_url }}</a><br>
-    Verification data: <a href="{{ assertion_json_url }}">{{ assertion_json_url }}</a>
+    {% trans %}Badge image:{% endtrans %} <a href="{{ badge_png_url }}">{{ badge_png_url }}</a><br>
+    {% trans %}Verification data:{% endtrans %} <a href="{{ assertion_json_url }}">{{ assertion_json_url }}</a>
   </p>
   <hr style="border:none;border-top:1px solid #ddd;">
   <p style="color:#888;font-size:.85em;">{{ site_title }}</p>

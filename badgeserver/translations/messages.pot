@@ -1,0 +1,1360 @@
+# Translations template for Open Badges Server.
+# Copyright (C) 2026 Jeroen Baten
+# This file is distributed under the same license as the Open Badges Server
+# project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Open Badges Server VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-09-01 15:10+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: badgeserver/admin.py:92 badgeserver/images.py:40
+msgid "The uploaded file is empty."
+msgstr ""
+
+#: badgeserver/admin.py:121
+msgid "Incorrect username or password."
+msgstr ""
+
+#: badgeserver/admin.py:129
+msgid "Signed out."
+msgstr ""
+
+#: badgeserver/admin.py:174
+msgid "Issuer saved."
+msgstr ""
+
+#: badgeserver/admin.py:194
+msgid "Create the issuer profile first."
+msgstr ""
+
+#: badgeserver/admin.py:204
+#, python-format
+msgid "Badge “%(name)s” created."
+msgstr ""
+
+#: badgeserver/admin.py:229
+msgid "Badge updated."
+msgstr ""
+
+#: badgeserver/admin.py:251
+msgid "A badge image is required."
+msgstr ""
+
+#: badgeserver/admin.py:262
+msgid "Upload a logo to compose a badge."
+msgstr ""
+
+#: badgeserver/admin.py:380
+msgid "Badge archived."
+msgstr ""
+
+#: badgeserver/admin.py:380
+msgid "Badge un-archived."
+msgstr ""
+
+#: badgeserver/admin.py:404
+#, python-format
+msgid "That recipient already holds this badge (assertion %(id)s)."
+msgstr ""
+
+#: badgeserver/admin.py:410
+#, python-format
+msgid "Badge awarded to %(email)s."
+msgstr ""
+
+#: badgeserver/admin.py:413
+msgid "Notification e-mail sent."
+msgstr ""
+
+#: badgeserver/admin.py:416
+#, python-format
+msgid "Notification e-mail failed: %(error)s"
+msgstr ""
+
+#: badgeserver/admin.py:438
+#, python-format
+msgid "CSV has %(count)d addresses; the limit is %(cap)d."
+msgstr ""
+
+#: badgeserver/admin.py:450
+#, python-format
+msgid "Processed %(rows)d rows: %(ok)d awarded."
+msgstr ""
+
+#: badgeserver/admin.py:482
+msgid "already holds this badge"
+msgstr ""
+
+#: badgeserver/admin.py:488
+#, python-format
+msgid "awarded, e-mail failed: %(error)s"
+msgstr ""
+
+#: badgeserver/admin.py:490
+msgid "awarded, e-mail sent"
+msgstr ""
+
+#: badgeserver/admin.py:492 badgeserver/templates/assertion.html:3
+msgid "awarded"
+msgstr ""
+
+#: badgeserver/admin.py:546
+msgid "Assertion revoked."
+msgstr ""
+
+#: badgeserver/admin.py:548
+msgid "A reason is required to revoke."
+msgstr ""
+
+#: badgeserver/admin.py:558
+msgid "Assertion re-instated."
+msgstr ""
+
+#: badgeserver/admin.py:566
+msgid "SMTP is not configured."
+msgstr ""
+
+#: badgeserver/admin.py:570
+msgid "Notification e-mail re-sent."
+msgstr ""
+
+#: badgeserver/admin.py:574
+#, python-format
+msgid "Re-send failed: %(error)s"
+msgstr ""
+
+#: badgeserver/admin.py:586
+msgid "Current password is incorrect."
+msgstr ""
+
+#: badgeserver/admin.py:590
+msgid "Password changed."
+msgstr ""
+
+#: badgeserver/claim_views.py:46
+msgid "Claiming this badge is unavailable right now."
+msgstr ""
+
+#: badgeserver/claim_views.py:59
+msgid "You already have this badge."
+msgstr ""
+
+#: badgeserver/claim_views.py:83
+msgid "We could not send the confirmation e-mail. Please try again later."
+msgstr ""
+
+#: badgeserver/claim_views.py:122
+msgid "Badge confirmed — here it is."
+msgstr ""
+
+#: badgeserver/extensions.py:21
+msgid "Please sign in to continue."
+msgstr ""
+
+#: badgeserver/forms.py:42
+msgid "Use a hex colour like #2b6cb0."
+msgstr ""
+
+#: badgeserver/forms.py:44
+msgid "Images only."
+msgstr ""
+
+#: badgeserver/forms.py:48
+msgid "Username"
+msgstr ""
+
+#: badgeserver/forms.py:49 badgeserver/templates/admin/base.html:18
+msgid "Password"
+msgstr ""
+
+#: badgeserver/forms.py:50 badgeserver/templates/admin/login.html:4
+msgid "Sign in"
+msgstr ""
+
+#: badgeserver/forms.py:54
+msgid "Current password"
+msgstr ""
+
+#: badgeserver/forms.py:56
+msgid "New password"
+msgstr ""
+
+#: badgeserver/forms.py:59
+msgid "Repeat new password"
+msgstr ""
+
+#: badgeserver/forms.py:60
+msgid "Passwords do not match."
+msgstr ""
+
+#: badgeserver/forms.py:62 badgeserver/templates/admin/change_password.html:4
+#: badgeserver/templates/admin/change_password.html:6
+msgid "Change password"
+msgstr ""
+
+#: badgeserver/forms.py:66 badgeserver/forms.py:76
+#: badgeserver/templates/admin/badges.html:11
+msgid "Slug"
+msgstr ""
+
+#: badgeserver/forms.py:67 badgeserver/forms.py:77
+#: badgeserver/templates/admin/badges.html:11
+msgid "Name"
+msgstr ""
+
+#: badgeserver/forms.py:68
+msgid "Website URL"
+msgstr ""
+
+#: badgeserver/forms.py:69
+msgid "Contact e-mail"
+msgstr ""
+
+#: badgeserver/forms.py:70 badgeserver/forms.py:79
+msgid "Description"
+msgstr ""
+
+#: badgeserver/forms.py:71
+msgid "Logo (optional)"
+msgstr ""
+
+#: badgeserver/forms.py:72
+msgid "Save issuer"
+msgstr ""
+
+#: badgeserver/forms.py:82
+msgid "Criteria (what it is awarded for)"
+msgstr ""
+
+#: badgeserver/forms.py:85
+msgid "Criteria URL (optional)"
+msgstr ""
+
+#: badgeserver/forms.py:87
+msgid "Tags (comma separated)"
+msgstr ""
+
+#: badgeserver/forms.py:88
+msgid "Let anyone claim this badge"
+msgstr ""
+
+#: badgeserver/forms.py:91 badgeserver/templates/admin/badge_form.html:34
+msgid "Badge image"
+msgstr ""
+
+#: badgeserver/forms.py:93 badgeserver/templates/admin/badge_form.html:41
+msgid "Upload a finished image"
+msgstr ""
+
+#: badgeserver/forms.py:94 badgeserver/templates/admin/badge_form.html:47
+msgid "Compose from a logo"
+msgstr ""
+
+#: badgeserver/forms.py:99
+msgid "Finished badge image"
+msgstr ""
+
+#: badgeserver/forms.py:101
+msgid "Logo"
+msgstr ""
+
+#: badgeserver/forms.py:103
+msgid "Shape"
+msgstr ""
+
+#: badgeserver/forms.py:108
+msgid "Background colour"
+msgstr ""
+
+#: badgeserver/forms.py:112
+msgid "Ring colour"
+msgstr ""
+
+#: badgeserver/forms.py:116
+msgid "Logo size"
+msgstr ""
+
+#: badgeserver/forms.py:120
+msgid "Border width"
+msgstr ""
+
+#: badgeserver/forms.py:124
+msgid "Logo position"
+msgstr ""
+
+#: badgeserver/forms.py:128
+msgid "Title position"
+msgstr ""
+
+#: badgeserver/forms.py:132
+msgid "Save badge"
+msgstr ""
+
+#: badgeserver/forms.py:141
+msgid "Recipient e-mail"
+msgstr ""
+
+#: badgeserver/forms.py:143
+#: badgeserver/templates/admin/assertion_detail.html:12
+#: badgeserver/templates/assertion.html:21
+msgid "Issued on"
+msgstr ""
+
+#: badgeserver/forms.py:145
+msgid "Evidence URL (optional)"
+msgstr ""
+
+#: badgeserver/forms.py:147
+msgid "Note (optional)"
+msgstr ""
+
+#: badgeserver/forms.py:148
+msgid "Send an e-mail notification"
+msgstr ""
+
+#: badgeserver/forms.py:149
+msgid "Award badge"
+msgstr ""
+
+#: badgeserver/forms.py:154
+msgid "CSV file"
+msgstr ""
+
+#: badgeserver/forms.py:155
+msgid "Choose a CSV file."
+msgstr ""
+
+#: badgeserver/forms.py:155
+msgid "CSV only."
+msgstr ""
+
+#: badgeserver/forms.py:157
+msgid "Send an e-mail notification to each recipient"
+msgstr ""
+
+#: badgeserver/forms.py:158
+msgid "Award to all rows"
+msgstr ""
+
+#: badgeserver/forms.py:162
+msgid "Reason"
+msgstr ""
+
+#: badgeserver/forms.py:163
+#: badgeserver/templates/admin/assertion_detail.html:49
+msgid "Revoke"
+msgstr ""
+
+#: badgeserver/forms.py:169
+msgid "Confirm"
+msgstr ""
+
+#: badgeserver/forms.py:174
+msgid "Your e-mail address"
+msgstr ""
+
+#: badgeserver/forms.py:176 badgeserver/templates/badge.html:31
+msgid "Claim this badge"
+msgstr ""
+
+#: badgeserver/forms.py:181
+msgid "Badge URL, assertion JSON, or signed badge token"
+msgstr ""
+
+#: badgeserver/forms.py:185
+msgid "Recipient e-mail (optional)"
+msgstr ""
+
+#: badgeserver/forms.py:187 badgeserver/templates/admin/base.html:17
+#: badgeserver/templates/base.html:16
+msgid "Verify"
+msgstr ""
+
+#: badgeserver/images.py:46
+msgid ""
+"SVG support needs the python3-cairosvg package. Install it, or upload a "
+"PNG, JPEG or WEBP."
+msgstr ""
+
+#: badgeserver/images.py:53
+#, python-format
+msgid "Could not render the SVG: %(error)s"
+msgstr ""
+
+#: badgeserver/images.py:63
+msgid "The file is not a recognised image."
+msgstr ""
+
+#: badgeserver/images.py:69
+#, python-format
+msgid "Unsupported image format %(format)r. Use PNG, JPEG, WEBP, GIF or SVG."
+msgstr ""
+
+#: badgeserver/mail.py:107
+#, python-format
+msgid "You have been awarded: %(badge)s"
+msgstr ""
+
+#: badgeserver/mail.py:125
+#, python-format
+msgid "Confirm your %(badge)s badge"
+msgstr ""
+
+#: badgeserver/verify.py:106
+msgid "Only http(s) URLs can be verified."
+msgstr ""
+
+#: badgeserver/verify.py:109
+msgid "That URL has no host name."
+msgstr ""
+
+#: badgeserver/verify.py:114
+#, python-format
+msgid "Could not resolve %(host)r."
+msgstr ""
+
+#: badgeserver/verify.py:117
+#, python-format
+msgid "The address behind %(host)r is not allowed."
+msgstr ""
+
+#: badgeserver/verify.py:137
+msgid "Got a redirect with no target."
+msgstr ""
+
+#: badgeserver/verify.py:143
+#, python-format
+msgid "%(url)s returned HTTP %(code)s."
+msgstr ""
+
+#: badgeserver/verify.py:153
+msgid "The response is larger than allowed."
+msgstr ""
+
+#: badgeserver/verify.py:157
+msgid "Too many redirects."
+msgstr ""
+
+#: badgeserver/verify.py:165
+#, python-format
+msgid "%(url)s did not return JSON."
+msgstr ""
+
+#: badgeserver/verify.py:167
+#, python-format
+msgid "%(url)s returned JSON that is not an object."
+msgstr ""
+
+#: badgeserver/verify.py:255
+msgid "Paste a badge URL, its assertion JSON, or a signed badge token."
+msgstr ""
+
+#: badgeserver/verify.py:263
+msgid "That does not look like valid JSON."
+msgstr ""
+
+#: badgeserver/verify.py:269
+msgid "Paste an http(s) URL, the assertion JSON, or a signed badge token."
+msgstr ""
+
+#: badgeserver/verify.py:277
+msgid "The badge data could not be processed."
+msgstr ""
+
+#: badgeserver/verify.py:296
+msgid "That PNG has no Open Badges data baked into it."
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:15
+#: badgeserver/verify.py:298
+msgid "Baked PNG"
+msgstr ""
+
+#: badgeserver/verify.py:298
+msgid "read the assertion reference from the image"
+msgstr ""
+
+#: badgeserver/verify.py:310
+msgid ""
+"That URL did not return badge data. Use the assertion JSON URL (often "
+"ends in .json) or the badge PNG."
+msgstr ""
+
+#: badgeserver/verify.py:315
+msgid "That URL returned JSON that is not an object."
+msgstr ""
+
+#: badgeserver/verify.py:331
+msgid "No badge with that identifier has been issued by this server."
+msgstr ""
+
+#: badgeserver/verify.py:333 badgeserver/verify.py:336
+msgid "Assertion exists on this server"
+msgstr ""
+
+#: badgeserver/verify.py:338
+msgid "Linked badge class"
+msgstr ""
+
+#: badgeserver/templates/admin/issuer.html:6 badgeserver/verify.py:347
+msgid "Issuer profile"
+msgstr ""
+
+#: badgeserver/verify.py:349 badgeserver/verify.py:449
+#: badgeserver/verify.py:477
+msgid "missing"
+msgstr ""
+
+#: badgeserver/verify.py:373 badgeserver/verify.py:377
+#: badgeserver/verify.py:557 badgeserver/verify.py:562
+msgid "Not revoked"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:29
+#: badgeserver/templates/admin/assertions.html:34
+#: badgeserver/templates/admin/dashboard.html:20
+#: badgeserver/templates/admin/dashboard.html:35 badgeserver/verify.py:373
+#: badgeserver/verify.py:559 badgeserver/verify.py:715
+msgid "revoked"
+msgstr ""
+
+#: badgeserver/verify.py:383 badgeserver/verify.py:585
+msgid "Recipient e-mail matches"
+msgstr ""
+
+#: badgeserver/verify.py:385 badgeserver/verify.py:587
+msgid "this badge was issued to a different address"
+msgstr ""
+
+#: badgeserver/verify.py:403
+msgid ""
+"This is an Open Badges 3.0 / Verifiable Credential. This tool verifies "
+"Open Badges 2.0 badges."
+msgstr ""
+
+#: badgeserver/verify.py:423
+msgid "Signed badge"
+msgstr ""
+
+#: badgeserver/verify.py:426
+msgid "provide the signed token or the baked PNG so the signature can be checked"
+msgstr ""
+
+#: badgeserver/verify.py:443 badgeserver/verify.py:445
+msgid "Document type is Assertion"
+msgstr ""
+
+#: badgeserver/verify.py:449 badgeserver/verify.py:451
+#, python-format
+msgid "Has %(field)s"
+msgstr ""
+
+#: badgeserver/verify.py:461 badgeserver/verify.py:467
+#: badgeserver/verify.py:472
+msgid "Assertion is published at its own URL"
+msgstr ""
+
+#: badgeserver/verify.py:463
+msgid "the copy at that URL has a different id"
+msgstr ""
+
+#: badgeserver/verify.py:477
+msgid "Assertion has an id"
+msgstr ""
+
+#: badgeserver/verify.py:505
+#, python-format
+msgid "%(kind)s fetched"
+msgstr ""
+
+#: badgeserver/verify.py:514
+msgid "Badge class is well-formed"
+msgstr ""
+
+#: badgeserver/verify.py:530
+msgid "Issuer profile is well-formed"
+msgstr ""
+
+#: badgeserver/verify.py:543
+msgid "Issuer and assertion share a domain"
+msgstr ""
+
+#: badgeserver/verify.py:545
+msgid "the issuer is hosted on a different domain"
+msgstr ""
+
+#: badgeserver/verify.py:565
+msgid "Issue date is valid"
+msgstr ""
+
+#: badgeserver/verify.py:570
+msgid "Not expired"
+msgstr ""
+
+#: badgeserver/verify.py:613
+msgid ""
+"Signed-badge verification needs the python3-jwt and python3-cryptography "
+"packages."
+msgstr ""
+
+#: badgeserver/verify.py:624
+msgid "Could not decode that signed badge token."
+msgstr ""
+
+#: badgeserver/verify.py:627
+msgid "The signed token payload is not an Open Badges assertion."
+msgstr ""
+
+#: badgeserver/verify.py:631
+msgid "Signed badge token decoded"
+msgstr ""
+
+#: badgeserver/verify.py:641
+msgid "The signed badge does not reference a public key (verification.creator)."
+msgstr ""
+
+#: badgeserver/verify.py:650
+msgid "The referenced key document has no publicKeyPem."
+msgstr ""
+
+#: badgeserver/verify.py:655 badgeserver/verify.py:659
+msgid "Signature verified with the issuer's key"
+msgstr ""
+
+#: badgeserver/verify.py:671
+msgid "Key belongs to the issuer"
+msgstr ""
+
+#: badgeserver/verify.py:682
+msgid "Issuer lists this key"
+msgstr ""
+
+#: badgeserver/verify.py:684
+msgid "the issuer profile does not reference this key"
+msgstr ""
+
+#: badgeserver/verify.py:699
+msgid "Checked the issuer revocation list"
+msgstr ""
+
+#: badgeserver/verify.py:713 badgeserver/verify.py:718
+msgid "Not on the revocation list"
+msgstr ""
+
+#: badgeserver/templates/404.html:3 badgeserver/templates/404.html:5
+msgid "Not found"
+msgstr ""
+
+#: badgeserver/templates/404.html:6
+msgid "That page or badge does not exist."
+msgstr ""
+
+#: badgeserver/templates/500.html:3
+msgid "Error"
+msgstr ""
+
+#: badgeserver/templates/500.html:5
+msgid "Something went wrong"
+msgstr ""
+
+#: badgeserver/templates/500.html:6
+msgid "The server hit an unexpected error. Please try again."
+msgstr ""
+
+#: badgeserver/templates/assertion.html:12
+#, python-format
+msgid "This badge was revoked: %(reason)s"
+msgstr ""
+
+#: badgeserver/templates/assertion.html:14
+msgid "This badge was revoked."
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:10
+#: badgeserver/templates/admin/assertions.html:25
+#: badgeserver/templates/admin/dashboard.html:27
+#: badgeserver/templates/assertion.html:20
+msgid "Recipient"
+msgstr ""
+
+#: badgeserver/templates/assertion.html:22
+msgid "Issued by"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:17
+#: badgeserver/templates/assertion.html:23
+msgid "Note"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:16
+#: badgeserver/templates/assertion.html:24
+msgid "Evidence"
+msgstr ""
+
+#: badgeserver/templates/assertion.html:27
+msgid "assertion JSON"
+msgstr ""
+
+#: badgeserver/templates/assertion.html:28
+msgid "baked PNG"
+msgstr ""
+
+#: badgeserver/templates/assertion.html:29
+msgid "QR code"
+msgstr ""
+
+#: badgeserver/templates/badge.html:9
+msgid "This badge is archived."
+msgstr ""
+
+#: badgeserver/templates/badge.html:12
+msgid "Criteria"
+msgstr ""
+
+#: badgeserver/templates/badge.html:16
+msgid "More about the criteria"
+msgstr ""
+
+#: badgeserver/templates/badge.html:22
+#, python-format
+msgid "Awarded %(num)d time"
+msgid_plural "Awarded %(num)d times"
+msgstr[0] ""
+msgstr[1] ""
+
+#: badgeserver/templates/badge.html:23
+msgid "badge JSON"
+msgstr ""
+
+#: badgeserver/templates/badge.html:24
+#, python-format
+msgid "issued by <a href=\"%(url)s\">%(name)s</a>"
+msgstr ""
+
+#: badgeserver/templates/badge.html:33
+msgid "Enter your e-mail and we'll send you a link to confirm."
+msgstr ""
+
+#: badgeserver/templates/badge.html:40
+msgid "Claiming is temporarily unavailable."
+msgstr ""
+
+#: badgeserver/templates/admin/badges.html:3
+#: badgeserver/templates/admin/base.html:14 badgeserver/templates/base.html:15
+#: badgeserver/templates/index.html:22
+msgid "Badges"
+msgstr ""
+
+#: badgeserver/templates/base.html:17
+msgid "Admin"
+msgstr ""
+
+#: badgeserver/templates/base.html:39
+msgid "Self-hosted Open Badges 2.0 issuer"
+msgstr ""
+
+#: badgeserver/templates/claim_result.html:3
+#, python-format
+msgid "Claim %(name)s"
+msgstr ""
+
+#: badgeserver/templates/claim_result.html:6
+msgid "Check your e-mail"
+msgstr ""
+
+#: badgeserver/templates/claim_result.html:7
+#, python-format
+msgid ""
+"We've sent a confirmation link for the <strong>%(name)s</strong> badge to"
+"\n"
+"      <strong>%(email)s</strong>. Click it to receive your badge."
+msgstr ""
+
+#: badgeserver/templates/claim_result.html:11
+#, python-format
+msgid ""
+"The link is valid for a limited time. Didn't get it? Check your spam "
+"folder,\n"
+"      then <a href=\"%(url)s\">try again</a>."
+msgstr ""
+
+#: badgeserver/templates/claim_result.html:16
+msgid "That link has expired"
+msgstr ""
+
+#: badgeserver/templates/claim_result.html:17
+#, python-format
+msgid ""
+"The confirmation link for the <strong>%(name)s</strong> badge is no "
+"longer valid."
+msgstr ""
+
+#: badgeserver/templates/claim_result.html:20
+msgid "Start over"
+msgstr ""
+
+#: badgeserver/templates/index.html:14
+msgid "issuer JSON"
+msgstr ""
+
+#: badgeserver/templates/index.html:19
+msgid "No issuer has been configured yet."
+msgstr ""
+
+#: badgeserver/templates/admin/badges.html:23
+#: badgeserver/templates/index.html:30
+msgid "claimable"
+msgstr ""
+
+#: badgeserver/templates/index.html:36
+msgid "No badges published yet."
+msgstr ""
+
+#: badgeserver/templates/verify.html:4 badgeserver/templates/verify.html:6
+msgid "Verify a badge"
+msgstr ""
+
+#: badgeserver/templates/verify.html:7
+msgid ""
+"Paste a badge page URL, an assertion JSON URL, the assertion JSON itself,"
+" or a signed badge token. Add the recipient's e-mail to also confirm who "
+"it was issued to. Badges from other Open Badges issuers can be checked "
+"too."
+msgstr ""
+
+#: badgeserver/templates/verify.html:18
+msgid "Valid badge"
+msgstr ""
+
+#: badgeserver/templates/admin/assertions.html:17
+#: badgeserver/templates/verify.html:18
+msgid "Revoked"
+msgstr ""
+
+#: badgeserver/templates/verify.html:18
+msgid "Expired"
+msgstr ""
+
+#: badgeserver/templates/verify.html:19
+msgid "Not verified"
+msgstr ""
+
+#: badgeserver/templates/verify.html:19
+msgid "Not checked"
+msgstr ""
+
+#: badgeserver/templates/verify.html:27
+#, python-format
+msgid "Issued by <strong>%(name)s</strong>"
+msgstr ""
+
+#: badgeserver/templates/verify.html:28
+msgid "this server"
+msgstr ""
+
+#: badgeserver/templates/verify.html:29
+msgid "external issuer"
+msgstr ""
+
+#: badgeserver/templates/verify.html:42
+msgid "(unnamed badge)"
+msgstr ""
+
+#: badgeserver/templates/verify.html:46
+#, python-format
+msgid "Issued %(d)s"
+msgstr ""
+
+#: badgeserver/templates/verify.html:47
+#, python-format
+msgid "to %(r)s"
+msgstr ""
+
+#: badgeserver/templates/verify.html:51
+msgid "badge image"
+msgstr ""
+
+#: badgeserver/templates/verify.html:59
+msgid "Confirmed: this badge was issued to that e-mail address."
+msgstr ""
+
+#: badgeserver/templates/verify.html:61
+msgid "That e-mail address is not the recipient of this badge."
+msgstr ""
+
+#: badgeserver/templates/verify.html:66
+msgid "Checks"
+msgstr ""
+
+#: badgeserver/templates/verify.html:78
+#, python-format
+msgid "Raw badge data (%(fmt)s)"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:4
+#, python-format
+msgid "Assertion %(id)s"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:6
+msgid "Assertion"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:9
+#: badgeserver/templates/admin/assertions.html:25
+#: badgeserver/templates/admin/dashboard.html:27
+msgid "Badge"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:11
+msgid "UUID"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:13
+msgid "Public page"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:14
+msgid "Assertion JSON"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:15
+msgid "download"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:18
+#: badgeserver/templates/admin/assertions.html:26
+#: badgeserver/templates/admin/dashboard.html:28
+msgid "E-mail"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:21
+#, python-format
+msgid "sent %(when)s"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:23
+#, python-format
+msgid "failed: %(err)s"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:25
+msgid "not sent"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:28
+#: badgeserver/templates/admin/assertions.html:26
+#: badgeserver/templates/admin/award_csv.html:19
+msgid "Status"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:29
+#: badgeserver/templates/admin/assertions.html:34
+#: badgeserver/templates/admin/badges.html:22
+msgid "active"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:36
+msgid "Re-send e-mail"
+msgstr ""
+
+#: badgeserver/templates/admin/assertion_detail.html:43
+msgid "Re-instate"
+msgstr ""
+
+#: badgeserver/templates/admin/assertions.html:3
+#: badgeserver/templates/admin/assertions.html:5
+#: badgeserver/templates/admin/base.html:16
+msgid "Assertions"
+msgstr ""
+
+#: badgeserver/templates/admin/assertions.html:8
+msgid "All badges"
+msgstr ""
+
+#: badgeserver/templates/admin/assertions.html:13
+msgid "e-mail contains…"
+msgstr ""
+
+#: badgeserver/templates/admin/assertions.html:15
+msgid "Any status"
+msgstr ""
+
+#: badgeserver/templates/admin/assertions.html:16
+msgid "Active"
+msgstr ""
+
+#: badgeserver/templates/admin/assertions.html:19
+msgid "Filter"
+msgstr ""
+
+#: badgeserver/templates/admin/assertions.html:25
+msgid "Issued"
+msgstr ""
+
+#: badgeserver/templates/admin/assertions.html:35
+#: badgeserver/templates/admin/dashboard.html:36
+msgid "sent"
+msgstr ""
+
+#: badgeserver/templates/admin/assertions.html:35
+#: badgeserver/templates/admin/dashboard.html:36
+msgid "failed"
+msgstr ""
+
+#: badgeserver/templates/admin/assertions.html:36
+#: badgeserver/templates/admin/award_csv.html:27
+#: badgeserver/templates/admin/dashboard.html:37
+msgid "open"
+msgstr ""
+
+#: badgeserver/templates/admin/assertions.html:41
+msgid "Showing up to 500 rows."
+msgstr ""
+
+#: badgeserver/templates/admin/assertions.html:43
+msgid "No assertions match."
+msgstr ""
+
+#: badgeserver/templates/admin/award.html:4
+#, python-format
+msgid "Award %(name)s"
+msgstr ""
+
+#: badgeserver/templates/admin/award.html:6
+#, python-format
+msgid "Award “%(name)s”"
+msgstr ""
+
+#: badgeserver/templates/admin/award.html:7
+msgid "This badge is archived but can still be awarded."
+msgstr ""
+
+#: badgeserver/templates/admin/award.html:11
+msgid "Defaults to today if left blank."
+msgstr ""
+
+#: badgeserver/templates/admin/award.html:17
+#: badgeserver/templates/admin/award_csv.html:12
+msgid "SMTP is not configured, so no e-mail will be sent."
+msgstr ""
+
+#: badgeserver/templates/admin/award_csv.html:4
+#, python-format
+msgid "Bulk award %(name)s"
+msgstr ""
+
+#: badgeserver/templates/admin/award_csv.html:6
+#, python-format
+msgid "Bulk award “%(name)s”"
+msgstr ""
+
+#: badgeserver/templates/admin/award_csv.html:7
+msgid ""
+"Upload a CSV or plain-text file. The first cell of each row that looks "
+"like an e-mail address is used; other cells are ignored. Duplicates and "
+"recipients who already hold this badge are skipped."
+msgstr ""
+
+#: badgeserver/templates/admin/award_csv.html:17
+msgid "Result"
+msgstr ""
+
+#: badgeserver/templates/admin/award_csv.html:19
+msgid "Address"
+msgstr ""
+
+#: badgeserver/templates/admin/award_csv.html:19
+msgid "Detail"
+msgstr ""
+
+#: badgeserver/templates/admin/badge_form.html:14
+#: badgeserver/templates/admin/badge_form.html:16
+msgid "Edit badge"
+msgstr ""
+
+#: badgeserver/templates/admin/badge_form.html:14
+#: badgeserver/templates/admin/badge_form.html:16
+#: badgeserver/templates/admin/badges.html:6
+msgid "New badge"
+msgstr ""
+
+#: badgeserver/templates/admin/badge_form.html:22
+#, python-format
+msgid "Slug <code>%(slug)s</code> &mdash; fixed once created."
+msgstr ""
+
+#: badgeserver/templates/admin/badge_form.html:24
+#: badgeserver/templates/admin/issuer.html:14
+msgid "Used in URLs. Leave blank to derive it from the name."
+msgstr ""
+
+#: badgeserver/templates/admin/badge_form.html:28
+msgid "Plain text describing what earns this badge."
+msgstr ""
+
+#: badgeserver/templates/admin/badge_form.html:31
+msgid ""
+"Anyone can claim this badge for their own e-mail address (they confirm by"
+" clicking a link). Needs e-mail to be configured."
+msgstr ""
+
+#: badgeserver/templates/admin/badge_form.html:42
+msgid ""
+"Fill this in if you chose “Upload a finished image” above. PNG, JPEG, "
+"WEBP, GIF or SVG. It is made square and resized."
+msgstr ""
+
+#: badgeserver/templates/admin/badge_form.html:48
+msgid ""
+"Fill this in if you chose “Compose from a logo”. The server draws the "
+"shape, places the logo and writes the title below it."
+msgstr ""
+
+#: badgeserver/templates/admin/badge_form.html:51
+msgid "PNG, JPEG, WEBP, GIF or SVG. A transparent logo looks best."
+msgstr ""
+
+#: badgeserver/templates/admin/badge_form.html:59
+msgid "positive = lower"
+msgstr ""
+
+#: badgeserver/templates/admin/badge_form.html:60
+msgid "negative = higher"
+msgstr ""
+
+#: badgeserver/templates/admin/badge_form.html:64
+msgid "badge preview"
+msgstr ""
+
+#: badgeserver/templates/admin/badge_form.html:66
+msgid "Live preview"
+msgstr ""
+
+#: badgeserver/templates/admin/badge_form.html:73
+msgid "Current image"
+msgstr ""
+
+#: badgeserver/templates/admin/badges.html:5
+msgid "Badge classes"
+msgstr ""
+
+#: badgeserver/templates/admin/badges.html:12
+msgid "Awarded"
+msgstr ""
+
+#: badgeserver/templates/admin/badges.html:12
+msgid "State"
+msgstr ""
+
+#: badgeserver/templates/admin/badges.html:22
+msgid "archived"
+msgstr ""
+
+#: badgeserver/templates/admin/badges.html:26
+msgid "Award"
+msgstr ""
+
+#: badgeserver/templates/admin/badges.html:27
+msgid "CSV"
+msgstr ""
+
+#: badgeserver/templates/admin/badges.html:28
+msgid "Edit"
+msgstr ""
+
+#: badgeserver/templates/admin/badges.html:29
+msgid "View"
+msgstr ""
+
+#: badgeserver/templates/admin/badges.html:32
+msgid "Un-archive"
+msgstr ""
+
+#: badgeserver/templates/admin/badges.html:32
+msgid "Archive"
+msgstr ""
+
+#: badgeserver/templates/admin/badges.html:40
+msgid "No badge classes yet."
+msgstr ""
+
+#: badgeserver/templates/admin/base.html:12
+#: badgeserver/templates/admin/dashboard.html:3
+#: badgeserver/templates/admin/dashboard.html:5
+msgid "Dashboard"
+msgstr ""
+
+#: badgeserver/templates/admin/base.html:13
+#: badgeserver/templates/admin/issuer.html:4
+msgid "Issuer"
+msgstr ""
+
+#: badgeserver/templates/admin/base.html:21
+msgid "Sign out"
+msgstr ""
+
+#: badgeserver/templates/admin/change_password.html:10
+msgid "At least 10 characters."
+msgstr ""
+
+#: badgeserver/templates/admin/dashboard.html:8
+#, python-format
+msgid ""
+"No issuer profile yet &mdash; <a href=\"%(url)s\">create it</a> before "
+"adding badges."
+msgstr ""
+
+#: badgeserver/templates/admin/dashboard.html:13
+msgid "SMTP is not configured; award notifications are disabled."
+msgstr ""
+
+#: badgeserver/templates/admin/dashboard.html:17
+msgid "active badges"
+msgstr ""
+
+#: badgeserver/templates/admin/dashboard.html:18
+msgid "badges total"
+msgstr ""
+
+#: badgeserver/templates/admin/dashboard.html:19
+msgid "active assertions"
+msgstr ""
+
+#: badgeserver/templates/admin/dashboard.html:23
+msgid "Recent awards"
+msgstr ""
+
+#: badgeserver/templates/admin/dashboard.html:27
+msgid "When"
+msgstr ""
+
+#: badgeserver/templates/admin/dashboard.html:43
+msgid "No badges awarded yet."
+msgstr ""
+
+#: badgeserver/templates/admin/issuer.html:8
+#, python-format
+msgid ""
+"Slug <code>%(slug)s</code> &mdash; fixed once created, because it is part"
+" of every badge URL."
+msgstr ""
+
+#: badgeserver/templates/admin/issuer.html:19
+msgid "Square PNG/JPEG/WEBP. Optional."
+msgstr ""
+
+#: badgeserver/templates/admin/login.html:6
+msgid "Admin sign in"
+msgstr ""
+
+#: badgeserver/templates/email/award.html:4
+msgid "You have been awarded a badge:"
+msgstr ""
+
+#: badgeserver/templates/email/award.html:7
+#, python-format
+msgid ""
+"Issued by <strong>%(name)s</strong> &ndash; <a "
+"href=\"%(url)s\">%(url)s</a>"
+msgstr ""
+
+#: badgeserver/templates/email/award.html:14
+msgid "View your badge"
+msgstr ""
+
+#: badgeserver/templates/email/award.html:17
+msgid "Badge image:"
+msgstr ""
+
+#: badgeserver/templates/email/award.html:18
+msgid "Verification data:"
+msgstr ""
+
+#: badgeserver/templates/email/award.txt:1
+#, python-format
+msgid "You have been awarded a badge: %(name)s"
+msgstr ""
+
+#: badgeserver/templates/email/award.txt:5
+#, python-format
+msgid "Issued by: %(name)s (%(url)s)"
+msgstr ""
+
+#: badgeserver/templates/email/award.txt:6
+#, python-format
+msgid "Note: %(note)s"
+msgstr ""
+
+#: badgeserver/templates/email/award.txt:8
+msgid "Your badge page:"
+msgstr ""
+
+#: badgeserver/templates/email/award.txt:11
+msgid "Badge image (Open Badges \"baked\" PNG):"
+msgstr ""
+
+#: badgeserver/templates/email/award.txt:14
+msgid "Verification data (Open Badges 2.0 assertion):"
+msgstr ""
+
+#: badgeserver/templates/email/claim.html:4
+#, python-format
+msgid ""
+"Someone (hopefully you) asked to claim the <strong>%(name)s</strong> "
+"badge\n"
+"    from <strong>%(issuer)s</strong> for this e-mail address."
+msgstr ""
+
+#: badgeserver/templates/email/claim.html:11
+msgid "Confirm and get my badge"
+msgstr ""
+
+#: badgeserver/templates/email/claim.html:14
+msgid "Or paste this link into your browser:"
+msgstr ""
+
+#: badgeserver/templates/email/claim.html:18
+#, python-format
+msgid ""
+"The link is valid for about %(hours)s hours. If you did not request this,"
+"\n"
+"    ignore this message &mdash; no badge is issued until the link is used."
+msgstr ""
+
+#: badgeserver/templates/email/claim.txt:1
+#, python-format
+msgid "Confirm your %(name)s badge"
+msgstr ""
+
+#: badgeserver/templates/email/claim.txt:3
+#, python-format
+msgid ""
+"Someone (hopefully you) asked to claim the \"%(name)s\" badge from "
+"%(issuer)s\n"
+"for this e-mail address."
+msgstr ""
+
+#: badgeserver/templates/email/claim.txt:8
+msgid "Confirm and receive your badge:"
+msgstr ""
+
+#: badgeserver/templates/email/claim.txt:11
+#, python-format
+msgid ""
+"This link is valid for about %(hours)s hours. If you did not request "
+"this, you\n"
+"can ignore this message -- no badge is issued until the link is used."
+msgstr ""
+

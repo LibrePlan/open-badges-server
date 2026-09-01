@@ -20,6 +20,7 @@ from flask import (
     request,
     url_for,
 )
+from flask_babel import gettext as _
 from flask_login import current_user, login_required, login_user, logout_user
 
 from .extensions import db, limiter
@@ -88,7 +89,7 @@ def _write_upload(data: bytes, filename: str) -> str:
 def _store_image(file_storage, filename: str) -> str:
     raw = file_storage.read()
     if not raw:
-        raise ImageError("The uploaded file is empty.")
+        raise ImageError(_("The uploaded file is empty."))
     save_square_png(raw, os.path.join(_upload_dir(), filename), size=_image_size())
     return filename
 
@@ -117,7 +118,7 @@ def login():
             if nxt.startswith("/") and not nxt.startswith("//"):
                 return redirect(nxt)
             return redirect(url_for("admin.dashboard"))
-        flash("Incorrect username or password.", "error")
+        flash(_("Incorrect username or password."), "error")
     return render_template("admin/login.html", form=form)
 
 
@@ -125,7 +126,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash("Signed out.", "ok")
+    flash(_("Signed out."), "ok")
     return redirect(url_for("public.index"))
 
 
@@ -170,7 +171,7 @@ def issuer():
             if form.image.data:
                 obj.image_path = _store_image(form.image.data, f"issuer-{obj.slug}.png")
             db.session.commit()
-            flash("Issuer saved.", "ok")
+            flash(_("Issuer saved."), "ok")
             return redirect(url_for("admin.issuer"))
         except ImageError as exc:
             db.session.rollback()
@@ -190,7 +191,7 @@ def badges():
 @bp.route("/badges/new", methods=["GET", "POST"])
 def badge_new():
     if _sole_issuer() is None:
-        flash("Create the issuer profile first.", "error")
+        flash(_("Create the issuer profile first."), "error")
         return redirect(url_for("admin.issuer"))
     form = NewBadgeClassForm()
     if form.validate_on_submit():
@@ -200,7 +201,7 @@ def badge_new():
             _apply_badge_form(badge, form, image_required=True)
             db.session.add(badge)
             db.session.commit()
-            flash(f"Badge “{badge.name}” created.", "ok")
+            flash(_("Badge “%(name)s” created.", name=badge.name), "ok")
             return redirect(url_for("admin.badges"))
         except ImageError as exc:
             db.session.rollback()
@@ -225,7 +226,7 @@ def badge_edit(slug: str):
         try:
             _apply_badge_form(badge, form, image_required=False)
             db.session.commit()
-            flash("Badge updated.", "ok")
+            flash(_("Badge updated."), "ok")
             return redirect(url_for("admin.badges"))
         except ImageError as exc:
             db.session.rollback()
@@ -247,7 +248,7 @@ def _apply_badge_form(badge: BadgeClass, form: BadgeClassForm, *, image_required
         if form.image.data:
             badge.image_path = _store_image(form.image.data, f"badge-{badge.slug}.png")
         elif image_required and not badge.image_path:
-            raise ImageError("A badge image is required.")
+            raise ImageError(_("A badge image is required."))
         badge.logo_path = None
         badge.art_bg = badge.art_accent = ""
 
@@ -258,7 +259,7 @@ def _apply_compose(badge: BadgeClass, form: BadgeClassForm) -> None:
         png = images.rasterize_to_png(form.logo.data.read(), size)
         badge.logo_path = _write_upload(png, f"logo-{badge.slug}.png")
     if not badge.logo_path:
-        raise ImageError("Upload a logo to compose a badge.")
+        raise ImageError(_("Upload a logo to compose a badge."))
 
     badge.art_shape = (
         form.art_shape.data if form.art_shape.data in BadgeClass.ART_SHAPES else "octagon"
@@ -376,7 +377,7 @@ def badge_archive(slug: str):
     badge = db.session.get(BadgeClass, slug) or abort(404)
     badge.archived = not badge.archived
     db.session.commit()
-    flash(("Badge archived." if badge.archived else "Badge un-archived."), "ok")
+    flash((_("Badge archived.") if badge.archived else _("Badge un-archived.")), "ok")
     return redirect(url_for("admin.badges"))
 
 
@@ -399,17 +400,21 @@ def award(slug: str):
             )
         except AlreadyAwarded as exc:
             flash(
-                f"That recipient already holds this badge "
-                f"(assertion {exc.assertion.uuid}).",
+                _(
+                    "That recipient already holds this badge (assertion %(id)s).",
+                    id=exc.assertion.uuid,
+                ),
                 "error",
             )
             return redirect(url_for("admin.award", slug=slug))
-        msg = f"Badge awarded to {result.assertion.recipient_email}."
+        msg = _("Badge awarded to %(email)s.", email=result.assertion.recipient_email)
         category = "ok"
         if result.email_attempted and result.email_ok:
-            msg += " Notification e-mail sent."
+            msg += " " + _("Notification e-mail sent.")
         elif result.email_attempted:
-            msg += f" Notification e-mail failed: {result.email_error}"
+            msg += " " + _(
+                "Notification e-mail failed: %(error)s", error=result.email_error
+            )
             category = "error"
         flash(msg, category)
         return redirect(url_for("admin.assertion_detail", uuid=result.assertion.uuid))
@@ -428,12 +433,26 @@ def award_csv(slug: str):
         emails = _extract_emails(raw)
         cap = current_app.config["CSV_AWARD_MAX_ROWS"]
         if len(emails) > cap:
-            flash(f"CSV has {len(emails)} addresses; the limit is {cap}.", "error")
+            flash(
+                _(
+                    "CSV has %(count)d addresses; the limit is %(cap)d.",
+                    count=len(emails),
+                    cap=cap,
+                ),
+                "error",
+            )
         else:
             for email in emails:
                 results.append(_award_one_csv_row(badge, email, form.send_email.data))
             ok = sum(1 for r in results if r["status"] == "awarded")
-            flash(f"Processed {len(results)} rows: {ok} awarded.", "ok")
+            flash(
+                _(
+                    "Processed %(rows)d rows: %(ok)d awarded.",
+                    rows=len(results),
+                    ok=ok,
+                ),
+                "ok",
+            )
     return render_template(
         "admin/award_csv.html",
         form=form,
@@ -460,17 +479,17 @@ def _award_one_csv_row(badge: BadgeClass, email: str, send_email: bool) -> dict:
     try:
         result = award_badge(badge, email, send_email=send_email)
     except AlreadyAwarded:
-        return {"email": email, "status": "skipped", "detail": "already holds this badge"}
+        return {"email": email, "status": "skipped", "detail": _("already holds this badge")}
     except Exception as exc:  # noqa: BLE001
         db.session.rollback()
         return {"email": email, "status": "error", "detail": f"{type(exc).__name__}: {exc}"}
     detail = ""
     if result.email_attempted and not result.email_ok:
-        detail = f"awarded, e-mail failed: {result.email_error}"
+        detail = _("awarded, e-mail failed: %(error)s", error=result.email_error)
     elif result.email_attempted:
-        detail = "awarded, e-mail sent"
+        detail = _("awarded, e-mail sent")
     else:
-        detail = "awarded"
+        detail = _("awarded")
     return {"email": email, "status": "awarded", "detail": detail, "uuid": result.assertion.uuid}
 
 
@@ -524,9 +543,9 @@ def assertion_revoke(uuid: str):
         assertion.revoked = True
         assertion.revocation_reason = form.reason.data.strip()
         db.session.commit()
-        flash("Assertion revoked.", "ok")
+        flash(_("Assertion revoked."), "ok")
     else:
-        flash("A reason is required to revoke.", "error")
+        flash(_("A reason is required to revoke."), "error")
     return redirect(url_for("admin.assertion_detail", uuid=uuid))
 
 
@@ -536,7 +555,7 @@ def assertion_unrevoke(uuid: str):
     assertion.revoked = False
     assertion.revocation_reason = ""
     db.session.commit()
-    flash("Assertion re-instated.", "ok")
+    flash(_("Assertion re-instated."), "ok")
     return redirect(url_for("admin.assertion_detail", uuid=uuid))
 
 
@@ -544,15 +563,15 @@ def assertion_unrevoke(uuid: str):
 def assertion_resend(uuid: str):
     assertion = db.session.get(Assertion, uuid) or abort(404)
     if not mail_configured():
-        flash("SMTP is not configured.", "error")
+        flash(_("SMTP is not configured."), "error")
     else:
         try:
             resend_email(assertion)
-            flash("Notification e-mail re-sent.", "ok")
+            flash(_("Notification e-mail re-sent."), "ok")
         except Exception as exc:  # noqa: BLE001
             assertion.email_error = f"{type(exc).__name__}: {exc}"
             db.session.commit()
-            flash(f"Re-send failed: {assertion.email_error}", "error")
+            flash(_("Re-send failed: %(error)s", error=assertion.email_error), "error")
     return redirect(url_for("admin.assertion_detail", uuid=uuid))
 
 
@@ -564,10 +583,10 @@ def change_password():
     form = ChangePasswordForm()
     if form.validate_on_submit():
         if not current_user.check_password(form.current_password.data):
-            flash("Current password is incorrect.", "error")
+            flash(_("Current password is incorrect."), "error")
         else:
             current_user.set_password(form.new_password.data)
             db.session.commit()
-            flash("Password changed.", "ok")
+            flash(_("Password changed."), "ok")
             return redirect(url_for("admin.dashboard"))
     return render_template("admin/change_password.html", form=form)

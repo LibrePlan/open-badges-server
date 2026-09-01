@@ -564,3 +564,54 @@ def test_claim_guards(app, client, auth_client, monkeypatch):
         from badgeserver.models import BadgeClaim
 
         assert BadgeClaim.query.count() == 0
+
+
+# --- internationalisation --------------------------------------------------
+
+
+def test_lang_query_switches_and_sticks(client):
+    r = client.get("/?lang=es")
+    assert r.status_code == 200
+    assert "Insignias".encode() in r.data  # nav label, Spanish
+    assert 'lang="es"'.encode() in r.data
+    with client.session_transaction() as sess:
+        assert sess["lang"] == "es"
+    # the choice persists without ?lang= on the next request
+    assert "Insignias".encode() in client.get("/").data
+
+
+def test_accept_language_header_without_cookie(client):
+    r = client.get("/", headers={"Accept-Language": "de"})
+    assert 'lang="de"'.encode() in r.data
+    assert "Abzeichen".encode() in r.data
+
+
+def test_unknown_lang_is_ignored(client):
+    r = client.get("/?lang=xx")
+    assert 'lang="en"'.encode() in r.data
+    with client.session_transaction() as sess:
+        assert "lang" not in sess
+
+
+def test_all_catalogs_load(app):
+    from flask_babel import force_locale, gettext
+
+    with app.test_request_context("/"):
+        english = gettext("Sign in")
+        for code in ("es", "de", "fr", "nl"):
+            with force_locale(code):
+                assert gettext("Sign in") != english
+
+
+def test_confirmation_email_follows_visitor_language(app, client, auth_client, monkeypatch):
+    _self_service_badge(app, auth_client)
+    sent = _mailable(app, monkeypatch)
+
+    r = client.post(
+        "/b/fan/claim?lang=nl", data={"email": "fan@example.com", "submit": "x"}
+    )
+    assert r.status_code == 200
+    assert len(sent) == 1
+    assert sent[0]["Subject"] == "Bevestig je Fan-badge"
+    body = sent[0].get_body(("plain",)).get_content()
+    assert "Bevestig en ontvang je badge" in body

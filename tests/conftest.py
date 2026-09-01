@@ -21,6 +21,8 @@ def app(tmp_path):
             "SESSION_COOKIE_SECURE": False,
             "MAIL_ENABLED": False,
             "RATELIMIT_ENABLED": False,
+            "LANGUAGES": ["en", "es", "de", "fr", "nl"],
+            "BABEL_DEFAULT_LOCALE": "en",
         },
         data_dir=str(tmp_path),
     )

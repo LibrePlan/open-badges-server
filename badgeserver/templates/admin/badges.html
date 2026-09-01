@@ -1,13 +1,16 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% extends "admin/base.html" %}
-{% block title %}Badges · {{ site_title }}{% endblock %}
+{% block title %}{{ _("Badges") }} · {{ site_title }}{% endblock %}
 {% block admin_content %}
-  <h1>Badge classes</h1>
-  <p><a class="btn" href="{{ url_for('admin.badge_new') }}">New badge</a></p>
+  <h1>{{ _("Badge classes") }}</h1>
+  <p><a class="btn" href="{{ url_for('admin.badge_new') }}">{{ _("New badge") }}</a></p>
 
   {% if badges %}
     <table class="grid">
-      <thead><tr><th></th><th>Name</th><th>Slug</th><th>Awarded</th><th>State</th><th></th></tr></thead>
+      <thead><tr>
+        <th></th><th>{{ _("Name") }}</th><th>{{ _("Slug") }}</th>
+        <th>{{ _("Awarded") }}</th><th>{{ _("State") }}</th><th></th>
+      </tr></thead>
       <tbody>
         {% for b in badges %}
           <tr>
@@ -16,17 +19,17 @@
             <td><code>{{ b.slug }}</code></td>
             <td>{{ b.assertions.filter_by(revoked=False).count() }}</td>
             <td>
-              {{ "archived" if b.archived else "active" }}
-              {% if b.self_service %}<span class="tag tag-open">claimable</span>{% endif %}
+              {{ _("archived") if b.archived else _("active") }}
+              {% if b.self_service %}<span class="tag tag-open">{{ _("claimable") }}</span>{% endif %}
             </td>
             <td class="actions">
-              <a href="{{ url_for('admin.award', slug=b.slug) }}">Award</a>
-              <a href="{{ url_for('admin.award_csv', slug=b.slug) }}">CSV</a>
-              <a href="{{ url_for('admin.badge_edit', slug=b.slug) }}">Edit</a>
-              <a href="{{ url_for('public.badge_page', slug=b.slug) }}">View</a>
+              <a href="{{ url_for('admin.award', slug=b.slug) }}">{{ _("Award") }}</a>
+              <a href="{{ url_for('admin.award_csv', slug=b.slug) }}">{{ _("CSV") }}</a>
+              <a href="{{ url_for('admin.badge_edit', slug=b.slug) }}">{{ _("Edit") }}</a>
+              <a href="{{ url_for('public.badge_page', slug=b.slug) }}">{{ _("View") }}</a>
               <form method="post" action="{{ url_for('admin.badge_archive', slug=b.slug) }}" class="inline">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="linkbtn">{{ "Un-archive" if b.archived else "Archive" }}</button>
+                <button type="submit" class="linkbtn">{{ _("Un-archive") if b.archived else _("Archive") }}</button>
               </form>
             </td>
           </tr>
@@ -34,6 +37,6 @@
       </tbody>
     </table>
   {% else %}
-    <p class="muted">No badge classes yet.</p>
+    <p class="muted">{{ _("No badge classes yet.") }}</p>
   {% endif %}
 {% endblock %}

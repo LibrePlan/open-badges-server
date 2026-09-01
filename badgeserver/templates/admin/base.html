@@ -9,16 +9,16 @@
 {% block content %}
   <div class="admin-layout">
     <aside class="admin-nav">
-      {{ navlink("admin.dashboard", "Dashboard", ep == "admin.dashboard") }}
-      {{ navlink("admin.issuer", "Issuer", ep == "admin.issuer") }}
-      {{ navlink("admin.badges", "Badges",
+      {{ navlink("admin.dashboard", _("Dashboard"), ep == "admin.dashboard") }}
+      {{ navlink("admin.issuer", _("Issuer"), ep == "admin.issuer") }}
+      {{ navlink("admin.badges", _("Badges"),
                  ep.startswith("admin.badge") or ep in ["admin.award", "admin.award_csv"]) }}
-      {{ navlink("admin.assertions", "Assertions", ep.startswith("admin.assertion")) }}
-      {{ navlink("verify.index", "Verify", ep == "verify.index") }}
-      {{ navlink("admin.change_password", "Password", ep == "admin.change_password") }}
+      {{ navlink("admin.assertions", _("Assertions"), ep.startswith("admin.assertion")) }}
+      {{ navlink("verify.index", _("Verify"), ep == "verify.index") }}
+      {{ navlink("admin.change_password", _("Password"), ep == "admin.change_password") }}
       <form method="post" action="{{ url_for('admin.logout') }}" class="inline">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="navbtn">Sign out</button>
+        <button type="submit" class="navbtn">{{ _("Sign out") }}</button>
       </form>
     </aside>
     <section class="admin-main">

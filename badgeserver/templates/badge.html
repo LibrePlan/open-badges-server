@@ -6,36 +6,38 @@
     <img class="detail-image" src="{{ badge_image_url(badge) }}" alt="" width="180" height="180">
     <div>
       <h1>{{ badge.name }}</h1>
-      {% if badge.archived %}<p class="flash flash-error">This badge is archived.</p>{% endif %}
+      {% if badge.archived %}<p class="flash flash-error">{{ _("This badge is archived.") }}</p>{% endif %}
       <p>{{ badge.description }}</p>
       {% if badge.criteria_narrative %}
-        <h2>Criteria</h2>
+        <h2>{{ _("Criteria") }}</h2>
         <p>{{ badge.criteria_narrative }}</p>
       {% endif %}
       {% if badge.criteria_url %}
-        <p><a href="{{ badge.criteria_url }}">More about the criteria</a></p>
+        <p><a href="{{ badge.criteria_url }}">{{ _("More about the criteria") }}</a></p>
       {% endif %}
       {% if badge.tag_list %}
         <p class="tags">{% for tag in badge.tag_list %}<span class="tag">{{ tag }}</span>{% endfor %}</p>
       {% endif %}
       <p class="muted">
-        Awarded {{ awarded }} time{{ '' if awarded == 1 else 's' }} ·
-        <a href="{{ url_for('public.badge_doc', slug=badge.slug) }}">badge JSON</a> ·
-        issued by <a href="{{ url_for('public.issuer_doc', slug=badge.issuer_slug) }}">{{ badge.issuer.name }}</a>
+        {{ ngettext("Awarded %(num)d time", "Awarded %(num)d times", awarded) }} ·
+        <a href="{{ url_for('public.badge_doc', slug=badge.slug) }}">{{ _("badge JSON") }}</a> ·
+        {% trans name=badge.issuer.name, url=url_for('public.issuer_doc', slug=badge.issuer_slug) -%}
+        issued by <a href="{{ url }}">{{ name }}</a>
+        {%- endtrans %}
       </p>
 
       {% if claimable %}
         <div class="claim-card">
-          <h2>Claim this badge</h2>
+          <h2>{{ _("Claim this badge") }}</h2>
           {% if mail_ready %}
-            <p class="muted">Enter your e-mail and we'll send you a link to confirm.</p>
+            <p class="muted">{{ _("Enter your e-mail and we'll send you a link to confirm.") }}</p>
             <form method="post" action="{{ url_for('claim.claim', slug=badge.slug) }}">
               {{ claim_form.hidden_tag() }}
               {{ claim_form.email(class="control", placeholder="you@example.com") }}
               {{ claim_form.submit(class="btn") }}
             </form>
           {% else %}
-            <p class="muted">Claiming is temporarily unavailable.</p>
+            <p class="muted">{{ _("Claiming is temporarily unavailable.") }}</p>
           {% endif %}
         </div>
       {% endif %}

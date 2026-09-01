@@ -16,6 +16,7 @@ from flask import (
     render_template,
     url_for,
 )
+from flask_babel import gettext as _
 
 from .extensions import db, limiter
 from .forms import ClaimForm
@@ -42,7 +43,7 @@ def claim(slug: str):
     badge_page = url_for("public.badge_page", slug=slug)
 
     if not mail_configured():
-        flash("Claiming this badge is unavailable right now.", "error")
+        flash(_("Claiming this badge is unavailable right now."), "error")
         return redirect(badge_page)
 
     form = ClaimForm()
@@ -55,7 +56,7 @@ def claim(slug: str):
     email = form.email.data.strip()
     existing = find_existing(badge, email)
     if existing is not None:
-        flash("You already have this badge.", "ok")
+        flash(_("You already have this badge."), "ok")
         return redirect(url_for("public.assertion_page", uuid=existing.uuid))
 
     now = datetime.now(timezone.utc)
@@ -78,7 +79,10 @@ def claim(slug: str):
         db.session.delete(entry)
         db.session.commit()
         current_app.logger.warning("Claim confirmation e-mail failed: %s", exc)
-        flash("We could not send the confirmation e-mail. Please try again later.", "error")
+        flash(
+            _("We could not send the confirmation e-mail. Please try again later."),
+            "error",
+        )
         return redirect(badge_page)
 
     return render_template(
@@ -115,7 +119,7 @@ def confirm(token: str):
     entry.assertion_uuid = assertion.uuid
     db.session.commit()
 
-    flash("Badge confirmed — here it is.", "ok")
+    flash(_("Badge confirmed — here it is."), "ok")
     return _no_store(redirect(url_for("public.assertion_page", uuid=assertion.uuid)))
 
 

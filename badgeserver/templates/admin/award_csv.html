@@ -1,24 +1,22 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% extends "admin/base.html" %}
 {% from "_formhelpers.html" import field, checkbox %}
-{% block title %}Bulk award {{ badge.name }} · {{ site_title }}{% endblock %}
+{% block title %}{% trans name=badge.name %}Bulk award {{ name }}{% endtrans %} · {{ site_title }}{% endblock %}
 {% block admin_content %}
-  <h1>Bulk award &ldquo;{{ badge.name }}&rdquo;</h1>
-  <p class="muted">Upload a CSV or plain-text file. The first cell of each row that
-    looks like an e-mail address is used; other cells are ignored. Duplicates and
-    recipients who already hold this badge are skipped.</p>
+  <h1>{% trans name=badge.name %}Bulk award “{{ name }}”{% endtrans %}</h1>
+  <p class="muted">{{ _("Upload a CSV or plain-text file. The first cell of each row that looks like an e-mail address is used; other cells are ignored. Duplicates and recipients who already hold this badge are skipped.") }}</p>
   <form method="post" enctype="multipart/form-data" class="card narrow">
     {{ form.hidden_tag() }}
     {{ field(form.file) }}
     {% if mail_ready %}{{ checkbox(form.send_email) }}{% else %}
-      <p class="hint">SMTP is not configured, so no e-mail will be sent.</p>{% endif %}
+      <p class="hint">{{ _("SMTP is not configured, so no e-mail will be sent.") }}</p>{% endif %}
     {{ form.submit(class="btn") }}
   </form>
 
   {% if results %}
-    <h2>Result</h2>
+    <h2>{{ _("Result") }}</h2>
     <table class="grid">
-      <thead><tr><th>Address</th><th>Status</th><th>Detail</th></tr></thead>
+      <thead><tr><th>{{ _("Address") }}</th><th>{{ _("Status") }}</th><th>{{ _("Detail") }}</th></tr></thead>
       <tbody>
         {% for r in results %}
           <tr>
@@ -26,7 +24,7 @@
             <td>{{ r.status }}</td>
             <td>
               {{ r.detail }}
-              {% if r.uuid %} &middot; <a href="{{ url_for('admin.assertion_detail', uuid=r.uuid) }}">open</a>{% endif %}
+              {% if r.uuid %} &middot; <a href="{{ url_for('admin.assertion_detail', uuid=r.uuid) }}">{{ _("open") }}</a>{% endif %}
             </td>
           </tr>
         {% endfor %}

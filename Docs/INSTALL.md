@@ -39,7 +39,8 @@ substitutes it automatically. If you later move the checkout, redo step 5.
 ```sh
 sudo apt install python3-flask python3-flask-sqlalchemy python3-flask-login \
   python3-flaskext.wtf python3-wtforms python3-email-validator \
-  python3-flask-talisman python3-flask-limiter python3-pil python3-qrcode \
+  python3-flask-talisman python3-flask-limiter python3-flask-babel \
+  python3-pil python3-qrcode \
   python3-gunicorn fonts-dejavu-core python3-cairosvg \
   python3-requests python3-jwt python3-cryptography rsync
 ```
@@ -48,6 +49,9 @@ sudo apt install python3-flask python3-flask-sqlalchemy python3-flask-login \
 rasterises SVG uploads (omit it and SVG uploads are rejected with a clear
 message). `python3-requests` / `python3-jwt` / `python3-cryptography` power the
 `/verify` badge checker (including signed-badge signature verification).
+`python3-flask-babel` provides the interface translations (Spanish, German,
+French, Dutch); the compiled catalogs are committed, so nothing needs building
+at install time.
 
 Optional, for the test suite: `sudo apt install python3-pytest`.
 
@@ -93,6 +97,11 @@ badge/assertion URLs and breaks already-issued badges — pick it carefully.
 `SESSION_COOKIE_SECURE` and `PROXY_FIX_HOPS` default themselves from the
 `EXTERNAL_URL` scheme (`http://` → insecure cookie, no proxy trust;
 `https://` → secure cookie). Only set them by hand for an unusual setup.
+
+The interface ships in English, Spanish, German, French and Dutch. Visitors
+pick a language from the header (their browser's `Accept-Language` is the
+default); set `LANGUAGES` to offer a subset and `BABEL_DEFAULT_LOCALE` to
+change the fallback. See Docs/operations.md for editing the translations.
 
 ## 4. Bootstrap the database
 

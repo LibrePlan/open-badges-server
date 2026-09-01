@@ -1,42 +1,45 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% extends "admin/base.html" %}
-{% block title %}Assertions · {{ site_title }}{% endblock %}
+{% block title %}{{ _("Assertions") }} · {{ site_title }}{% endblock %}
 {% block admin_content %}
-  <h1>Assertions</h1>
+  <h1>{{ _("Assertions") }}</h1>
   <form method="get" class="filter-bar">
     <select name="badge">
-      <option value="">All badges</option>
+      <option value="">{{ _("All badges") }}</option>
       {% for b in all_badges %}
         <option value="{{ b.slug }}" {{ 'selected' if filters.badge == b.slug }}>{{ b.name }}</option>
       {% endfor %}
     </select>
-    <input type="text" name="email" value="{{ filters.email }}" placeholder="e-mail contains…">
+    <input type="text" name="email" value="{{ filters.email }}" placeholder="{{ _('e-mail contains…') }}">
     <select name="status">
-      <option value="">Any status</option>
-      <option value="active" {{ 'selected' if filters.status == 'active' }}>Active</option>
-      <option value="revoked" {{ 'selected' if filters.status == 'revoked' }}>Revoked</option>
+      <option value="">{{ _("Any status") }}</option>
+      <option value="active" {{ 'selected' if filters.status == 'active' }}>{{ _("Active") }}</option>
+      <option value="revoked" {{ 'selected' if filters.status == 'revoked' }}>{{ _("Revoked") }}</option>
     </select>
-    <button type="submit" class="btn">Filter</button>
+    <button type="submit" class="btn">{{ _("Filter") }}</button>
   </form>
 
   {% if items %}
     <table class="grid">
-      <thead><tr><th>Issued</th><th>Badge</th><th>Recipient</th><th>Status</th><th>E-mail</th><th></th></tr></thead>
+      <thead><tr>
+        <th>{{ _("Issued") }}</th><th>{{ _("Badge") }}</th><th>{{ _("Recipient") }}</th>
+        <th>{{ _("Status") }}</th><th>{{ _("E-mail") }}</th><th></th>
+      </tr></thead>
       <tbody>
         {% for a in items %}
           <tr>
-            <td>{{ a.issued_on_utc().strftime('%Y-%m-%d') }}</td>
+            <td>{{ a.issued_on_utc() | dateformat("short") }}</td>
             <td>{{ a.badge.name }}</td>
             <td>{{ a.recipient_email }}</td>
-            <td>{{ "revoked" if a.revoked else "active" }}</td>
-            <td>{% if a.email_sent %}sent{% elif a.email_error %}<span class="field-error">failed</span>{% else %}&ndash;{% endif %}</td>
-            <td><a href="{{ url_for('admin.assertion_detail', uuid=a.uuid) }}">open</a></td>
+            <td>{{ _("revoked") if a.revoked else _("active") }}</td>
+            <td>{% if a.email_sent %}{{ _("sent") }}{% elif a.email_error %}<span class="field-error">{{ _("failed") }}</span>{% else %}&ndash;{% endif %}</td>
+            <td><a href="{{ url_for('admin.assertion_detail', uuid=a.uuid) }}">{{ _("open") }}</a></td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
-    <p class="muted">Showing up to 500 rows.</p>
+    <p class="muted">{{ _("Showing up to 500 rows.") }}</p>
   {% else %}
-    <p class="muted">No assertions match.</p>
+    <p class="muted">{{ _("No assertions match.") }}</p>
   {% endif %}
 {% endblock %}

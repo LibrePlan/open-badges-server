@@ -1,13 +1,17 @@
-Confirm your {{ badge.name }} badge
+{% trans name=badge.name %}Confirm your {{ name }} badge{% endtrans %}
 
-Someone (hopefully you) asked to claim the "{{ badge.name }}" badge from
-{{ issuer.name }} for this e-mail address.
+{% trans name=badge.name, issuer=issuer.name -%}
+Someone (hopefully you) asked to claim the "{{ name }}" badge from {{ issuer }}
+for this e-mail address.
+{%- endtrans %}
 
-Confirm and receive your badge:
+{% trans %}Confirm and receive your badge:{% endtrans %}
 {{ confirm_url }}
 
-This link is valid for about {{ expires_hours }} hours. If you did not request
-this, you can ignore this message -- no badge is issued until the link is used.
+{% trans hours=expires_hours -%}
+This link is valid for about {{ hours }} hours. If you did not request this, you
+can ignore this message -- no badge is issued until the link is used.
+{%- endtrans %}
 
 --
 {{ site_title }}

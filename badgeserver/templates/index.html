@@ -11,15 +11,15 @@
         {% if issuer.description %}<p>{{ issuer.description }}</p>{% endif %}
         <p class="muted">
           <a href="{{ issuer.url }}">{{ issuer.url }}</a> ·
-          <a href="{{ url_for('public.issuer_doc', slug=issuer.slug) }}">issuer JSON</a>
+          <a href="{{ url_for('public.issuer_doc', slug=issuer.slug) }}">{{ _("issuer JSON") }}</a>
         </p>
       </div>
     </section>
   {% else %}
-    <p>No issuer has been configured yet.</p>
+    <p>{{ _("No issuer has been configured yet.") }}</p>
   {% endif %}
 
-  <h2>Badges</h2>
+  <h2>{{ _("Badges") }}</h2>
   {% if badges %}
     <ul class="badge-grid">
       {% for badge in badges %}
@@ -27,12 +27,12 @@
           <a href="{{ url_for('public.badge_page', slug=badge.slug) }}">
             <img src="{{ badge_image_url(badge) }}" alt="" width="96" height="96">
             <span>{{ badge.name }}</span>
-            {% if badge.self_service %}<span class="tag tag-open">claimable</span>{% endif %}
+            {% if badge.self_service %}<span class="tag tag-open">{{ _("claimable") }}</span>{% endif %}
           </a>
         </li>
       {% endfor %}
     </ul>
   {% else %}
-    <p class="muted">No badges published yet.</p>
+    <p class="muted">{{ _("No badges published yet.") }}</p>
   {% endif %}
 {% endblock %}
