@@ -25,21 +25,23 @@ _TITLE_BAND = {
     "circle": (0.55, 0.80),
     "hexagon": (0.52, 0.73),
     "shield": (0.47, 0.67),
-    "crest": (0.48, 0.69),
+    "crest": (0.51, 0.73),
 }
 
 # top of the logo area, as a fraction of canvas height (default 0.07). The
-# "crest" has a notch at the top, so its logo starts lower.
-_LOGO_TOP = {"crest": 0.16}
+# "crest" flares up at the top corners, so its logo starts lower.
+_LOGO_TOP = {"crest": 0.15}
 
-# Bezier control fractions (of the shape's span) for the "crest" outline: a
-# heater shield with two gentle rounded shoulders at the top meeting in a
-# central cusp, curved sides, and a pointed base. Tuned visually.
+# Bezier control fractions (of the span) for the "crest" outline: a US-style
+# police / detective shield -- top corners flare up into rounded "horns" with
+# a shallow dip between them, a concave neck, a convex body, and a pointed
+# base. Right half only; mirrored at render time. Tuned visually.
 _CREST = {
-    "cusp": 0.05, "lobe_c": 0.03, "apex": 0.25, "apex_y": 0.04,
-    "crn_c": 0.06, "crn_x": 0.015, "crn_y": 0.12,
-    "bulge": 0.05, "bulge_y": 0.32, "waist_x": 0.03, "waist_y": 0.50,
-    "tip_cx": 0.045, "tip_cy": 0.82,
+    "dip": 0.055,
+    "horn_c": (0.30, 0.005), "horn": (0.10, 0.005),
+    "neck_c": (0.145, 0.10), "neck": (0.135, 0.18),
+    "body_c": (-0.03, 0.31), "wide": (0.015, 0.47),
+    "tip_c": (0.06, 0.84),
 }
 #: supersampling factor for the curved "crest" outline (anti-aliasing)
 _CREST_SS = 4
@@ -69,15 +71,19 @@ def _crest(size: int, inset: float) -> list[tuple[float, float]]:
     s = b - a
     cx = a + s / 2
     p = _CREST
-    cusp = (cx, a + p["cusp"] * s)
+
+    def loc(fx, fy):
+        return (a + fx * s, a + fy * s)
+
+    top = (cx, a + p["dip"] * s)
     segments = [
-        ((cx - p["lobe_c"] * s, a - p["lobe_c"] * s), (a + p["apex"] * s, a + p["apex_y"] * s)),
-        ((a + p["crn_c"] * s, a - 0.05 * s), (a + p["crn_x"] * s, a + p["crn_y"] * s)),
-        ((a - p["bulge"] * s, a + p["bulge_y"] * s), (a + p["waist_x"] * s, a + p["waist_y"] * s)),
-        ((a + p["tip_cx"] * s, a + p["tip_cy"] * s), (cx, b)),
+        (loc(*p["horn_c"]), loc(*p["horn"])),   # dip -> flared top corner
+        (loc(*p["neck_c"]), loc(*p["neck"])),   # corner -> concave neck
+        (loc(*p["body_c"]), loc(*p["wide"])),   # neck -> convex body (widest)
+        (loc(*p["tip_c"]), (cx, b)),            # body -> bottom point
     ]
-    pts = [cusp]
-    cur = cusp
+    pts = [top]
+    cur = top
     for ctrl, end in segments:
         pts += _quad(cur, ctrl, end, 22)
         cur = end
