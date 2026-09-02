@@ -2,6 +2,17 @@
 
 A small self-hosted **Open Badges 2.0** issuer.
 
+## Always start with "why?"
+
+I needed to "scratch an itch". I wanted a simple open badges server and
+all I could find was, well, not what I hoped I would find.
+So I vibe coded this in a couple of days and deployed it on https://badges.libreplan.dev.
+I'm happy now, and hopefully you too.
+
+If you like it, consider a donation to the LibrePlan project at https://libreplan.dev.
+
+## What does it do?
+
 - Issues badges with **hosted verification** — the assertion JSON URL is the proof.
 - One **local admin** account (username + password). No external identity provider.
 - Single **SQLite** database plus an uploads directory.
@@ -10,7 +21,9 @@ A small self-hosted **Open Badges 2.0** issuer.
   for TLS.
 - Emails recipients (optional) when a badge is awarded.
 
-Licence: **AGPL-3.0-or-later** (see `LICENSE`). © Jeroen Baten / LibrePlan.
+Licence: **AGPL-3.0-or-later** (see `LICENSE`). © Jeroen Baten.
+
+## Important docs
 
 - Install: [`Docs/INSTALL.md`](Docs/INSTALL.md)
 - Running it (backup, upgrade, troubleshooting): [`Docs/operations.md`](Docs/operations.md)
@@ -54,14 +67,14 @@ sudo ./deploy/badgectl create-admin admin
 sudo ./deploy/badgectl set-issuer --slug main --name "LibrePlan Badges" \
   --url https://libreplan.dev --email jeroen@libreplan.dev
 
+# The `sed` step pins the checkout path into the service unit — redo it if you
+# move the checkout.
 sudo sed "s#__REPO__#$PWD#" deploy/badgeserver.service \
   | sudo tee /etc/systemd/system/badgeserver.service > /dev/null
+
 sudo systemctl daemon-reload && sudo systemctl enable --now badgeserver
 curl -s localhost:4000/healthz
 ```
-
-The `sed` step pins the checkout path into the service unit — redo it if you
-move the checkout.
 
 ## Local development
 
