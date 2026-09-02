@@ -25,23 +25,30 @@ _TITLE_BAND = {
     "circle": (0.55, 0.80),
     "hexagon": (0.52, 0.73),
     "shield": (0.47, 0.67),
-    "crest": (0.51, 0.73),
+    "crest": (0.58, 0.80),
 }
 
 # top of the logo area, as a fraction of canvas height (default 0.07). The
-# "crest" flares up at the top corners, so its logo starts lower.
-_LOGO_TOP = {"crest": 0.15}
+# "crest" has a tall banner-like top section, so its logo starts lower.
+_LOGO_TOP = {"crest": 0.22}
 
-# Bezier control fractions (of the span) for the "crest" outline: a US-style
-# police / detective shield -- top corners flare up into rounded "horns" with
-# a shallow dip between them, a concave neck, a convex body, and a pointed
-# base. Right half only; mirrored at render time. Tuned visually.
+# The "crest" outline traces a US detective / FBI-style shield: rounded flared
+# top corners with a shallow dip between them, a very gentle waist, a full
+# body, and a shield point. Coordinates are (x, y) as fractions of the span,
+# x measured from the centre line; only the right half is listed and it is
+# mirrored at render time. Tuned against a reference badge silhouette.
 _CREST = {
-    "dip": 0.055,
-    "horn_c": (0.30, 0.005), "horn": (0.10, 0.005),
-    "neck_c": (0.145, 0.10), "neck": (0.135, 0.18),
-    "body_c": (-0.03, 0.31), "wide": (0.015, 0.47),
-    "tip_c": (0.06, 0.84),
+    "corner": (0.475, 0.045),      # the top corner "ear"
+    "top_mid_y": 0.014,            # centre of the top edge (shallow dip)
+    "top_ctrl": (0.30, -0.012),    # control point for each half of the top edge
+    "side": [                      # (control, end) down the right side
+        ((0.492, 0.05), (0.475, 0.13)),
+        ((0.455, 0.19), (0.435, 0.29)),
+        ((0.44, 0.42), (0.465, 0.57)),
+        ((0.472, 0.67), (0.42, 0.77)),
+        ((0.35, 0.855), (0.22, 0.905)),
+        ((0.115, 0.972), None),    # None -> the bottom point (cx, b)
+    ],
 }
 #: supersampling factor for the curved "crest" outline (anti-aliasing)
 _CREST_SS = 4
@@ -73,23 +80,27 @@ def _crest(size: int, inset: float) -> list[tuple[float, float]]:
     p = _CREST
 
     def loc(fx, fy):
-        return (a + fx * s, a + fy * s)
+        return (cx + fx * s, a + fy * s)
 
-    top = (cx, a + p["dip"] * s)
-    segments = [
-        (loc(*p["horn_c"]), loc(*p["horn"])),   # dip -> flared top corner
-        (loc(*p["neck_c"]), loc(*p["neck"])),   # corner -> concave neck
-        (loc(*p["body_c"]), loc(*p["wide"])),   # neck -> convex body (widest)
-        (loc(*p["tip_c"]), (cx, b)),            # body -> bottom point
-    ]
-    pts = [top]
-    cur = top
-    for ctrl, end in segments:
-        pts += _quad(cur, ctrl, end, 22)
-        cur = end
-    pts.append((cx, b))
-    mirrored = [(2 * cx - x, y) for x, y in reversed(pts)]
-    return pts + mirrored[1:-1]
+    hw, corner_y = p["corner"]
+    corner_r = loc(hw, corner_y)
+    corner_l = loc(-hw, corner_y)
+    top_mid = loc(0.0, p["top_mid_y"])
+    tcx, tcy = p["top_ctrl"]
+
+    # top edge: left corner -> centre dip -> right corner
+    pts = _quad(corner_l, loc(-tcx, tcy), top_mid, 16)
+    pts += _quad(top_mid, loc(tcx, tcy), corner_r, 16)
+
+    # right side: corner -> ... -> bottom point
+    right = [corner_r]
+    for ctrl, end in p["side"]:
+        target = (cx, b) if end is None else loc(*end)
+        right += _quad(right[-1], loc(*ctrl), target, 16)
+        right.append(target)
+
+    left = [(2 * cx - x, y) for x, y in reversed(right)]
+    return pts + right + left[1:-1]
 
 
 def _crest_layers(
