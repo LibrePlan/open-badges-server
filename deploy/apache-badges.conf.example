@@ -4,11 +4,26 @@
 # Example Apache reverse-proxy vhost for the badge server.
 #
 #   sudo a2enmod proxy proxy_http headers ssl
+#   sudo systemctl restart apache2        # a full restart -- new modules
+#   sudo certbot certonly --apache -d badges.example.org   # cert first (see below)
 #   sudo cp deploy/apache-badges.conf.example /etc/apache2/sites-available/badges.conf
-#   (edit ServerName + certificate paths)
-#   sudo a2ensite badges && sudo systemctl reload apache2
+#   sudoedit /etc/apache2/sites-available/badges.conf    # ServerName + cert paths
+#   sudo a2ensite badges && sudo apache2ctl configtest && sudo systemctl reload apache2
 #
-# TLS is expected to be obtained separately (e.g. certbot --apache).
+# Modules this vhost needs:
+#   proxy        core reverse-proxy engine
+#   proxy_http   handle http:// backends -- without it: "AH01144: No protocol
+#                handler was valid for the URL / (scheme 'http')"
+#   headers      the "RequestHeader set X-Forwarded-Proto" line -- without it:
+#                "Invalid command 'RequestHeader'"
+#   ssl          the <VirtualHost *:443> / SSL* directives
+#   (mod_alias, for the port-80 Redirect, is enabled by default)
+# Check what is loaded:  apache2ctl -M | grep -E 'proxy|headers|ssl'
+#
+# Get the certificate BEFORE enabling this site -- `apache2ctl configtest`
+# fails while SSLCertificateFile points at a path that does not exist yet.
+# `certbot certonly --apache` obtains it without touching this vhost.
+# See Docs/INSTALL.md section 6b.
 
 <VirtualHost *:80>
     ServerName badges.example.org

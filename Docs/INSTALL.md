@@ -178,20 +178,75 @@ clients). That is the whole setup for this mode.
 
 ## 6b. Behind a reverse proxy (TLS)
 
-Set in `badges.env`: `BIND=127.0.0.1:4000`, `PROXY_FIX_HOPS=1`,
-`EXTERNAL_URL=https://badges.example.org`, then
-`sudo systemctl restart badgeserver`.
+First, in `badges.env`:
 
-An Apache vhost is in [`deploy/apache-badges.conf.example`](../deploy/apache-badges.conf.example):
-
-```sh
-sudo a2enmod proxy proxy_http headers ssl
-sudo cp deploy/apache-badges.conf.example /etc/apache2/sites-available/badges.conf
-sudoedit /etc/apache2/sites-available/badges.conf     # ServerName + cert paths
-sudo a2ensite badges && sudo systemctl reload apache2
+```
+BIND=127.0.0.1:4000
+PROXY_FIX_HOPS=1
+EXTERNAL_URL=https://badges.example.org
 ```
 
-The proxy must forward the original `Host` and set `X-Forwarded-Proto: https`.
+then `sudo systemctl restart badgeserver`. `PROXY_FIX_HOPS=1` tells the app to
+trust one hop of `X-Forwarded-*` — set it to the exact number of proxies you
+control, never higher (a client could otherwise spoof the header).
+
+**Any proxy must:** pass the original `Host` through, set
+`X-Forwarded-Proto: https`, and pass `X-Forwarded-For` (needed for the real
+client IP — rate limits key on it). Config for the two common ones follows.
+
+### Apache
+
+Config: [`deploy/apache-badges.conf.example`](../deploy/apache-badges.conf.example).
+
+```sh
+sudo apt install apache2 certbot python3-certbot-apache
+sudo a2enmod proxy proxy_http headers ssl
+sudo systemctl restart apache2       # a full restart -- loading new modules
+
+sudo certbot certonly --apache -d badges.example.org   # cert first (see note)
+
+sudo cp deploy/apache-badges.conf.example /etc/apache2/sites-available/badges.conf
+sudoedit /etc/apache2/sites-available/badges.conf    # ServerName + cert paths
+sudo a2ensite badges
+sudo apache2ctl configtest && sudo systemctl reload apache2
+```
+
+The four modules and what breaks without each:
+
+| Module | Provides | Error if missing |
+| --- | --- | --- |
+| `proxy` | the reverse-proxy engine (`ProxyPass`) | `Invalid command 'ProxyPass'` |
+| `proxy_http` | proxying to an `http://` backend | `AH01144: No protocol handler was valid for the URL / (scheme 'http')` |
+| `headers` | `RequestHeader set X-Forwarded-Proto` | `Invalid command 'RequestHeader'` |
+| `ssl` | the `<VirtualHost *:443>` `SSL*` directives | `Invalid command 'SSLEngine'` |
+
+`mod_alias` (the port-80 `Redirect`) is enabled by default. Check what is
+loaded with `apache2ctl -M | grep -E 'proxy|headers|ssl|alias'`.
+
+`certbot certonly` runs **before** enabling the site: `apache2ctl configtest`
+fails while `SSLCertificateFile` points at a certificate that doesn't exist
+yet. The `--apache` authenticator gets the cert without touching this vhost.
+
+### nginx
+
+Config: [`deploy/nginx-badges.conf.example`](../deploy/nginx-badges.conf.example).
+No modules to enable — the stock `nginx` package proxies out of the box.
+
+```sh
+sudo apt install nginx certbot python3-certbot-nginx
+sudo cp deploy/nginx-badges.conf.example /etc/nginx/sites-available/badges.conf
+sudoedit /etc/nginx/sites-available/badges.conf      # server_name
+
+sudo certbot certonly --nginx -d badges.example.org  # cert first (see note)
+
+sudo ln -s /etc/nginx/sites-available/badges.conf /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Same ordering as Apache: `nginx -t` fails with *"cannot load certificate"* if
+the site is enabled before the cert exists. The `http2 on;` directive needs
+nginx ≥ 1.25.1 (Debian 13); on older nginx use `listen 443 ssl http2;` (noted
+inline in the example).
 
 ## 7. End-to-end check
 

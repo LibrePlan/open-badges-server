@@ -309,10 +309,13 @@ sudo systemctl start badgeserver
 
 The server runs fine on plain HTTP with `BIND=0.0.0.0:4000` and no proxy. To
 put TLS in front of it, set `BIND=127.0.0.1:4000`, `PROXY_FIX_HOPS=1` and an
-`https://` `EXTERNAL_URL`, then restart. `deploy/apache-badges.conf.example` is
-a working Apache vhost; any proxy works as long as it forwards the original
-`Host` and sets `X-Forwarded-Proto`, with `PROXY_FIX_HOPS` matching the number
-of proxies. See [`INSTALL.md`](INSTALL.md) section 6b.
+`https://` `EXTERNAL_URL`, then restart. Worked examples:
+[`deploy/apache-badges.conf.example`](../deploy/apache-badges.conf.example) and
+[`deploy/nginx-badges.conf.example`](../deploy/nginx-badges.conf.example). Any
+proxy works as long as it forwards the original `Host`, sets
+`X-Forwarded-Proto`, and passes `X-Forwarded-For`, with `PROXY_FIX_HOPS`
+matching the number of proxies you control. Full steps (Apache modules, certs)
+in [`INSTALL.md`](INSTALL.md) section 6b.
 
 ## Health
 
@@ -327,6 +330,9 @@ proxy or an external monitor at it.
 | Service won't start, `WorkingDirectory ... not absolute` | the unit still has `__REPO__`; re-run the `sed` install step |
 | `badgectl` / service fails: `badges` user can't read the checkout, or `dotenv ... Starting path not found` | the checkout is under a private `/home`; relocate it (`sudo rsync -a --delete <checkout>/ /opt/badgeserver/`), redo the `sed` install step |
 | Badge JSON has the wrong scheme/host | `EXTERNAL_URL` must be the exact public origin; behind a proxy also set `PROXY_FIX_HOPS=1` |
+| Apache: `Invalid command 'RequestHeader'` | `sudo a2enmod headers && sudo systemctl restart apache2` |
+| Apache: `AH01144: No protocol handler was valid for the URL / (scheme 'http')` | `mod_proxy_http` not loaded: `sudo a2enmod proxy_http && sudo systemctl restart apache2` |
+| Login works but redirects to `http://` / drops the session | proxy isn't sending `X-Forwarded-Proto: https`, or `PROXY_FIX_HOPS` is 0 |
 | Login fails with `The CSRF session token is missing` | `SESSION_COOKIE_SECURE=true` in `badges.env` while serving over `http://` — the browser drops the cookie. Remove that line (it defaults correctly from `EXTERNAL_URL`) and restart. The service now refuses to start in this state. |
 | Login always fails right after deploy | run `create-admin`; check the clock (session protection) |
 | `429 Too Many Requests` on login | rate limit hit; wait, or adjust `RATELIMIT_LOGIN` |
