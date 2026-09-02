@@ -11,12 +11,20 @@
     {% for e in f.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
   </div>
 {% endmacro %}
-{% block title %}{{ _("Edit badge") if badge else _("New badge") }} · {{ site_title }}{% endblock %}
+{% set heading = _("Edit badge") if badge else (_("Copy badge") if source else _("New badge")) %}
+{% block title %}{{ heading }} · {{ site_title }}{% endblock %}
 {% block admin_content %}
-  <h1>{{ _("Edit badge") if badge else _("New badge") }}</h1>
+  <h1>{{ heading }}</h1>
   <form method="post" enctype="multipart/form-data" class="card" id="badge-form"
         data-preview-url="{{ url_for('admin.badge_preview') }}">
     {{ form.hidden_tag() }}
+    {% if source %}
+      <input type="hidden" name="copy" value="{{ source.slug }}">
+      <p class="muted">{% trans name=source.name -%}
+        Copying <strong>{{ name }}</strong>. Its image is carried over unless you
+        upload a new one; pick a new slug or leave it blank.
+      {%- endtrans %}</p>
+    {% endif %}
     {% if badge %}
       <input type="hidden" name="slug" value="{{ badge.slug }}">
       <p class="muted">{% trans slug=badge.slug %}Slug <code>{{ slug }}</code> &mdash; fixed once created.{% endtrans %}</p>
@@ -62,16 +70,18 @@
         </div>
         <figure class="badge-preview" id="preview-wrap">
           <img id="badge-preview" alt="{{ _('badge preview') }}"
-               {% if badge and badge.composed %}src="{{ badge_image_url(badge) }}"{% endif %}>
+               {% if badge and badge.composed %}src="{{ badge_image_url(badge) }}"
+               {% elif source and source.composed %}src="{{ badge_image_url(source) }}"{% endif %}>
           <figcaption>{{ _("Live preview") }}</figcaption>
         </figure>
       </div>
     </fieldset>
 
-    {% if badge and not badge.composed %}
+    {% set art_src = badge if (badge and not badge.composed) else (source if (source and not source.composed)) %}
+    {% if art_src %}
       <div class="field">
         <span class="field-label">{{ _("Current image") }}</span>
-        <p><img src="{{ badge_image_url(badge) }}" alt="" width="96" height="96"></p>
+        <p><img src="{{ badge_image_url(art_src) }}" alt="" width="96" height="96"></p>
       </div>
     {% endif %}
 

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Open Badges Server VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-01 16:05+0200\n"
+"POT-Creation-Date: 2026-09-02 18:14+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,132 +18,137 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: badgeserver/admin.py:100 badgeserver/images.py:45
+#: badgeserver/admin.py:101 badgeserver/images.py:45
 msgid "The uploaded file is empty."
 msgstr ""
 
-#: badgeserver/admin.py:143
+#: badgeserver/admin.py:144
 msgid "Incorrect username or password."
 msgstr ""
 
-#: badgeserver/admin.py:151
+#: badgeserver/admin.py:152
 msgid "Signed out."
 msgstr ""
 
-#: badgeserver/admin.py:196
+#: badgeserver/admin.py:197
 msgid "Issuer saved."
 msgstr ""
 
-#: badgeserver/admin.py:216
+#: badgeserver/admin.py:217
 msgid "Create the issuer profile first."
 msgstr ""
 
-#: badgeserver/admin.py:226
+#: badgeserver/admin.py:223
+#, python-format
+msgid "No badge “%(slug)s” to copy from."
+msgstr ""
+
+#: badgeserver/admin.py:237
 #, python-format
 msgid "Badge “%(name)s” created."
 msgstr ""
 
-#: badgeserver/admin.py:251
+#: badgeserver/admin.py:309
 msgid "Badge updated."
 msgstr ""
 
-#: badgeserver/admin.py:273
+#: badgeserver/admin.py:331
 msgid "A badge image is required."
 msgstr ""
 
-#: badgeserver/admin.py:284
+#: badgeserver/admin.py:342
 msgid "Upload a logo to compose a badge."
 msgstr ""
 
-#: badgeserver/admin.py:402
+#: badgeserver/admin.py:462
 msgid "Badge archived."
 msgstr ""
 
-#: badgeserver/admin.py:402
+#: badgeserver/admin.py:462
 msgid "Badge un-archived."
 msgstr ""
 
-#: badgeserver/admin.py:426
+#: badgeserver/admin.py:486
 #, python-format
 msgid "That recipient already holds this badge (assertion %(id)s)."
 msgstr ""
 
-#: badgeserver/admin.py:432
+#: badgeserver/admin.py:492
 #, python-format
 msgid "Badge awarded to %(email)s."
 msgstr ""
 
-#: badgeserver/admin.py:435
+#: badgeserver/admin.py:495
 msgid "Notification e-mail sent."
 msgstr ""
 
-#: badgeserver/admin.py:438
+#: badgeserver/admin.py:498
 #, python-format
 msgid "Notification e-mail failed: %(error)s"
 msgstr ""
 
-#: badgeserver/admin.py:459
+#: badgeserver/admin.py:519
 #, python-format
 msgid "Skipped %(n)d row(s) with an unreadable e-mail address."
 msgstr ""
 
-#: badgeserver/admin.py:465
+#: badgeserver/admin.py:525
 #, python-format
 msgid "CSV has %(count)d addresses; the limit is %(cap)d."
 msgstr ""
 
-#: badgeserver/admin.py:477
+#: badgeserver/admin.py:537
 #, python-format
 msgid "Processed %(rows)d rows: %(ok)d awarded."
 msgstr ""
 
-#: badgeserver/admin.py:525
+#: badgeserver/admin.py:587
 msgid "already holds this badge"
 msgstr ""
 
-#: badgeserver/admin.py:531
+#: badgeserver/admin.py:593
 #, python-format
 msgid "awarded, e-mail failed: %(error)s"
 msgstr ""
 
-#: badgeserver/admin.py:533
+#: badgeserver/admin.py:595
 msgid "awarded, e-mail sent"
 msgstr ""
 
-#: badgeserver/admin.py:535 badgeserver/templates/assertion.html:3
+#: badgeserver/admin.py:597 badgeserver/templates/assertion.html:3
 msgid "awarded"
 msgstr ""
 
-#: badgeserver/admin.py:589
+#: badgeserver/admin.py:651
 msgid "Assertion revoked."
 msgstr ""
 
-#: badgeserver/admin.py:591
+#: badgeserver/admin.py:653
 msgid "A reason is required to revoke."
 msgstr ""
 
-#: badgeserver/admin.py:601
+#: badgeserver/admin.py:663
 msgid "Assertion re-instated."
 msgstr ""
 
-#: badgeserver/admin.py:609
+#: badgeserver/admin.py:671
 msgid "SMTP is not configured."
 msgstr ""
 
-#: badgeserver/admin.py:613
+#: badgeserver/admin.py:675
 msgid "Notification e-mail re-sent."
 msgstr ""
 
-#: badgeserver/admin.py:617
+#: badgeserver/admin.py:679
 #, python-format
 msgid "Re-send failed: %(error)s"
 msgstr ""
 
-#: badgeserver/admin.py:629
+#: badgeserver/admin.py:691
 msgid "Current password is incorrect."
 msgstr ""
 
-#: badgeserver/admin.py:633
+#: badgeserver/admin.py:695
 msgid "Password changed."
 msgstr ""
 
@@ -250,15 +255,15 @@ msgstr ""
 msgid "Let anyone claim this badge"
 msgstr ""
 
-#: badgeserver/forms.py:91 badgeserver/templates/admin/badge_form.html:34
+#: badgeserver/forms.py:91 badgeserver/templates/admin/badge_form.html:42
 msgid "Badge image"
 msgstr ""
 
-#: badgeserver/forms.py:93 badgeserver/templates/admin/badge_form.html:41
+#: badgeserver/forms.py:93 badgeserver/templates/admin/badge_form.html:49
 msgid "Upload a finished image"
 msgstr ""
 
-#: badgeserver/forms.py:94 badgeserver/templates/admin/badge_form.html:47
+#: badgeserver/forms.py:94 badgeserver/templates/admin/badge_form.html:55
 msgid "Compose from a logo"
 msgstr ""
 
@@ -1111,69 +1116,78 @@ msgid "Detail"
 msgstr ""
 
 #: badgeserver/templates/admin/badge_form.html:14
-#: badgeserver/templates/admin/badge_form.html:16
 msgid "Edit badge"
 msgstr ""
 
 #: badgeserver/templates/admin/badge_form.html:14
-#: badgeserver/templates/admin/badge_form.html:16
+msgid "Copy badge"
+msgstr ""
+
+#: badgeserver/templates/admin/badge_form.html:14
 #: badgeserver/templates/admin/badges.html:6
 msgid "New badge"
 msgstr ""
 
-#: badgeserver/templates/admin/badge_form.html:22
+#: badgeserver/templates/admin/badge_form.html:23
+#, python-format
+msgid ""
+"Copying <strong>%(name)s</strong>. Its image is carried over unless you\n"
+"        upload a new one; pick a new slug or leave it blank."
+msgstr ""
+
+#: badgeserver/templates/admin/badge_form.html:30
 #, python-format
 msgid "Slug <code>%(slug)s</code> &mdash; fixed once created."
 msgstr ""
 
-#: badgeserver/templates/admin/badge_form.html:24
+#: badgeserver/templates/admin/badge_form.html:32
 #: badgeserver/templates/admin/issuer.html:14
 msgid "Used in URLs. Leave blank to derive it from the name."
 msgstr ""
 
-#: badgeserver/templates/admin/badge_form.html:28
+#: badgeserver/templates/admin/badge_form.html:36
 msgid "Plain text describing what earns this badge."
 msgstr ""
 
-#: badgeserver/templates/admin/badge_form.html:31
+#: badgeserver/templates/admin/badge_form.html:39
 msgid ""
 "Anyone can claim this badge for their own e-mail address (they confirm by"
 " clicking a link). Needs e-mail to be configured."
 msgstr ""
 
-#: badgeserver/templates/admin/badge_form.html:42
+#: badgeserver/templates/admin/badge_form.html:50
 msgid ""
 "Fill this in if you chose “Upload a finished image” above. PNG, JPEG, "
 "WEBP, GIF or SVG. It is made square and resized."
 msgstr ""
 
-#: badgeserver/templates/admin/badge_form.html:48
+#: badgeserver/templates/admin/badge_form.html:56
 msgid ""
 "Fill this in if you chose “Compose from a logo”. The server draws the "
 "shape, places the logo and writes the title below it."
 msgstr ""
 
-#: badgeserver/templates/admin/badge_form.html:51
+#: badgeserver/templates/admin/badge_form.html:59
 msgid "PNG, JPEG, WEBP, GIF or SVG. A transparent logo looks best."
 msgstr ""
 
-#: badgeserver/templates/admin/badge_form.html:59
+#: badgeserver/templates/admin/badge_form.html:67
 msgid "positive = lower"
 msgstr ""
 
-#: badgeserver/templates/admin/badge_form.html:60
+#: badgeserver/templates/admin/badge_form.html:68
 msgid "negative = higher"
 msgstr ""
 
-#: badgeserver/templates/admin/badge_form.html:64
+#: badgeserver/templates/admin/badge_form.html:72
 msgid "badge preview"
 msgstr ""
 
-#: badgeserver/templates/admin/badge_form.html:66
+#: badgeserver/templates/admin/badge_form.html:75
 msgid "Live preview"
 msgstr ""
 
-#: badgeserver/templates/admin/badge_form.html:73
+#: badgeserver/templates/admin/badge_form.html:83
 msgid "Current image"
 msgstr ""
 
@@ -1206,18 +1220,22 @@ msgid "Edit"
 msgstr ""
 
 #: badgeserver/templates/admin/badges.html:29
+msgid "Copy"
+msgstr ""
+
+#: badgeserver/templates/admin/badges.html:30
 msgid "View"
 msgstr ""
 
-#: badgeserver/templates/admin/badges.html:32
+#: badgeserver/templates/admin/badges.html:33
 msgid "Un-archive"
 msgstr ""
 
-#: badgeserver/templates/admin/badges.html:32
+#: badgeserver/templates/admin/badges.html:33
 msgid "Archive"
 msgstr ""
 
-#: badgeserver/templates/admin/badges.html:40
+#: badgeserver/templates/admin/badges.html:41
 msgid "No badge classes yet."
 msgstr ""
 

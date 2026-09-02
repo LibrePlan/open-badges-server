@@ -7,6 +7,7 @@ from __future__ import annotations
 import csv as csvmod
 import io
 import os
+import shutil
 from datetime import datetime, time, timezone
 from urllib.parse import urlsplit
 
@@ -215,12 +216,22 @@ def badge_new():
     if _sole_issuer() is None:
         flash(_("Create the issuer profile first."), "error")
         return redirect(url_for("admin.issuer"))
+
+    ref = (request.values.get("copy") or "").strip()
+    source = db.session.get(BadgeClass, ref) if ref else None
+    if ref and source is None and request.method == "GET":
+        flash(_("No badge “%(slug)s” to copy from.", slug=ref), "error")
+
     form = NewBadgeClassForm()
+    if request.method == "GET" and source is not None:
+        _prefill_from_badge(form, source, name=f"{source.name}-copy")
+
     if form.validate_on_submit():
         try:
             slug = _unique_slug(BadgeClass, form.slug.data or form.name.data)
             badge = BadgeClass(slug=slug, issuer_slug=_sole_issuer().slug)
-            _apply_badge_form(badge, form, image_required=True)
+            copied = source is not None and _copy_badge_art(source, badge)
+            _apply_badge_form(badge, form, image_required=not copied)
             db.session.add(badge)
             db.session.commit()
             flash(_("Badge “%(name)s” created.", name=badge.name), "ok")
@@ -228,7 +239,54 @@ def badge_new():
         except ImageError as exc:
             db.session.rollback()
             flash(str(exc), "error")
-    return render_template("admin/badge_form.html", form=form, badge=None)
+    return render_template("admin/badge_form.html", form=form, badge=None, source=source)
+
+
+def _prefill_from_badge(form: BadgeClassForm, badge: BadgeClass, *, name: str) -> None:
+    """Populate a blank badge form from an existing badge (the 'copy' action)."""
+    form.name.data = name
+    form.description.data = badge.description
+    form.criteria_narrative.data = badge.criteria_narrative
+    form.criteria_url.data = badge.criteria_url
+    form.tags.data = badge.tags
+    form.self_service.data = badge.self_service
+    form.art_mode.data = "compose" if badge.composed else "upload"
+    form.art_shape.data = badge.art_shape or "octagon"
+    form.art_bg.data = badge.art_bg or BadgeClass.ART_BG_DEFAULT
+    form.art_accent.data = badge.art_accent or BadgeClass.ART_ACCENT_DEFAULT
+    form.art_logo_scale.data = badge.art_logo_scale
+    form.art_border_width.data = badge.art_border_width
+    form.art_logo_offset.data = badge.art_logo_offset
+    form.art_title_offset.data = badge.art_title_offset
+
+
+def _copy_badge_art(source: BadgeClass, badge: BadgeClass) -> bool:
+    """Copy *source*'s stored logo/image files to *badge*'s filenames.
+
+    Returns True if the new badge now has usable art, so the form does not
+    have to require an upload.
+    """
+    up = _upload_dir()
+    copied = False
+    for rel, dest in (
+        (source.logo_path, f"logo-{badge.slug}.png"),
+        (source.image_path, f"badge-{badge.slug}.png"),
+    ):
+        if not rel:
+            continue
+        src = os.path.join(up, rel)
+        if not os.path.exists(src):
+            continue
+        try:
+            shutil.copyfile(src, os.path.join(up, dest))
+        except OSError:
+            continue
+        if dest.startswith("logo-"):
+            badge.logo_path = dest
+        else:
+            badge.image_path = dest
+        copied = True
+    return copied
 
 
 @bp.route("/badges/<slug>/edit", methods=["GET", "POST"])
@@ -253,7 +311,7 @@ def badge_edit(slug: str):
         except ImageError as exc:
             db.session.rollback()
             flash(str(exc), "error")
-    return render_template("admin/badge_form.html", form=form, badge=badge)
+    return render_template("admin/badge_form.html", form=form, badge=badge, source=None)
 
 
 def _apply_badge_form(badge: BadgeClass, form: BadgeClassForm, *, image_required: bool) -> None:
@@ -361,8 +419,10 @@ def badge_preview():
             logo_png = images.rasterize_to_png(upload.read(), 320)
         except ImageError:
             logo_png = None
-    if logo_png is None and data.get("slug", "").strip():
-        badge = db.session.get(BadgeClass, data["slug"].strip())
+    if logo_png is None:
+        # the badge being edited, or the one being copied from
+        ref = (data.get("slug") or data.get("copy") or "").strip()
+        badge = db.session.get(BadgeClass, ref) if ref else None
         if badge and badge.logo_path:
             path = os.path.join(_upload_dir(), badge.logo_path)
             if os.path.exists(path):

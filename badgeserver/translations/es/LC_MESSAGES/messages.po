@@ -12,132 +12,137 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 
-#: badgeserver/admin.py:100 badgeserver/images.py:45
+#: badgeserver/admin.py:101 badgeserver/images.py:45
 msgid "The uploaded file is empty."
 msgstr "El archivo subido está vacío."
 
-#: badgeserver/admin.py:143
+#: badgeserver/admin.py:144
 msgid "Incorrect username or password."
 msgstr "Nombre de usuario o contraseña incorrectos."
 
-#: badgeserver/admin.py:151
+#: badgeserver/admin.py:152
 msgid "Signed out."
 msgstr "Sesión cerrada."
 
-#: badgeserver/admin.py:196
+#: badgeserver/admin.py:197
 msgid "Issuer saved."
 msgstr "Emisor guardado."
 
-#: badgeserver/admin.py:216
+#: badgeserver/admin.py:217
 msgid "Create the issuer profile first."
 msgstr "Cree primero el perfil del emisor."
 
-#: badgeserver/admin.py:226
+#: badgeserver/admin.py:223
+#, python-format
+msgid "No badge “%(slug)s” to copy from."
+msgstr "No hay ninguna insignia «%(slug)s» de la que copiar."
+
+#: badgeserver/admin.py:237
 #, python-format
 msgid "Badge “%(name)s” created."
 msgstr "Insignia «%(name)s» creada."
 
-#: badgeserver/admin.py:251
+#: badgeserver/admin.py:309
 msgid "Badge updated."
 msgstr "Insignia actualizada."
 
-#: badgeserver/admin.py:273
+#: badgeserver/admin.py:331
 msgid "A badge image is required."
 msgstr "Se requiere una imagen para la insignia."
 
-#: badgeserver/admin.py:284
+#: badgeserver/admin.py:342
 msgid "Upload a logo to compose a badge."
 msgstr "Suba un logotipo para componer una insignia."
 
-#: badgeserver/admin.py:402
+#: badgeserver/admin.py:462
 msgid "Badge archived."
 msgstr "Insignia archivada."
 
-#: badgeserver/admin.py:402
+#: badgeserver/admin.py:462
 msgid "Badge un-archived."
 msgstr "Insignia desarchivada."
 
-#: badgeserver/admin.py:426
+#: badgeserver/admin.py:486
 #, python-format
 msgid "That recipient already holds this badge (assertion %(id)s)."
 msgstr "Ese destinatario ya tiene esta insignia (aserción %(id)s)."
 
-#: badgeserver/admin.py:432
+#: badgeserver/admin.py:492
 #, python-format
 msgid "Badge awarded to %(email)s."
 msgstr "Insignia otorgada a %(email)s."
 
-#: badgeserver/admin.py:435
+#: badgeserver/admin.py:495
 msgid "Notification e-mail sent."
 msgstr "Correo de notificación enviado."
 
-#: badgeserver/admin.py:438
+#: badgeserver/admin.py:498
 #, python-format
 msgid "Notification e-mail failed: %(error)s"
 msgstr "Falló el correo de notificación: %(error)s"
 
-#: badgeserver/admin.py:459
+#: badgeserver/admin.py:519
 #, python-format
 msgid "Skipped %(n)d row(s) with an unreadable e-mail address."
 msgstr "Se omitieron %(n)d fila(s) con una dirección de correo ilegible."
 
-#: badgeserver/admin.py:465
+#: badgeserver/admin.py:525
 #, python-format
 msgid "CSV has %(count)d addresses; the limit is %(cap)d."
 msgstr "El CSV tiene %(count)d direcciones; el límite es %(cap)d."
 
-#: badgeserver/admin.py:477
+#: badgeserver/admin.py:537
 #, python-format
 msgid "Processed %(rows)d rows: %(ok)d awarded."
 msgstr "Se procesaron %(rows)d filas: %(ok)d otorgadas."
 
-#: badgeserver/admin.py:525
+#: badgeserver/admin.py:587
 msgid "already holds this badge"
 msgstr "ya tiene esta insignia"
 
-#: badgeserver/admin.py:531
+#: badgeserver/admin.py:593
 #, python-format
 msgid "awarded, e-mail failed: %(error)s"
 msgstr "otorgada, falló el correo: %(error)s"
 
-#: badgeserver/admin.py:533
+#: badgeserver/admin.py:595
 msgid "awarded, e-mail sent"
 msgstr "otorgada, correo enviado"
 
-#: badgeserver/admin.py:535 badgeserver/templates/assertion.html:3
+#: badgeserver/admin.py:597 badgeserver/templates/assertion.html:3
 msgid "awarded"
 msgstr "otorgada"
 
-#: badgeserver/admin.py:589
+#: badgeserver/admin.py:651
 msgid "Assertion revoked."
 msgstr "Aserción revocada."
 
-#: badgeserver/admin.py:591
+#: badgeserver/admin.py:653
 msgid "A reason is required to revoke."
 msgstr "Se requiere un motivo para revocar."
 
-#: badgeserver/admin.py:601
+#: badgeserver/admin.py:663
 msgid "Assertion re-instated."
 msgstr "Aserción restablecida."
 
-#: badgeserver/admin.py:609
+#: badgeserver/admin.py:671
 msgid "SMTP is not configured."
 msgstr "SMTP no está configurado."
 
-#: badgeserver/admin.py:613
+#: badgeserver/admin.py:675
 msgid "Notification e-mail re-sent."
 msgstr "Correo de notificación reenviado."
 
-#: badgeserver/admin.py:617
+#: badgeserver/admin.py:679
 #, python-format
 msgid "Re-send failed: %(error)s"
 msgstr "Falló el reenvío: %(error)s"
 
-#: badgeserver/admin.py:629
+#: badgeserver/admin.py:691
 msgid "Current password is incorrect."
 msgstr "La contraseña actual es incorrecta."
 
-#: badgeserver/admin.py:633
+#: badgeserver/admin.py:695
 msgid "Password changed."
 msgstr "Contraseña cambiada."
 
@@ -244,15 +249,15 @@ msgstr "Etiquetas (separadas por comas)"
 msgid "Let anyone claim this badge"
 msgstr "Permitir que cualquiera reclame esta insignia"
 
-#: badgeserver/forms.py:91 badgeserver/templates/admin/badge_form.html:34
+#: badgeserver/forms.py:91 badgeserver/templates/admin/badge_form.html:42
 msgid "Badge image"
 msgstr "Imagen de la insignia"
 
-#: badgeserver/forms.py:93 badgeserver/templates/admin/badge_form.html:41
+#: badgeserver/forms.py:93 badgeserver/templates/admin/badge_form.html:49
 msgid "Upload a finished image"
 msgstr "Subir una imagen terminada"
 
-#: badgeserver/forms.py:94 badgeserver/templates/admin/badge_form.html:47
+#: badgeserver/forms.py:94 badgeserver/templates/admin/badge_form.html:55
 msgid "Compose from a logo"
 msgstr "Componer a partir de un logotipo"
 
@@ -1090,63 +1095,74 @@ msgid "Detail"
 msgstr "Detalle"
 
 #: badgeserver/templates/admin/badge_form.html:14
-#: badgeserver/templates/admin/badge_form.html:16
 msgid "Edit badge"
 msgstr "Editar insignia"
 
 #: badgeserver/templates/admin/badge_form.html:14
-#: badgeserver/templates/admin/badge_form.html:16
+msgid "Copy badge"
+msgstr "Copiar insignia"
+
+#: badgeserver/templates/admin/badge_form.html:14
 #: badgeserver/templates/admin/badges.html:6
 msgid "New badge"
 msgstr "Nueva insignia"
 
-#: badgeserver/templates/admin/badge_form.html:22
+#: badgeserver/templates/admin/badge_form.html:23
+#, python-format
+msgid ""
+"Copying <strong>%(name)s</strong>. Its image is carried over unless you\n"
+"        upload a new one; pick a new slug or leave it blank."
+msgstr ""
+"Copiando <strong>%(name)s</strong>. Se conserva su imagen a menos que suba\n"
+"        una nueva; elija un slug nuevo o déjelo en blanco."
+
+#: badgeserver/templates/admin/badge_form.html:30
 #, python-format
 msgid "Slug <code>%(slug)s</code> &mdash; fixed once created."
 msgstr "Slug <code>%(slug)s</code> &mdash; fijo una vez creado."
 
-#: badgeserver/templates/admin/badge_form.html:24
+#: badgeserver/templates/admin/badge_form.html:32
 #: badgeserver/templates/admin/issuer.html:14
 msgid "Used in URLs. Leave blank to derive it from the name."
 msgstr "Se usa en las URLs. Déjelo en blanco para derivarlo del nombre."
 
-#: badgeserver/templates/admin/badge_form.html:28
+#: badgeserver/templates/admin/badge_form.html:36
 msgid "Plain text describing what earns this badge."
 msgstr "Texto plano que describe cómo se obtiene esta insignia."
 
-#: badgeserver/templates/admin/badge_form.html:31
+#: badgeserver/templates/admin/badge_form.html:39
 msgid "Anyone can claim this badge for their own e-mail address (they confirm by clicking a link). Needs e-mail to be configured."
 msgstr "Cualquiera puede reclamar esta insignia para su propia dirección de correo (lo confirma haciendo clic en un enlace). Requiere que el correo esté configurado."
 
-#: badgeserver/templates/admin/badge_form.html:42
+#: badgeserver/templates/admin/badge_form.html:50
 msgid "Fill this in if you chose “Upload a finished image” above. PNG, JPEG, WEBP, GIF or SVG. It is made square and resized."
 msgstr "Rellene esto si eligió «Subir una imagen terminada» arriba. PNG, JPEG, WEBP, GIF o SVG. Se recorta a cuadrado y se redimensiona."
 
-#: badgeserver/templates/admin/badge_form.html:48
+#: badgeserver/templates/admin/badge_form.html:56
 msgid "Fill this in if you chose “Compose from a logo”. The server draws the shape, places the logo and writes the title below it."
 msgstr "Rellene esto si eligió «Componer a partir de un logotipo». El servidor dibuja la forma, coloca el logotipo y escribe el título debajo."
 
-#: badgeserver/templates/admin/badge_form.html:51
+#: badgeserver/templates/admin/badge_form.html:59
 msgid "PNG, JPEG, WEBP, GIF or SVG. A transparent logo looks best."
 msgstr "PNG, JPEG, WEBP, GIF o SVG. Un logotipo transparente queda mejor."
 
-#: badgeserver/templates/admin/badge_form.html:59
+#: badgeserver/templates/admin/badge_form.html:67
 msgid "positive = lower"
 msgstr "positivo = más abajo"
 
-#: badgeserver/templates/admin/badge_form.html:60
+#: badgeserver/templates/admin/badge_form.html:68
 msgid "negative = higher"
 msgstr "negativo = más arriba"
 
-#: badgeserver/templates/admin/badge_form.html:64
+#: badgeserver/templates/admin/badge_form.html:72
 msgid "badge preview"
 msgstr "vista previa de la insignia"
 
-#: badgeserver/templates/admin/badge_form.html:66
+#: badgeserver/templates/admin/badge_form.html:75
 msgid "Live preview"
 msgstr "Vista previa en vivo"
 
-#: badgeserver/templates/admin/badge_form.html:73
+#: badgeserver/templates/admin/badge_form.html:83
 msgid "Current image"
 msgstr "Imagen actual"
 
@@ -1179,18 +1195,22 @@ msgid "Edit"
 msgstr "Editar"
 
 #: badgeserver/templates/admin/badges.html:29
+msgid "Copy"
+msgstr "Copiar"
+
+#: badgeserver/templates/admin/badges.html:30
 msgid "View"
 msgstr "Ver"
 
-#: badgeserver/templates/admin/badges.html:32
+#: badgeserver/templates/admin/badges.html:33
 msgid "Un-archive"
 msgstr "Desarchivar"
 
-#: badgeserver/templates/admin/badges.html:32
+#: badgeserver/templates/admin/badges.html:33
 msgid "Archive"
 msgstr "Archivar"
 
-#: badgeserver/templates/admin/badges.html:40
+#: badgeserver/templates/admin/badges.html:41
 msgid "No badge classes yet."
 msgstr "Aún no hay clases de insignia."
 

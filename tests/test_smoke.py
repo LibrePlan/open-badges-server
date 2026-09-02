@@ -197,6 +197,52 @@ def test_compose_crest_shape(app, auth_client):
     assert img.convert("RGBA").getpixel((1, 1))[3] == 0
 
 
+def test_copy_badge(app, auth_client):
+    import os
+
+    _compose(
+        auth_client, name="Release Manager", art_shape="crest", art_bg="#1f6f43",
+        art_logo_scale="130", self_service="y", tags="eng, release",
+    )
+
+    # the copy form is pre-filled from the source
+    html = auth_client.get("/admin/badges/new?copy=release-manager").data.decode()
+    assert 'value="Release Manager-copy"' in html
+    assert '<option selected value="crest">' in html
+    assert 'value="#1f6f43"' in html
+    assert 'name="self_service"' in html and "checked" in html
+    assert 'name="copy" value="release-manager"' in html
+
+    # submitting it (no new upload) makes a real duplicate with copied art
+    r = auth_client.post(
+        "/admin/badges/new?copy=release-manager",
+        data={
+            "name": "Release Manager-copy", "description": "Ships releases.",
+            "art_mode": "compose", "art_shape": "crest", "art_bg": "#1f6f43",
+            "art_accent": "#d4af37", "art_logo_scale": "130", "art_border_width": "8",
+            "art_logo_offset": "0", "art_title_offset": "0", "self_service": "y",
+            "tags": "eng, release", "copy": "release-manager", "submit": "Save badge",
+        },
+        content_type="multipart/form-data", follow_redirects=True,
+    )
+    assert r.status_code == 200
+    with app.app_context():
+        src = db.session.get(BadgeClass, "release-manager")
+        dup = db.session.get(BadgeClass, "release-manager-copy")
+        assert dup is not None and dup.slug != src.slug
+        assert dup.name == "Release Manager-copy"
+        assert dup.art_shape == "crest" and dup.art_logo_scale == 130
+        assert dup.self_service and dup.composed
+        assert dup.logo_path == "logo-release-manager-copy.png"
+        assert os.path.exists(os.path.join(app.config["UPLOAD_DIR"], dup.image_path))
+
+    # an unknown source just gives a blank form
+    assert auth_client.get("/admin/badges/new?copy=nope").status_code == 200
+
+    # and the badge list offers the Copy link
+    assert b"/admin/badges/new?copy=release-manager" in auth_client.get("/admin/badges").data
+
+
 def test_compose_rerenders_on_rename(app, auth_client):
     _compose(auth_client)
     import os

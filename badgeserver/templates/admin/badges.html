@@ -26,6 +26,7 @@
               <a href="{{ url_for('admin.award', slug=b.slug) }}">{{ _("Award") }}</a>
               <a href="{{ url_for('admin.award_csv', slug=b.slug) }}">{{ _("CSV") }}</a>
               <a href="{{ url_for('admin.badge_edit', slug=b.slug) }}">{{ _("Edit") }}</a>
+              <a href="{{ url_for('admin.badge_new', copy=b.slug) }}">{{ _("Copy") }}</a>
               <a href="{{ url_for('public.badge_page', slug=b.slug) }}">{{ _("View") }}</a>
               <form method="post" action="{{ url_for('admin.badge_archive', slug=b.slug) }}" class="inline">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

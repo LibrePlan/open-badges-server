@@ -36,6 +36,8 @@
     });
     var slug = form.querySelector('input[name="slug"]');
     if (slug) fd.append("slug", slug.value);
+    var copy = form.querySelector('input[name="copy"]');
+    if (copy) fd.append("copy", copy.value);
     var logo = form.elements.logo;
     if (logo && logo.files && logo.files[0]) fd.append("logo", logo.files[0]);
     return fd;
