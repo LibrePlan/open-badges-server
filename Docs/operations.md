@@ -35,13 +35,36 @@ Change the bootstrap password now if it was typed on a shared terminal:
 
 ### 2. Polish the issuer profile
 
-**Issuer** in the nav. `badgectl set-issuer` already created it; here you can
-edit the name, website URL, contact e-mail and description, and upload a
-**logo** (square PNG/JPEG/WEBP/GIF; it is normalised to a 512 px PNG). The
-issuer's `slug` is fixed — it is part of every badge URL.
+**Issuer** in the nav. This is the Open Badges `Issuer` / `Profile` object — it
+identifies *who* issues the badges (your organisation), separate from the
+server that hosts them. `badgectl set-issuer` created it; here you edit:
 
-This profile is published at `/issuer/<slug>.json` and is what validators read
-to identify who issued a badge.
+| Field | Meaning |
+| --- | --- |
+| Name | Display name of the issuing organisation. Shown everywhere as *"Issued by \<name\>"*. |
+| Website URL | The **organisation's public homepage**, e.g. `https://example.org`. A human link shown by wallets and validators so a badge holder can find out who the issuer is. Point it at the organisation, **not** at this badge server (see below). |
+| Contact e-mail | Public address, embedded in the issuer JSON — visible to anyone who verifies a badge. |
+| Description | Optional blurb about the issuer. |
+| Logo | Square PNG/JPEG/WEBP/GIF, normalised to a 512 px PNG. Appears on the issuer JSON and next to the badge on verification pages. |
+
+The **slug** is fixed once set — it is part of `/issuer/<slug>.json`, which is
+referenced by every badge.
+
+The server derives the rest from `EXTERNAL_URL` and never asks you for it: the
+issuer's machine-readable **`id`** (`{EXTERNAL_URL}/issuer/<slug>.json`) and the
+URLs of every badge class and assertion.
+
+**Website URL — organisation, not server.** The badge server's host is already
+in the badge data twice over (the issuer `id`, and the host of every assertion
+JSON). The *Website URL* is the one human-facing link in the profile, so it
+should go to a page that says who the issuer is — the organisation's site, not
+a bare badge host. Using the organisation's parent domain also keeps the issuer
+`id` host and the assertion host on a related domain, which some external
+validators check for consistency. This server's own `/verify` only checks that
+the issuer `id` and the assertion share a domain, so the Website URL never
+affects verification here.
+
+This profile is published at `/issuer/<slug>.json`.
 
 ### 3. Create a badge class
 
@@ -64,7 +87,7 @@ issue *assertions* of it to people.
 - **Upload a finished image** — PNG / JPEG / WEBP / GIF / SVG; it is made square
   and resized to 512 px and used as-is.
 - **Compose from a logo** — upload just a logo (SVG works well), pick a shape
-  (octagon / circle / hexagon / shield) and background + ring colours, then
+  (octagon / circle / hexagon / shield / crest) and background + ring colours, then
   fine-tune with sliders: **Logo size** (40–200 %), **Border width** (0–30 px,
   0 = no border), **Logo position** and **Title position** (nudge each up or
   down). The **live preview** beside the form updates as you change any of

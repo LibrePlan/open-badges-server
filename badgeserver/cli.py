@@ -134,14 +134,30 @@ def reset_password(username: str, password: str) -> None:
 
 
 @click.command("set-issuer")
-@click.option("--slug", default="", help="Identifier in URLs (default: derived from the name).")
-@click.option("--name", required=True)
-@click.option("--url", "url", required=True, help="Issuer website URL.")
-@click.option("--email", required=True)
-@click.option("--description", default="")
+@click.option(
+    "--slug",
+    default="",
+    help="Internal id, used only in the issuer JSON URL (/issuer/<slug>.json). "
+    "Defaults to a slug of the name; fixed once set.",
+)
+@click.option("--name", required=True, help="Display name of the issuing organisation.")
+@click.option(
+    "--url",
+    "url",
+    required=True,
+    help="The issuing organisation's public homepage (not this badge server). "
+    "Shown to badge holders as 'issued by <name>'. Full URL, e.g. https://example.org.",
+)
+@click.option("--email", required=True, help="Public contact address for the issuer.")
+@click.option("--description", default="", help="Optional blurb about the issuer.")
 @with_appcontext
 def set_issuer(slug: str, name: str, url: str, email: str, description: str) -> None:
-    """Create or update the issuer profile."""
+    """Create or update the issuer profile (who issues the badges).
+
+    The issuer's machine-readable id and the URLs of every badge and assertion
+    are derived from EXTERNAL_URL automatically; you only set the human-facing
+    fields here. The same profile is editable at /admin/issuer.
+    """
     existing = Issuer.query.order_by(Issuer.created_on).first()
     if existing is None:
         existing = Issuer(slug=slugify(slug or name))

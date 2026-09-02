@@ -11,6 +11,12 @@ compiled translation catalogs are committed, so there is no build step beyond
 copying the source in. `docker-compose.yml` builds it, runs `gunicorn` on port
 4000, and keeps the data in a named volume.
 
+Debian trixie is the tested base. `ubuntu:24.04` has compatible package
+versions too (its `requests` is a little old, so the `/verify` DNS-pinning
+falls back to the plain SSRF screen — no crash). `ubuntu:22.04` is too old:
+its Flask-Babel, WTForms, email-validator and Flask-SQLAlchemy predate what
+the code uses.
+
 ## First run
 
 ```sh
@@ -23,6 +29,12 @@ docker compose exec badgeserver flask set-issuer \
 ```
 
 Open `http://localhost:4000/` (or your `EXTERNAL_URL`).
+
+`set-issuer` fills in the issuer profile — the organisation that issues the
+badges. `--url` is that organisation's homepage, not this server (the server's
+address is already recorded as the issuer id). `flask set-issuer --help` and
+[`INSTALL.md`](INSTALL.md#what-set-issuer-configures) explain each field; you
+can also edit it later at **Admin → Issuer**.
 
 ### `badges.env`
 

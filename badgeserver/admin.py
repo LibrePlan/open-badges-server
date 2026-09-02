@@ -507,7 +507,9 @@ def _extract_emails(text: str) -> tuple[list[str], int]:
             if "@" not in cell:
                 continue
             try:
-                normalized = validate_email(cell, check_deliverability=False).normalized
+                result = validate_email(cell, check_deliverability=False)
+                # .normalized on email-validator >= 2.0, .email on 1.x
+                normalized = getattr(result, "normalized", None) or result.email
             except EmailNotValidError:
                 skipped += 1
             else:

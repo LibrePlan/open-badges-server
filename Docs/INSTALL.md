@@ -116,6 +116,35 @@ sudo ./deploy/badgectl set-issuer --slug main \
 sudo ./deploy/badgectl send-test-email jeroen@libreplan.dev
 ```
 
+### What `set-issuer` configures
+
+The **issuer profile** identifies *who* issues the badges — the organisation,
+not this server. In Open Badges terms it is the `Issuer` / `Profile` object,
+published at `/issuer/<slug>.json` and read by every validator to attribute a
+badge. You can also set all of this later at **Admin → Issuer**.
+
+| Option | Meaning |
+| --- | --- |
+| `--slug` | Internal id. Appears only in the issuer JSON URL (`…/issuer/<slug>.json`). Defaults to a slug of the name. **Fixed once set** — every badge references it. `main` is a fine choice. |
+| `--name` | Display name of the issuing organisation. Rendered everywhere as *"Issued by \<name\>"*. |
+| `--url` | The organisation's **public homepage** (see below). A full URL, e.g. `https://example.org`. |
+| `--email` | Public contact address, embedded in the issuer JSON. |
+| `--description` | Optional one- or two-sentence blurb about the issuer. |
+
+The server fills in the rest automatically from `EXTERNAL_URL`: the issuer's
+machine-readable **`id`** (`<EXTERNAL_URL>/issuer/<slug>.json`) and the URLs of
+every badge class and assertion. You never set those by hand.
+
+**`--url` should point at the issuing organisation's website, not at the badge
+server.** The issuer is the organisation; the badge server is just where the
+credentials are hosted. A badge holder viewing the credential in a wallet sees
+*"Issued by \<name\>"* linked to `--url`, so it should land on a page that
+explains who the issuer is. The badge server's own host is already recorded in
+the badge data as the issuer `id` and as the host of every assertion — there is
+no need to repeat it here. (Using the organisation's parent domain also keeps
+the issuer `id` host and the assertion host on a related domain, which some
+validators check.)
+
 The `send-test-email` step should land a message in your inbox. If it errors,
 fix the `SMTP_*` values and retry — nothing else depends on it.
 

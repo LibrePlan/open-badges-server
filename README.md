@@ -67,6 +67,7 @@ sudoedit /var/lib/badgeserver/badges.env      # SECRET_KEY, EXTERNAL_URL, BIND, 
 
 sudo ./deploy/badgectl init-db
 sudo ./deploy/badgectl create-admin admin
+# --url is the issuing organisation's homepage, not this server; see INSTALL.md.
 sudo ./deploy/badgectl set-issuer --slug main --name "LibrePlan Badges" \
   --url https://libreplan.dev --email jeroen@libreplan.dev
 
