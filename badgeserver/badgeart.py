@@ -38,9 +38,9 @@ _LOGO_TOP = {"crest": 0.22}
 # x measured from the centre line; only the right half is listed and it is
 # mirrored at render time. Tuned against a reference badge silhouette.
 _CREST = {
-    "corner": (0.475, 0.045),      # the top corner "ear"
-    "top_mid_y": 0.014,            # centre of the top edge (shallow dip)
-    "top_ctrl": (0.17, -0.010),    # control point for each half of the top edge
+    "corner": (0.475, 0.012),      # the top corner "ear" (the high points)
+    "top_mid_y": 0.05,             # centre of the top edge dips below the corners
+    "top_ctrl": (0.24, 0.05),      # control point for each half of the top edge
     "side": [                      # (control, end) down the right side
         ((0.492, 0.05), (0.475, 0.13)),
         ((0.455, 0.19), (0.435, 0.29)),
