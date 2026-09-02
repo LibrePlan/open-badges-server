@@ -38,7 +38,7 @@ def test_public_pages(client):
 
 
 def test_project_logo_links_to_repo(client, auth_client):
-    repo = "https://github.com/libreplan/libreplan-open-badges-server"
+    repo = "https://github.com/LibrePlan/open-badges-server"
     for page in (client.get("/"), auth_client.get("/admin/")):
         body = page.data.decode()
         assert "/static/project-logo.png" in body
