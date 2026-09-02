@@ -1,3 +1,5 @@
+<img src="badgeserver/static/project-logo.png" alt="LibrePlan Open Badges Server" width="400">
+
 # badgeserver
 
 A small self-hosted **Open Badges 2.0** issuer.
