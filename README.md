@@ -28,6 +28,7 @@ Licence: **AGPL-3.0-or-later** (see `LICENSE`). © Jeroen Baten.
 ## Important docs
 
 - Install: [`Docs/INSTALL.md`](Docs/INSTALL.md)
+- Docker: [`Docs/docker.md`](Docs/docker.md)
 - Running it (backup, upgrade, troubleshooting): [`Docs/operations.md`](Docs/operations.md)
 - Design notes: [`Docs/badges-server-v2-build-plan-v1.md`](Docs/badges-server-v2-build-plan-v1.md)
 
@@ -77,6 +78,21 @@ sudo sed "s#__REPO__#$PWD#" deploy/badgeserver.service \
 sudo systemctl daemon-reload && sudo systemctl enable --now badgeserver
 curl -s localhost:4000/healthz
 ```
+
+## Docker
+
+```sh
+cp deploy/badges.env.example badges.env      # then edit: SECRET_KEY, EXTERNAL_URL, SMTP_*
+docker compose up -d --build
+docker compose exec badgeserver flask create-admin admin
+docker compose exec badgeserver flask set-issuer --name "LibrePlan Badges" \
+  --url https://libreplan.dev --email jeroen@libreplan.dev
+curl -s localhost:4000/healthz
+```
+
+The image installs the same apt packages as a bare-metal install; the SQLite
+database and uploads live in the `data` volume. Details, reverse-proxy and
+backup notes in [`Docs/docker.md`](Docs/docker.md).
 
 ## Local development
 

@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Jeroen Baten <jeroen@libreplan.dev>
+#
+# Quick start:
+#   cp deploy/badges.env.example badges.env
+#   # edit badges.env -- at minimum SECRET_KEY and EXTERNAL_URL
+#   docker compose up -d --build
+#   docker compose exec badgeserver flask create-admin <username>
+#   docker compose exec badgeserver flask set-issuer --name "..." --url https://... --email ...
+#
+# Notes
+#   - badges.env uses the same KEY=VALUE format as deploy/badges.env.example.
+#   - EXTERNAL_URL is baked into every badge URL: set it to the exact public
+#     origin (e.g. https://badges.example.org, or http://host.lan:4000 for a
+#     plain-HTTP LAN deployment). Do not change it after issuing badges.
+#   - Behind a reverse proxy also set PROXY_FIX_HOPS=1 in badges.env.
+#   - Data (SQLite DB + uploads) lives in the named volume "data".
+
+name: badgeserver
+
+services:
+  badgeserver:
+    build: .
+    image: badgeserver:local
+    restart: unless-stopped
+    init: true
+    env_file:
+      - badges.env
+    environment:
+      # Fixed for the container -- do not set these in badges.env.
+      BADGESERVER_DATA_DIR: /data
+      BIND: 0.0.0.0:4000
+    ports:
+      - "${HOST_PORT:-4000}:4000"
+    volumes:
+      - data:/data
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:4000/healthz').read()"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # Optional shared rate-limit store, so limits are exact across gunicorn
+  # workers. Enable with:  docker compose --profile with-redis up -d --build
+  # and set  RATELIMIT_STORAGE_URI=redis://redis:6379/0  in badges.env
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    profiles: ["with-redis"]
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+
+volumes:
+  data:

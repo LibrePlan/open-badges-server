@@ -1,0 +1,21 @@
+.git
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# local runtime data / secrets -- never bake into the image
+instance/
+*.sqlite
+*.sqlite-*
+*.env
+!deploy/badges.env.example
+
+# caches / build cruft
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.swp
+.DS_Store
