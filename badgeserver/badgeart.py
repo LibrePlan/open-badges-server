@@ -14,7 +14,7 @@ import io
 from PIL import Image, ImageDraw, ImageFont
 
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-SHAPES = ("octagon", "circle", "hexagon", "shield")
+SHAPES = ("octagon", "circle", "hexagon", "shield", "crest")
 
 _BG_FALLBACK = (43, 108, 176)
 _ACCENT_FALLBACK = (176, 135, 43)
@@ -25,11 +25,91 @@ _TITLE_BAND = {
     "circle": (0.55, 0.80),
     "hexagon": (0.52, 0.73),
     "shield": (0.47, 0.67),
+    "crest": (0.48, 0.69),
 }
+
+# top of the logo area, as a fraction of canvas height (default 0.07). The
+# "crest" has a notch at the top, so its logo starts lower.
+_LOGO_TOP = {"crest": 0.16}
+
+# Bezier control fractions (of the shape's span) for the "crest" outline: a
+# heater shield with two gentle rounded shoulders at the top meeting in a
+# central cusp, curved sides, and a pointed base. Tuned visually.
+_CREST = {
+    "cusp": 0.05, "lobe_c": 0.03, "apex": 0.25, "apex_y": 0.04,
+    "crn_c": 0.06, "crn_x": 0.015, "crn_y": 0.12,
+    "bulge": 0.05, "bulge_y": 0.32, "waist_x": 0.03, "waist_y": 0.50,
+    "tip_cx": 0.045, "tip_cy": 0.82,
+}
+#: supersampling factor for the curved "crest" outline (anti-aliasing)
+_CREST_SS = 4
 
 
 def _clampf(value: float, low: float, high: float) -> float:
     return max(low, min(high, value))
+
+
+def _quad(p0, p1, p2, steps: int) -> list[tuple[float, float]]:
+    """Sample a quadratic Bezier from *p0* to *p2* (control *p1*), *p2* excluded."""
+    out = []
+    for i in range(steps):
+        t = i / steps
+        u = 1 - t
+        out.append(
+            (
+                u * u * p0[0] + 2 * u * t * p1[0] + t * t * p2[0],
+                u * u * p0[1] + 2 * u * t * p1[1] + t * t * p2[1],
+            )
+        )
+    return out
+
+
+def _crest(size: int, inset: float) -> list[tuple[float, float]]:
+    a, b = inset, size - inset
+    s = b - a
+    cx = a + s / 2
+    p = _CREST
+    cusp = (cx, a + p["cusp"] * s)
+    segments = [
+        ((cx - p["lobe_c"] * s, a - p["lobe_c"] * s), (a + p["apex"] * s, a + p["apex_y"] * s)),
+        ((a + p["crn_c"] * s, a - 0.05 * s), (a + p["crn_x"] * s, a + p["crn_y"] * s)),
+        ((a - p["bulge"] * s, a + p["bulge_y"] * s), (a + p["waist_x"] * s, a + p["waist_y"] * s)),
+        ((a + p["tip_cx"] * s, a + p["tip_cy"] * s), (cx, b)),
+    ]
+    pts = [cusp]
+    cur = cusp
+    for ctrl, end in segments:
+        pts += _quad(cur, ctrl, end, 22)
+        cur = end
+    pts.append((cx, b))
+    mirrored = [(2 * cx - x, y) for x, y in reversed(pts)]
+    return pts + mirrored[1:-1]
+
+
+def _crest_layers(
+    size: int, stroke: int, bg: tuple[int, int, int], accent: tuple[int, int, int]
+) -> tuple[Image.Image, Image.Image]:
+    """Anti-aliased crest: return ``(body_rgba, mask_L)`` at *size*.
+
+    The outline is a curve, so it is drawn at ``_CREST_SS`` x and downsampled --
+    a stroked polygon would butt each tiny segment and look chunky.
+    """
+    ss = _CREST_SS
+    big = size * ss
+    outer = _polygon("crest", big, 0)
+    body = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    bd = ImageDraw.Draw(body)
+    if stroke > 0:
+        bd.polygon(outer, fill=accent + (255,))
+        bd.polygon(_polygon("crest", big, stroke * ss), fill=bg + (255,))
+    else:
+        bd.polygon(outer, fill=bg + (255,))
+    mask = Image.new("L", (big, big), 0)
+    ImageDraw.Draw(mask).polygon(outer, fill=255)
+    return (
+        body.resize((size, size), Image.LANCZOS),
+        mask.resize((size, size), Image.LANCZOS),
+    )
 
 
 def _hex_to_rgb(value: str, fallback: tuple[int, int, int]) -> tuple[int, int, int]:
@@ -48,6 +128,8 @@ def _polygon(shape: str, size: int, inset: float) -> list[tuple[float, float]]:
     a, b = inset, size - inset
     span = b - a
     mid = size / 2
+    if shape == "crest":
+        return _crest(size, inset)
     if shape == "hexagon":
         return [
             (a + span * 0.25, a), (a + span * 0.75, a), (b, mid),
@@ -194,24 +276,27 @@ def render_badge(
     stroke = round(bw * size / 512)
     outline = accent_rgb + (255,) if stroke > 0 else None
 
-    mask = _shape_mask(shape, size)
-
-    canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(canvas)
-    if shape == "circle":
-        draw.ellipse(
-            [stroke, stroke, size - 1 - stroke, size - 1 - stroke],
-            fill=bg_rgb + (255,),
-            outline=outline,
-            width=max(1, stroke),
-        )
+    if shape == "crest":
+        canvas, mask = _crest_layers(size, stroke, bg_rgb, accent_rgb)
+        draw = ImageDraw.Draw(canvas)
     else:
-        draw.polygon(
-            _polygon(shape, size, stroke),
-            fill=bg_rgb + (255,),
-            outline=outline,
-            width=max(1, stroke),
-        )
+        mask = _shape_mask(shape, size)
+        canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(canvas)
+        if shape == "circle":
+            draw.ellipse(
+                [stroke, stroke, size - 1 - stroke, size - 1 - stroke],
+                fill=bg_rgb + (255,),
+                outline=outline,
+                width=max(1, stroke),
+            )
+        else:
+            draw.polygon(
+                _polygon(shape, size, stroke),
+                fill=bg_rgb + (255,),
+                outline=outline,
+                width=max(1, stroke),
+            )
 
     has_title = bool((title or "").strip())
     band0, band1 = _TITLE_BAND.get(shape, (0.56, 0.86))
@@ -221,7 +306,7 @@ def render_badge(
     with Image.open(io.BytesIO(logo_png)) as logo:
         logo = logo.convert("RGBA")
         # The logo occupies the area between the top of the shape and the title.
-        top = size * 0.07
+        top = size * _LOGO_TOP.get(shape, 0.07)
         bottom = (title_top - size * 0.02) if has_title else size * 0.93
         avail_mid = (top + bottom) / 2
         # Beyond 100 %, the logo is allowed to grow past its nominal area (and

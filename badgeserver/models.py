@@ -80,7 +80,7 @@ class BadgeClass(db.Model):
     __tablename__ = "badge_class"
 
     #: shapes available when composing a badge from a logo + title
-    ART_SHAPES = ("octagon", "circle", "hexagon", "shield")
+    ART_SHAPES = ("octagon", "circle", "hexagon", "shield", "crest")
     ART_BG_DEFAULT = "#2b6cb0"
     ART_ACCENT_DEFAULT = "#b0872b"
     ART_LOGO_SCALE_RANGE = (40, 200)

@@ -182,6 +182,21 @@ def test_compose_badge(app, auth_client):
     assert auth_client.get("/b/release-manager/logo").status_code == 200
 
 
+def test_compose_crest_shape(app, auth_client):
+    from io import BytesIO
+
+    from PIL import Image
+
+    assert _compose(auth_client, name="Crested", art_shape="crest").status_code == 200
+    with app.app_context():
+        assert db.session.get(BadgeClass, "crested").art_shape == "crest"
+    img = Image.open(BytesIO(auth_client.get("/b/crested/image").data))
+    n = app.config["BADGE_IMAGE_SIZE"]
+    assert img.format == "PNG" and img.size == (n, n)
+    # the curved outline leaves the corners transparent
+    assert img.convert("RGBA").getpixel((1, 1))[3] == 0
+
+
 def test_compose_rerenders_on_rename(app, auth_client):
     _compose(auth_client)
     import os
