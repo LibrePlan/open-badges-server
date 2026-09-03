@@ -37,6 +37,28 @@ def test_public_pages(client):
     assert client.get("/nope").status_code == 404
 
 
+def test_footer_version(client):
+    from badgeserver.version import app_version
+
+    v = app_version()
+    body = client.get("/").data.decode()
+    shown = '<span class="version">' in body
+    assert shown == (v != "unknown")
+    if shown:
+        assert v in body
+
+
+def test_app_version_env_override(monkeypatch):
+    from badgeserver import version
+
+    version.app_version.cache_clear()
+    try:
+        monkeypatch.setenv("BADGESERVER_VERSION", "v9.9.9 (deadbee)")
+        assert version.app_version() == "v9.9.9 (deadbee)"
+    finally:
+        version.app_version.cache_clear()
+
+
 def test_project_logo_links_to_repo(client, auth_client):
     repo = "https://github.com/LibrePlan/open-badges-server"
     for page in (client.get("/"), auth_client.get("/admin/")):

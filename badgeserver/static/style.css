@@ -52,6 +52,7 @@ a { color: var(--accent); }
 
 .wrap { max-width: 60rem; margin: 1.6rem auto; padding: 0 1.4rem; }
 .site-footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 2rem 0; }
+.site-footer .version { font-family: ui-monospace, "SFMono-Regular", monospace; }
 
 .muted { color: var(--muted); }
 .hint { color: var(--muted); font-size: .85rem; margin: .2rem 0 0; }

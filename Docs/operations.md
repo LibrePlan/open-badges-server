@@ -322,6 +322,23 @@ in [`INSTALL.md`](INSTALL.md) section 6b.
 `GET /healthz` returns `{"status":"ok"}` and touches the database. Point the
 proxy or an external monitor at it.
 
+## Version
+
+The site footer shows `<most recent tag> (<short commit>)`. Tag releases so it
+reads sensibly:
+
+```sh
+git tag -a v1.0.0 -m "First release" && git push --tags
+```
+
+It is derived from git in the checkout at runtime. Where there is no checkout —
+the Docker image, or a systemd unit that can't run `git` — set it explicitly:
+
+```sh
+echo "BADGESERVER_VERSION=$(contrib/version.sh)" | sudo tee -a /var/lib/badgeserver/badges.env
+# or for Docker:  BADGESERVER_VERSION="$(contrib/version.sh)" docker compose up -d --build
+```
+
 ## Troubleshooting
 
 | Symptom | Check |

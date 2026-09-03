@@ -113,6 +113,7 @@ def create_app(config_overrides: dict | None = None, *, data_dir: str | None = N
         from flask_babel import get_locale
 
         from .i18n import languages, switch_url
+        from .version import app_version
 
         def badge_image_url(badge):
             """Badge image URL with a cache-busting version from the file mtime."""
@@ -129,6 +130,7 @@ def create_app(config_overrides: dict | None = None, *, data_dir: str | None = N
             "languages": languages(),
             "current_locale": str(get_locale() or app.config["BABEL_DEFAULT_LOCALE"]),
             "switch_url": switch_url,
+            "app_version": app_version(),
         }
 
     return app

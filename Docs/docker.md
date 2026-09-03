@@ -22,11 +22,15 @@ the code uses.
 ```sh
 cp deploy/badges.env.example badges.env
 $EDITOR badges.env
-docker compose up -d --build
+BADGESERVER_VERSION="$(contrib/version.sh)" docker compose up -d --build
 docker compose exec badgeserver flask create-admin <username>
 docker compose exec badgeserver flask set-issuer \
   --name "Your Org" --url https://your.org --email badges@your.org
 ```
+
+`BADGESERVER_VERSION` is optional — it just fills the footer version string,
+which the image can't read from git itself. Plain `docker compose up -d --build`
+is fine; the footer then omits the version.
 
 Open `http://localhost:4000/` (or your `EXTERNAL_URL`).
 

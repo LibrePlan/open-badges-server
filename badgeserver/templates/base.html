@@ -45,7 +45,10 @@
 
 <footer class="site-footer">
   <p>{{ _("Self-hosted Open Badges 2.0 issuer") }} &middot;
-    <a href="{{ repo_url }}" rel="noopener noreferrer">LibrePlan Open Badges Server</a></p>
+    <a href="{{ repo_url }}" rel="noopener noreferrer">LibrePlan Open Badges Server</a>
+    {% if app_version and app_version != "unknown" %}
+      &middot; <span class="version">{{ app_version }}</span>
+    {% endif %}</p>
 </footer>
 {% block scripts %}{% endblock %}
 </body>

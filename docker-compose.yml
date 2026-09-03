@@ -20,7 +20,12 @@ name: badgeserver
 
 services:
   badgeserver:
-    build: .
+    build:
+      context: .
+      args:
+        # Footer version; fill it from git before building, e.g.
+        #   BADGESERVER_VERSION="$(contrib/version.sh)" docker compose up -d --build
+        BADGESERVER_VERSION: "${BADGESERVER_VERSION:-}"
     image: badgeserver:local
     restart: unless-stopped
     init: true

@@ -25,12 +25,17 @@ WORKDIR /app
 COPY . /app
 RUN install -d -o badges -g badges /data
 
+# The image has no .git, so the footer version comes from this build arg:
+#   BADGESERVER_VERSION="$(contrib/version.sh)" docker compose build
+ARG BADGESERVER_VERSION=""
+
 ENV BADGESERVER_DATA_DIR=/data \
     BIND=0.0.0.0:4000 \
     FLASK_APP=/app/wsgi.py \
     FLASK_SKIP_DOTENV=1 \
     PYTHONPATH=/app \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    BADGESERVER_VERSION=$BADGESERVER_VERSION
 
 USER badges
 EXPOSE 4000
