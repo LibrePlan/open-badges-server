@@ -129,7 +129,7 @@ msgstr "Assertion wiederhergestellt."
 msgid "SMTP is not configured."
 msgstr "SMTP ist nicht konfiguriert."
 
-#: badgeserver/admin.py:675
+#: badgeserver/admin.py:675 badgeserver/claim_views.py:192
 msgid "Notification e-mail re-sent."
 msgstr "Benachrichtigungs-E-Mail erneut gesendet."
 
@@ -154,9 +154,17 @@ msgstr "Das Anfordern dieses Abzeichens ist derzeit nicht möglich."
 msgid "We could not send the confirmation e-mail. Please try again later."
 msgstr "Die Bestätigungs-E-Mail konnte nicht gesendet werden. Bitte versuchen Sie es später erneut."
 
-#: badgeserver/claim_views.py:154
+#: badgeserver/claim_views.py:167
 msgid "Badge confirmed — here it is."
 msgstr "Abzeichen bestätigt – hier ist es."
+
+#: badgeserver/claim_views.py:188
+msgid "E-mail is not configured on this server."
+msgstr "E-Mail ist auf diesem Server nicht konfiguriert."
+
+#: badgeserver/claim_views.py:195
+msgid "We could not send the e-mail. Please try again later."
+msgstr "Die E-Mail konnte nicht gesendet werden. Bitte versuchen Sie es später erneut."
 
 #: badgeserver/extensions.py:21
 msgid "Please sign in to continue."
@@ -826,6 +834,32 @@ msgstr "Der Bestätigungslink für das Abzeichen <strong>%(name)s</strong> ist n
 msgid "Start over"
 msgstr "Von vorn beginnen"
 
+#: badgeserver/templates/claim_result.html:22
+msgid "You already have this badge"
+msgstr "Sie haben dieses Abzeichen bereits"
+
+#: badgeserver/templates/claim_result.html:23
+#, python-format
+msgid ""
+"The <strong>%(name)s</strong> badge was issued to this e-mail address on\n"
+"      %(date)s."
+msgstr ""
+"Das Abzeichen <strong>%(name)s</strong> wurde dieser E-Mail-Adresse am\n"
+"      %(date)s ausgestellt."
+
+#: badgeserver/templates/claim_result.html:29
+#: badgeserver/templates/email/award.html:14
+msgid "View your badge"
+msgstr "Abzeichen ansehen"
+
+#: badgeserver/templates/claim_result.html:33
+msgid "Lost the original e-mail?"
+msgstr "Die ursprüngliche E-Mail verloren?"
+
+#: badgeserver/templates/claim_result.html:34
+msgid "Re-send the notification e-mail"
+msgstr "Benachrichtigungs-E-Mail erneut senden"
+
 #: badgeserver/templates/index.html:14
 msgid "issuer JSON"
 msgstr "Aussteller-JSON"
@@ -1287,10 +1321,6 @@ msgstr "Ihnen wurde ein Abzeichen verliehen:"
 #, python-format
 msgid "Issued by <strong>%(name)s</strong> &ndash; <a href=\"%(url)s\">%(url)s</a>"
 msgstr "Ausgestellt von <strong>%(name)s</strong> &ndash; <a href=\"%(url)s\">%(url)s</a>"
-
-#: badgeserver/templates/email/award.html:14
-msgid "View your badge"
-msgstr "Abzeichen ansehen"
 
 #: badgeserver/templates/email/award.html:17
 msgid "Badge image:"

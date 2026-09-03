@@ -18,5 +18,21 @@
       The confirmation link for the <strong>{{ name }}</strong> badge is no longer valid.
     {%- endtrans %}</p>
     <p><a class="btn" href="{{ url_for('public.badge_page', slug=badge.slug) }}">{{ _("Start over") }}</a></p>
+  {% elif status == "already" %}
+    <h1>{{ _("You already have this badge") }}</h1>
+    <p>{% trans name=badge.name,
+              date=assertion.issued_on_utc() | dateformat("long") -%}
+      The <strong>{{ name }}</strong> badge was issued to this e-mail address on
+      {{ date }}.
+    {%- endtrans %}</p>
+    <p>
+      <a class="btn" href="{{ url_for('public.assertion_page', uuid=assertion.uuid) }}">{{ _("View your badge") }}</a>
+    </p>
+    <form method="post" action="{{ url_for('claim.confirm_resend', token=token) }}">
+      {{ form.hidden_tag() }}
+      <p class="muted">{{ _("Lost the original e-mail?") }}
+        <button type="submit" class="linkbtn">{{ _("Re-send the notification e-mail") }}</button>
+      </p>
+    </form>
   {% endif %}
 {% endblock %}

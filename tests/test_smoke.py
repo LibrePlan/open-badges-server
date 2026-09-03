@@ -604,6 +604,42 @@ def test_claim_flow(app, client, auth_client, monkeypatch):
         assert Assertion.query.count() == 1
 
 
+def test_claim_when_already_awarded(app, client, auth_client, monkeypatch):
+    from badgeserver.models import Assertion, BadgeClaim
+
+    _self_service_badge(app, auth_client)
+    sent = _mailable(app, monkeypatch)
+
+    # already hold the badge
+    with app.app_context():
+        from badgeserver.issuing import award_badge
+
+        award_badge(db.session.get(BadgeClass, "fan"), "fan@example.com", send_email=False)
+
+    # claim again -> confirm -> "already have it" page, no second award e-mail
+    client.post("/b/fan/claim", data={"email": "fan@example.com", "submit": "x"})
+    with app.app_context():
+        token = BadgeClaim.query.filter_by(email="fan@example.com", confirmed_on=None).one().token
+    sent.clear()
+    r = client.post(f"/claim/{token}", data={"submit": "x"}, follow_redirects=False)
+    assert r.status_code == 200
+    body = r.data.decode()
+    assert "You already have this badge" in body
+    assert "issued to this e-mail address on" in body
+    assert f'action="/claim/{token}/resend"' in body
+    assert not any("awarded" in m["Subject"] for m in sent)
+
+    # the re-send button works and only mails the recipient's own address
+    r = client.post(f"/claim/{token}/resend", data={"submit": "x"}, follow_redirects=False)
+    assert r.status_code == 302 and "/a/" in r.headers["Location"]
+    assert len(sent) == 1 and sent[0]["To"] == "fan@example.com"
+    assert "awarded: Fan" in sent[0]["Subject"]
+
+    assert client.post("/claim/nope/resend", data={"submit": "x"}).status_code == 404
+    with app.app_context():
+        assert Assertion.query.count() == 1
+
+
 def test_claim_expired(app, client, auth_client, monkeypatch):
     from datetime import datetime, timedelta, timezone
 

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Open Badges Server VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-02 18:14+0200\n"
+"POT-Creation-Date: 2026-09-03 09:33+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -135,7 +135,7 @@ msgstr ""
 msgid "SMTP is not configured."
 msgstr ""
 
-#: badgeserver/admin.py:675
+#: badgeserver/admin.py:675 badgeserver/claim_views.py:192
 msgid "Notification e-mail re-sent."
 msgstr ""
 
@@ -160,8 +160,16 @@ msgstr ""
 msgid "We could not send the confirmation e-mail. Please try again later."
 msgstr ""
 
-#: badgeserver/claim_views.py:154
+#: badgeserver/claim_views.py:167
 msgid "Badge confirmed — here it is."
+msgstr ""
+
+#: badgeserver/claim_views.py:188
+msgid "E-mail is not configured on this server."
+msgstr ""
+
+#: badgeserver/claim_views.py:195
+msgid "We could not send the e-mail. Please try again later."
 msgstr ""
 
 #: badgeserver/extensions.py:21
@@ -840,6 +848,30 @@ msgstr ""
 msgid "Start over"
 msgstr ""
 
+#: badgeserver/templates/claim_result.html:22
+msgid "You already have this badge"
+msgstr ""
+
+#: badgeserver/templates/claim_result.html:23
+#, python-format
+msgid ""
+"The <strong>%(name)s</strong> badge was issued to this e-mail address on\n"
+"      %(date)s."
+msgstr ""
+
+#: badgeserver/templates/claim_result.html:29
+#: badgeserver/templates/email/award.html:14
+msgid "View your badge"
+msgstr ""
+
+#: badgeserver/templates/claim_result.html:33
+msgid "Lost the original e-mail?"
+msgstr ""
+
+#: badgeserver/templates/claim_result.html:34
+msgid "Re-send the notification e-mail"
+msgstr ""
+
 #: badgeserver/templates/index.html:14
 msgid "issuer JSON"
 msgstr ""
@@ -1317,10 +1349,6 @@ msgstr ""
 msgid ""
 "Issued by <strong>%(name)s</strong> &ndash; <a "
 "href=\"%(url)s\">%(url)s</a>"
-msgstr ""
-
-#: badgeserver/templates/email/award.html:14
-msgid "View your badge"
 msgstr ""
 
 #: badgeserver/templates/email/award.html:17

@@ -129,7 +129,7 @@ msgstr "Aserción restablecida."
 msgid "SMTP is not configured."
 msgstr "SMTP no está configurado."
 
-#: badgeserver/admin.py:675
+#: badgeserver/admin.py:675 badgeserver/claim_views.py:192
 msgid "Notification e-mail re-sent."
 msgstr "Correo de notificación reenviado."
 
@@ -154,9 +154,17 @@ msgstr "Reclamar esta insignia no está disponible en este momento."
 msgid "We could not send the confirmation e-mail. Please try again later."
 msgstr "No pudimos enviar el correo de confirmación. Inténtelo de nuevo más tarde."
 
-#: badgeserver/claim_views.py:154
+#: badgeserver/claim_views.py:167
 msgid "Badge confirmed — here it is."
 msgstr "Insignia confirmada: aquí la tiene."
+
+#: badgeserver/claim_views.py:188
+msgid "E-mail is not configured on this server."
+msgstr "El correo no está configurado en este servidor."
+
+#: badgeserver/claim_views.py:195
+msgid "We could not send the e-mail. Please try again later."
+msgstr "No pudimos enviar el correo. Inténtelo de nuevo más tarde."
 
 #: badgeserver/extensions.py:21
 msgid "Please sign in to continue."
@@ -826,6 +834,32 @@ msgstr "El enlace de confirmación de la insignia <strong>%(name)s</strong> ya n
 msgid "Start over"
 msgstr "Empezar de nuevo"
 
+#: badgeserver/templates/claim_result.html:22
+msgid "You already have this badge"
+msgstr "Ya tiene esta insignia"
+
+#: badgeserver/templates/claim_result.html:23
+#, python-format
+msgid ""
+"The <strong>%(name)s</strong> badge was issued to this e-mail address on\n"
+"      %(date)s."
+msgstr ""
+"La insignia <strong>%(name)s</strong> se emitió a esta dirección de correo el\n"
+"      %(date)s."
+
+#: badgeserver/templates/claim_result.html:29
+#: badgeserver/templates/email/award.html:14
+msgid "View your badge"
+msgstr "Ver su insignia"
+
+#: badgeserver/templates/claim_result.html:33
+msgid "Lost the original e-mail?"
+msgstr "¿Perdió el correo original?"
+
+#: badgeserver/templates/claim_result.html:34
+msgid "Re-send the notification e-mail"
+msgstr "Reenviar el correo de notificación"
+
 #: badgeserver/templates/index.html:14
 msgid "issuer JSON"
 msgstr "JSON del emisor"
@@ -1287,10 +1321,6 @@ msgstr "Ha recibido una insignia:"
 #, python-format
 msgid "Issued by <strong>%(name)s</strong> &ndash; <a href=\"%(url)s\">%(url)s</a>"
 msgstr "Emitida por <strong>%(name)s</strong> &ndash; <a href=\"%(url)s\">%(url)s</a>"
-
-#: badgeserver/templates/email/award.html:14
-msgid "View your badge"
-msgstr "Ver su insignia"
 
 #: badgeserver/templates/email/award.html:17
 msgid "Badge image:"

@@ -129,7 +129,7 @@ msgstr "Assertie hersteld."
 msgid "SMTP is not configured."
 msgstr "SMTP is niet geconfigureerd."
 
-#: badgeserver/admin.py:675
+#: badgeserver/admin.py:675 badgeserver/claim_views.py:192
 msgid "Notification e-mail re-sent."
 msgstr "Notificatie-e-mail opnieuw verzonden."
 
@@ -154,9 +154,17 @@ msgstr "Deze badge claimen is nu niet mogelijk."
 msgid "We could not send the confirmation e-mail. Please try again later."
 msgstr "We konden de bevestigingsmail niet verzenden. Probeer het later opnieuw."
 
-#: badgeserver/claim_views.py:154
+#: badgeserver/claim_views.py:167
 msgid "Badge confirmed — here it is."
 msgstr "Badge bevestigd — hier is hij."
+
+#: badgeserver/claim_views.py:188
+msgid "E-mail is not configured on this server."
+msgstr "E-mail is niet geconfigureerd op deze server."
+
+#: badgeserver/claim_views.py:195
+msgid "We could not send the e-mail. Please try again later."
+msgstr "We konden de e-mail niet verzenden. Probeer het later opnieuw."
 
 #: badgeserver/extensions.py:21
 msgid "Please sign in to continue."
@@ -826,6 +834,32 @@ msgstr "De bevestigingslink voor de badge <strong>%(name)s</strong> is niet meer
 msgid "Start over"
 msgstr "Opnieuw beginnen"
 
+#: badgeserver/templates/claim_result.html:22
+msgid "You already have this badge"
+msgstr "Je hebt deze badge al"
+
+#: badgeserver/templates/claim_result.html:23
+#, python-format
+msgid ""
+"The <strong>%(name)s</strong> badge was issued to this e-mail address on\n"
+"      %(date)s."
+msgstr ""
+"De badge <strong>%(name)s</strong> is op\n"
+"      %(date)s aan dit e-mailadres uitgegeven."
+
+#: badgeserver/templates/claim_result.html:29
+#: badgeserver/templates/email/award.html:14
+msgid "View your badge"
+msgstr "Bekijk je badge"
+
+#: badgeserver/templates/claim_result.html:33
+msgid "Lost the original e-mail?"
+msgstr "De oorspronkelijke e-mail kwijt?"
+
+#: badgeserver/templates/claim_result.html:34
+msgid "Re-send the notification e-mail"
+msgstr "Notificatie-e-mail opnieuw verzenden"
+
 #: badgeserver/templates/index.html:14
 msgid "issuer JSON"
 msgstr "uitgever-JSON"
@@ -1287,10 +1321,6 @@ msgstr "Je hebt een badge ontvangen:"
 #, python-format
 msgid "Issued by <strong>%(name)s</strong> &ndash; <a href=\"%(url)s\">%(url)s</a>"
 msgstr "Uitgegeven door <strong>%(name)s</strong> &ndash; <a href=\"%(url)s\">%(url)s</a>"
-
-#: badgeserver/templates/email/award.html:14
-msgid "View your badge"
-msgstr "Bekijk je badge"
 
 #: badgeserver/templates/email/award.html:17
 msgid "Badge image:"

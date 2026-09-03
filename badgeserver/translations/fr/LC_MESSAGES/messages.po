@@ -129,7 +129,7 @@ msgstr "Assertion rétablie."
 msgid "SMTP is not configured."
 msgstr "SMTP n’est pas configuré."
 
-#: badgeserver/admin.py:675
+#: badgeserver/admin.py:675 badgeserver/claim_views.py:192
 msgid "Notification e-mail re-sent."
 msgstr "E-mail de notification renvoyé."
 
@@ -154,9 +154,17 @@ msgstr "La demande de ce badge est indisponible pour le moment."
 msgid "We could not send the confirmation e-mail. Please try again later."
 msgstr "Impossible d’envoyer l’e-mail de confirmation. Réessayez plus tard."
 
-#: badgeserver/claim_views.py:154
+#: badgeserver/claim_views.py:167
 msgid "Badge confirmed — here it is."
 msgstr "Badge confirmé — le voici."
+
+#: badgeserver/claim_views.py:188
+msgid "E-mail is not configured on this server."
+msgstr "L’e-mail n’est pas configuré sur ce serveur."
+
+#: badgeserver/claim_views.py:195
+msgid "We could not send the e-mail. Please try again later."
+msgstr "Impossible d’envoyer l’e-mail. Réessayez plus tard."
 
 #: badgeserver/extensions.py:21
 msgid "Please sign in to continue."
@@ -826,6 +834,32 @@ msgstr "Le lien de confirmation du badge <strong>%(name)s</strong> n’est plus 
 msgid "Start over"
 msgstr "Recommencer"
 
+#: badgeserver/templates/claim_result.html:22
+msgid "You already have this badge"
+msgstr "Vous avez déjà ce badge"
+
+#: badgeserver/templates/claim_result.html:23
+#, python-format
+msgid ""
+"The <strong>%(name)s</strong> badge was issued to this e-mail address on\n"
+"      %(date)s."
+msgstr ""
+"Le badge <strong>%(name)s</strong> a été délivré à cette adresse e-mail le\n"
+"      %(date)s."
+
+#: badgeserver/templates/claim_result.html:29
+#: badgeserver/templates/email/award.html:14
+msgid "View your badge"
+msgstr "Voir votre badge"
+
+#: badgeserver/templates/claim_result.html:33
+msgid "Lost the original e-mail?"
+msgstr "E-mail d’origine perdu ?"
+
+#: badgeserver/templates/claim_result.html:34
+msgid "Re-send the notification e-mail"
+msgstr "Renvoyer l’e-mail de notification"
+
 #: badgeserver/templates/index.html:14
 msgid "issuer JSON"
 msgstr "JSON de l’émetteur"
@@ -1287,10 +1321,6 @@ msgstr "Vous avez reçu un badge :"
 #, python-format
 msgid "Issued by <strong>%(name)s</strong> &ndash; <a href=\"%(url)s\">%(url)s</a>"
 msgstr "Délivré par <strong>%(name)s</strong> &ndash; <a href=\"%(url)s\">%(url)s</a>"
-
-#: badgeserver/templates/email/award.html:14
-msgid "View your badge"
-msgstr "Voir votre badge"
 
 #: badgeserver/templates/email/award.html:17
 msgid "Badge image:"

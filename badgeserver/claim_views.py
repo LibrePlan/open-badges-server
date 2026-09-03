@@ -20,9 +20,9 @@ from flask_babel import gettext as _
 
 from .extensions import db, limiter
 from .forms import ClaimForm, ConfirmForm
-from .issuing import AlreadyAwarded, award_badge
+from .issuing import AlreadyAwarded, award_badge, resend_email
 from .mail import mail_configured, send_claim_confirmation
-from .models import BadgeClaim, BadgeClass
+from .models import Assertion, BadgeClaim, BadgeClass
 
 bp = Blueprint("claim", __name__)
 
@@ -142,16 +142,58 @@ def confirm_submit(token: str):
             )
         )
 
+    already_had = False
     try:
         assertion = award_badge(badge, entry.email, send_email=True).assertion
     except AlreadyAwarded as exc:
         assertion = exc.assertion
+        already_had = True
 
     entry.confirmed_on = datetime.now(timezone.utc)
     entry.assertion_uuid = assertion.uuid
     db.session.commit()
 
+    if already_had:
+        # They had it already -- show when, and offer to re-send the notice.
+        # This is only reachable via the confirmation link, so no address is
+        # confirmed to anyone who does not already own the inbox.
+        return _no_store(
+            render_template(
+                "claim_result.html", status="already", badge=badge,
+                assertion=assertion, token=token, form=ConfirmForm(),
+            )
+        )
+
     flash(_("Badge confirmed — here it is."), "ok")
+    return _no_store(redirect(url_for("public.assertion_page", uuid=assertion.uuid)))
+
+
+@bp.post("/claim/<token>/resend")
+@limiter.limit("5 per minute")
+def confirm_resend(token: str):
+    entry = db.session.get(BadgeClaim, token)
+    if entry is None or not entry.assertion_uuid:
+        abort(404)
+    assertion = db.session.get(Assertion, entry.assertion_uuid)
+    if (
+        assertion is None
+        or assertion.revoked
+        or assertion.recipient_email != entry.email
+    ):
+        abort(404)
+    if not ConfirmForm().validate_on_submit():
+        abort(400)
+
+    if not mail_configured():
+        flash(_("E-mail is not configured on this server."), "error")
+    else:
+        try:
+            resend_email(assertion)
+            flash(_("Notification e-mail re-sent."), "ok")
+        except Exception as exc:  # noqa: BLE001 - report cleanly
+            current_app.logger.warning("Claim resend failed: %s", exc)
+            flash(_("We could not send the e-mail. Please try again later."), "error")
+
     return _no_store(redirect(url_for("public.assertion_page", uuid=assertion.uuid)))
 
 
